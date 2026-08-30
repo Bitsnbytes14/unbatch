@@ -3,10 +3,16 @@ returning. No stage may resolve an item without a Decision row landing here.
 
 The exception report and the HTML report are queries over this table, never
 separately maintained lists (ARCHITECTURE.md § Audit trail).
+
+`derive_run_id` ties a run's id to both its seed and the actual bytes of the
+input CSVs, so a run_id only ever means "this seed against this exact data" —
+two runs are safely diffable, and regenerating the fixtures under an
+unchanged seed number can never be mistaken for the same run.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 from datetime import datetime
@@ -15,6 +21,9 @@ from pathlib import Path
 from unbatch.models import Decision, DecisionOutcome, Stage
 
 DEFAULT_DB_PATH = Path("out/audit.db")
+DEFAULT_DATA_DIR = Path("data")
+
+_INPUT_FILENAMES = ("order_ledger.csv", "settlement_report.csv", "bank_statement.csv")
 
 _CREATE_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS decisions (
@@ -128,3 +137,19 @@ def fetch_exceptions(conn: sqlite3.Connection, run_id: str | None = None) -> lis
         "SELECT * FROM decisions WHERE run_id = ? AND outcome = ? ORDER BY id",
         (run_id, DecisionOutcome.EXCEPTION.value),
     )
+
+
+def derive_run_id(seed: int, data_dir: Path = DEFAULT_DATA_DIR) -> str:
+    """Derive a run_id deterministically from `seed` and a hash of the input
+    CSVs actually present in `data_dir`. Two calls with the same seed and
+    the same file bytes always produce the same run_id; a changed seed or
+    changed input data always produces a different one — this is what makes
+    runs reproducible and safely diffable rather than just labeled the same.
+    """
+    hasher = hashlib.sha256()
+    hasher.update(str(seed).encode("utf-8"))
+    for filename in _INPUT_FILENAMES:
+        hasher.update(filename.encode("utf-8"))
+        hasher.update((data_dir / filename).read_bytes())
+    digest = hasher.hexdigest()[:12]
+    return f"run_{seed}_{digest}"
