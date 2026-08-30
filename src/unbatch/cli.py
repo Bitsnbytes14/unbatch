@@ -11,13 +11,15 @@ from __future__ import annotations
 
 import typer
 
+from unbatch import generate as generate_module
+
 app = typer.Typer(help="unbatch — settlement reconciliation agent.")
 
 
 @app.command()
 def generate(seed: int = 42) -> None:
     """Write data/ fixtures + ground truth for `seed`."""
-    raise NotImplementedError
+    generate_module.generate(seed)
 
 
 @app.command()
