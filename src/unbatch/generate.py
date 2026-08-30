@@ -50,7 +50,7 @@ from unbatch.models import (
     SettlementLine,
     SettlementLineType,
 )
-from unbatch.money import format_paise_to_rupees
+from unbatch.money import format_paise_to_rupees, parse_rupees_to_paise
 
 DEFAULT_OUT_DIR = Path("data")
 
@@ -940,6 +940,67 @@ def write_order_ledger_csv(orders: list[OrderLedgerRecord], path: Path) -> None:
 def write_settlement_report_csv(settlements: list[SettlementLine], path: Path) -> None:
     """Write data/settlement_report.csv per DATA_SPEC.md."""
     _write_csv(path, SETTLEMENT_REPORT_HEADER, [_settlement_report_row(s) for s in settlements])
+
+
+def _read_csv(path: Path) -> list[dict[str, str]]:
+    """Read a CSV written by `_write_csv` back into row dicts. Opened with
+    `newline=""` for symmetry with the writer, even though reading doesn't
+    carry the same CRLF risk — csv.reader still expects it."""
+    with open(path, encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def _order_ledger_from_row(row: dict[str, str]) -> OrderLedgerRecord:
+    return OrderLedgerRecord(
+        order_id=row["order_id"],
+        payment_id=row["payment_id"],
+        amount_paise=parse_rupees_to_paise(row["amount"]),
+        currency=row["currency"],
+        status=OrderStatus(row["status"]),
+        captured_at=datetime.fromisoformat(row["captured_at"]),
+        customer_ref=row["customer_ref"],
+        method=PaymentMethod(row["method"]),
+    )
+
+
+def _settlement_line_from_row(row: dict[str, str]) -> SettlementLine:
+    return SettlementLine(
+        settlement_id=row["settlement_id"],
+        settlement_utr=row["settlement_utr"],
+        payment_id=row["payment_id"],
+        type=SettlementLineType(row["type"]),
+        gross_paise=parse_rupees_to_paise(row["gross"]),
+        fee_paise=parse_rupees_to_paise(row["fee"]),
+        tax_paise=parse_rupees_to_paise(row["tax"]),
+        net_paise=parse_rupees_to_paise(row["net"]),
+        settled_at=datetime.fromisoformat(row["settled_at"]),
+    )
+
+
+def _bank_statement_from_row(row: dict[str, str]) -> BankStatementRecord:
+    return BankStatementRecord(
+        txn_id=row["txn_id"],
+        value_date=date.fromisoformat(row["value_date"]),
+        narration=row["narration"],
+        credit_paise=parse_rupees_to_paise(row["credit"]) if row["credit"] else None,
+        debit_paise=parse_rupees_to_paise(row["debit"]) if row["debit"] else None,
+        balance_paise=parse_rupees_to_paise(row["balance"]),
+    )
+
+
+def read_order_ledger_csv(path: Path) -> list[OrderLedgerRecord]:
+    """Read data/order_ledger.csv back into OrderLedgerRecord models."""
+    return [_order_ledger_from_row(row) for row in _read_csv(path)]
+
+
+def read_settlement_report_csv(path: Path) -> list[SettlementLine]:
+    """Read data/settlement_report.csv back into SettlementLine models."""
+    return [_settlement_line_from_row(row) for row in _read_csv(path)]
+
+
+def read_bank_statement_csv(path: Path) -> list[BankStatementRecord]:
+    """Read data/bank_statement.csv back into BankStatementRecord models."""
+    return [_bank_statement_from_row(row) for row in _read_csv(path)]
 
 
 def generate(seed: int, out_dir: Path = DEFAULT_OUT_DIR) -> None:
