@@ -144,8 +144,17 @@ class BankStatementRecord(BaseModel):
 
 class ExpectedBatch(BaseModel):
     """A settlement batch the rules computed from order_ledger +
-    settlement_report: the net amount a bank credit should match."""
+    settlement_report: the net amount a bank credit should match.
 
+    `settlement_utr` is the UTR a real payout carries — needed for L0 to
+    check whether it appears in a bank credit's narration. Grouping
+    settlement lines by UTR (see cli.compute_expected_batches) is itself
+    what makes duplicate_utr and settlement_split show up as ambiguity
+    rather than something a stage needs to special-case: two real batches
+    sharing a UTR collapse into one ExpectedBatch here, so neither credit's
+    amount ties to it exactly and L0 correctly declines both."""
+
+    settlement_utr: str
     settlement_ids: list[str]
     payment_ids: list[str]
     net_paise: Paise

@@ -133,31 +133,6 @@ FEE_TIER_TARGET_GROSS_PAISE = 1_000_000  # Rs 10,000, forced so the delta is pre
 FEE_TIER_BUMP = Decimal("0.005")  # a 0.5 point rate change -> tens of rupees, not paise
 UNRELATED_CREDIT_PAISE = 25_000  # ~Rs 250, a plausible-looking stray inbound transfer
 
-# Every designated batch above is deliberately built by hand, not by the
-# generic random draw: organic refund/chargeback/adjustment noise is
-# suppressed for all of them (see the `not in _SPECIAL_BATCH_INDICES` guards
-# in generate_orders_and_settlements) so their composition stays predictable
-# enough to split, subtract, or resum without accidentally going negative.
-# That realism belongs in the ordinary "clean" population instead, where it
-# doesn't need to be reasoned about precisely.
-_SPECIAL_BATCH_INDICES = frozenset(
-    {
-        REFUND_BATCH_INDEX,
-        CHARGEBACK_BATCH_INDEX,
-        LARGE_VALUE_BATCH_INDEX,
-        *NARRATION_TRUNCATED_BATCH_INDICES,
-        NARRATION_NO_UTR_BATCH_INDEX,
-        *SETTLEMENT_SPLIT_BATCH_INDICES,
-        FEE_TIER_CHANGE_BATCH_INDEX,
-        DATE_SKEW_BATCH_INDEX,
-        DUPLICATE_UTR_BATCH_INDEX_A,
-        DUPLICATE_UTR_BATCH_INDEX_B,
-        ORPHAN_SETTLEMENT_BATCH_INDEX,
-        AMBIGUOUS_COMPOSITION_BATCH_INDEX,
-        AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX,
-    }
-)
-
 # settlement_split and ambiguous_composition need more than the general 2-4
 # line range to split or subtract safely without landing on a near-empty or
 # negative group; CHARGEBACK_BATCH_INDEX needs enough other lines to absorb
@@ -184,8 +159,6 @@ AMBIGUOUS_DECOY_ANCHOR_GROSS_PAISE = AMOUNT_MIN_PAISE  # forced small so the dec
 # (1000050 * 2% = 20001.0) needs no rounding at all. Per-line sum (20002) vs
 # per-batch (20001) is the guaranteed 1-paise rounding_delta gap.
 ROUNDING_BOUNDARY_GROSS_PAISE = 500_025
-
-MIN_BATCH_NET_BUFFER_PAISE = 100  # floor for a running batch total after an organic refund
 
 _METHOD_WEIGHTS: dict[PaymentMethod, float] = {
     PaymentMethod.UPI: 0.55,
@@ -335,35 +308,23 @@ def _make_chargeback_line(
     )
 
 
-def _make_adjustment_line(
-    rng: random.Random,
-    payment_id: str,
-    settlement_utr: str,
-    settled_date: date,
-) -> SettlementLine:
-    amount = rng.choice([-500, -200, 200, 500])
-    return SettlementLine(
-        settlement_id=_random_id(rng, "setl_"),
-        settlement_utr=settlement_utr,
-        payment_id=payment_id,
-        type=SettlementLineType.ADJUSTMENT,
-        gross_paise=amount,
-        fee_paise=0,
-        tax_paise=0,
-        net_paise=amount,
-        settled_at=_datetime_at(settled_date, rng),
-    )
-
-
 def generate_orders_and_settlements(
     seed: int,
 ) -> tuple[list[OrderLedgerRecord], list[SettlementLine], list[Batch]]:
     """Generate the economic base data: captured orders grouped into
     N_BATCHES settlement payout batches over a WINDOW_DAYS-day window, each
     batch sharing one settlement_utr across its lines (a UTR is assigned to
-    the whole payout, not per transaction). Refunds, a chargeback, and a
-    couple of manual adjustments are mixed in for realistic type variety,
-    plus a handful of failed orders that never reach settlement at all.
+    the whole payout, not per transaction), plus a handful of failed orders
+    that never reach settlement at all.
+
+    A refund or chargeback line lives ONLY in its own dedicated batch
+    (REFUND_BATCH_INDEX / CHARGEBACK_BATCH_INDEX), never mixed into an
+    otherwise-clean one — see FAILURES.md's 2026-08-30 entry for why that
+    used to be organic/random and why that was wrong: a "clean" batch
+    containing a refund still nets to the same total on both the expected
+    and actual side, so L0/L1 would resolve it exactly like a real clean
+    batch and refund_in_window's whole point (a naive expectation that
+    ignores the refund) would never be exercised.
 
     Deterministic regardless of seed: batch REFUND_BATCH_INDEX contains a
     refund line, batch CHARGEBACK_BATCH_INDEX contains a chargeback line,
@@ -389,7 +350,6 @@ def generate_orders_and_settlements(
     for batch in batches:
         captured_date = batch.settled_date - timedelta(days=rng.choice([1, 1, 1, 2]))
         n_lines = _FORCED_N_LINES.get(batch.index, rng.randint(2, 4))
-        is_special = batch.index in _SPECIAL_BATCH_INDICES
         captured_this_batch: list[OrderLedgerRecord] = []
 
         for i in range(n_lines):
@@ -415,12 +375,6 @@ def generate_orders_and_settlements(
             status = OrderStatus.CAPTURED
             if batch.index == REFUND_BATCH_INDEX and i == 0:
                 status = OrderStatus.REFUNDED
-            elif gross_paise is None and not is_special:
-                roll = rng.random()
-                if roll < 0.05:
-                    status = OrderStatus.REFUNDED
-                elif roll < 0.10:
-                    status = OrderStatus.PARTIALLY_REFUNDED
 
             order, line = _make_payment(
                 rng,
@@ -432,57 +386,34 @@ def generate_orders_and_settlements(
                 status=status,
             )
 
-            refund_line = None
-            is_forced_refund = batch.index == REFUND_BATCH_INDEX and i == 0
-            if status is not OrderStatus.CAPTURED:
-                refund_line = _make_refund_line(
-                    rng,
-                    order,
-                    batch.settlement_utr,
-                    batch.settled_date,
-                    partial=status is OrderStatus.PARTIALLY_REFUNDED,
-                )
-                # A small batch with only a line or two can't always absorb an
-                # organic refund without its running total going negative
-                # (BankStatementRecord requires credit_paise >= 0). Only the
-                # dedicated REFUND_BATCH_INDEX instance is exempt — it is the
-                # one guaranteed refund_in_window example and always has
-                # enough other lines to stay positive overall.
-                projected_total = (
-                    sum(existing.net_paise for existing in batch.lines)
-                    + line.net_paise
-                    + refund_line.net_paise
-                )
-                if not is_forced_refund and projected_total < MIN_BATCH_NET_BUFFER_PAISE:
-                    status = OrderStatus.CAPTURED
-                    order = order.model_copy(update={"status": OrderStatus.CAPTURED})
-                    refund_line = None
-
             orders.append(order)
             batch.lines.append(line)
             captured_this_batch.append(order)
-            if refund_line is not None:
-                batch.lines.append(refund_line)
+
+            if status is not OrderStatus.CAPTURED:
+                # Only REFUND_BATCH_INDEX's forced i==0 case reaches here (see
+                # above) — refunds/chargebacks/adjustments live exclusively in
+                # their own dedicated batch, never mixed into an otherwise
+                # `clean` one. A "clean" batch whose lines happen to include a
+                # refund would make its own expected-batch total (all lines)
+                # equal its own bank credit (also all lines) by construction,
+                # same as a genuinely clean batch — no gap for L0/L1 to
+                # correctly decline on, silently defeating refund_in_window's
+                # whole point. See FAILURES.md's 2026-08-30 entry.
+                batch.lines.append(
+                    _make_refund_line(
+                        rng,
+                        order,
+                        batch.settlement_utr,
+                        batch.settled_date,
+                        partial=status is OrderStatus.PARTIALLY_REFUNDED,
+                    )
+                )
 
         if batch.index == CHARGEBACK_BATCH_INDEX:
             batch.lines.append(
                 _make_chargeback_line(
                     rng, captured_this_batch[0], batch.settlement_utr, batch.settled_date
-                )
-            )
-        elif not is_special and rng.random() < 0.15:
-            eligible = [o for o in captured_this_batch if o.status == OrderStatus.CAPTURED]
-            if eligible:
-                target = rng.choice(eligible)
-                batch.lines.append(
-                    _make_chargeback_line(rng, target, batch.settlement_utr, batch.settled_date)
-                )
-
-        if not is_special and rng.random() < 0.2 and captured_this_batch:
-            ref_order = rng.choice(captured_this_batch)
-            batch.lines.append(
-                _make_adjustment_line(
-                    rng, ref_order.payment_id, batch.settlement_utr, batch.settled_date
                 )
             )
 
@@ -677,9 +608,16 @@ def inject_breaks(
     _apply_duplicate_utr(
         batches[DUPLICATE_UTR_BATCH_INDEX_A], batches[DUPLICATE_UTR_BATCH_INDEX_B]
     )
-    ambiguous_target = sum(
-        line.net_paise for line in batches[AMBIGUOUS_COMPOSITION_BATCH_INDEX].lines
-    )
+    # The credit only ever accounts for all-but-the-last of this batch's
+    # lines — the last line is a deliberate leftover, never claimed by any
+    # ground-truth credit. Without this, the credit's amount would equal the
+    # WHOLE batch's total, which is exactly what compute_expected_batches
+    # groups by UTR, so L0/L1 would resolve it via a clean, unambiguous
+    # exact match before composition search (L2) ever ran — silently
+    # defeating the entire point of "two subsets compose the same amount."
+    # See FAILURES.md's 2026-08-30 entry.
+    ambiguous_lines = batches[AMBIGUOUS_COMPOSITION_BATCH_INDEX].lines[:-1]
+    ambiguous_target = sum(line.net_paise for line in ambiguous_lines)
     _apply_ambiguous_decoy(batches[AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX], ambiguous_target)
 
     settlements = [line for batch in batches for line in batch.lines]
@@ -752,9 +690,13 @@ def inject_breaks(
             )
 
         elif batch.index == AMBIGUOUS_COMPOSITION_BATCH_INDEX:
+            lines = batch.lines[:-1]  # excludes the deliberate leftover line
+            record = record.model_copy(
+                update={"credit_paise": sum(line.net_paise for line in lines)}
+            )
             final_records.append(record)
             credits.append(
-                _ground_truth_credit(record.txn_id, batch.lines, BreakType.AMBIGUOUS_COMPOSITION)
+                _ground_truth_credit(record.txn_id, lines, BreakType.AMBIGUOUS_COMPOSITION)
             )
 
         elif batch.index == AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX:

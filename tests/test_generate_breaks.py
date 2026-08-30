@@ -160,11 +160,18 @@ def test_orphan_settlement_has_no_matching_bank_credit() -> None:
 
 
 def test_ambiguous_composition_has_a_genuine_alternate_subset() -> None:
+    """The target credit covers all-but-the-last line of its batch — the
+    last line is a deliberate, permanently unclaimed leftover. Without that,
+    the credit's amount would equal the batch's WHOLE total, which is
+    exactly what compute_expected_batches groups by UTR, so L0/L1 would
+    resolve it via a clean exact match before composition search (L2) ever
+    ran. See FAILURES.md's 2026-08-30 entry."""
     _, _, batches, _bank_statement, ground_truth = _full_pipeline()
     target_batch = batches[AMBIGUOUS_COMPOSITION_BATCH_INDEX]
     decoy_batch = batches[AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX]
 
-    target_total = sum(line.net_paise for line in target_batch.lines)
+    target_lines = target_batch.lines[:-1]
+    target_total = sum(line.net_paise for line in target_lines)
     decoy_payment_lines = [line for line in decoy_batch.lines if line.type.value == "payment"]
     decoy_pair_sum = decoy_payment_lines[0].net_paise + decoy_payment_lines[1].net_paise
 
@@ -173,7 +180,13 @@ def test_ambiguous_composition_has_a_genuine_alternate_subset() -> None:
     ambiguous_credit = next(
         c for c in ground_truth.credits if c.break_type == BreakType.AMBIGUOUS_COMPOSITION
     )
-    assert set(ambiguous_credit.payment_ids) == {line.payment_id for line in target_batch.lines}
+    assert set(ambiguous_credit.payment_ids) == {line.payment_id for line in target_lines}
+    assert ambiguous_credit.txn_id  # sanity: it's still a real, tagged credit
+
+    # the leftover line is never claimed by any ground-truth credit
+    leftover_payment_id = target_batch.lines[-1].payment_id
+    all_credited_payment_ids = {pid for c in ground_truth.credits for pid in c.payment_ids}
+    assert leftover_payment_id not in all_credited_payment_ids
 
     # the decoy batch's own credit still ties out despite the mutated line
     decoy_payment_ids = {ln.payment_id for ln in decoy_batch.lines}

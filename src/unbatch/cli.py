@@ -36,6 +36,7 @@ from unbatch.models import (
     OrderLedgerRecord,
     RunContext,
     SettlementLine,
+    SettlementLineType,
     Stage,
     UnresolvedCredit,
 )
@@ -71,19 +72,37 @@ def compute_expected_batches(settlements: list[SettlementLine]) -> list[Expected
     assigned to a whole payout, not per transaction, so grouping by UTR
     recovers each real batch — except where a break deliberately breaks that
     assumption (settlement_split, duplicate_utr), which is exactly the
-    ambiguity later stages exist to resolve."""
+    ambiguity later stages exist to resolve.
+
+    `net_paise` is the sum of PAYMENT-type lines only — the naive total a
+    merchant would expect from captures alone, before any refund or
+    chargeback that later lands in the same window. The actual bank credit
+    correctly nets those in (ARCHITECTURE.md: "minus refunds issued in the
+    window, minus chargebacks and their fees"), so a batch with a refund or
+    chargeback line never ties out exactly here — that gap is
+    refund_in_window / chargeback_deduction's whole point, and L0/L1 are
+    right to decline them; L2 finds the true composition (payment lines
+    plus the refund/chargeback line) by searching individual lines directly,
+    not through this aggregate. `settlement_ids`/`payment_ids` still list
+    every line in the group, payment or not, since those are just bookkeeping
+    for whichever stage does resolve the batch as a whole.
+    """
     groups: dict[str, list[SettlementLine]] = defaultdict(list)
     for line in settlements:
         groups[line.settlement_utr].append(line)
 
     batches = []
-    for lines in groups.values():
+    for utr, lines in groups.items():
         dates = [line.settled_at.date() for line in lines]
+        payment_only_net = sum(
+            line.net_paise for line in lines if line.type == SettlementLineType.PAYMENT
+        )
         batches.append(
             ExpectedBatch(
+                settlement_utr=utr,
                 settlement_ids=[line.settlement_id for line in lines],
                 payment_ids=[line.payment_id for line in lines],
-                net_paise=sum(line.net_paise for line in lines),
+                net_paise=payment_only_net,
                 window_start=min(dates),
                 window_end=max(dates),
             )
