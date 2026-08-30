@@ -123,17 +123,29 @@ def build_unresolved_credits(
     ]
 
 
+_CANDIDATE_LINE_STAGES = frozenset({Stage.L2, Stage.L3})
+
+
 def run_cascade(
     ctx: RunContext,
     unresolved: list[UnresolvedCredit],
     conn: sqlite3.Connection,
     *,
+    settlements: list[SettlementLine] | None = None,
     stage_sequence: tuple[tuple[Stage, object], ...] = STAGE_SEQUENCE,
 ) -> dict[str, int]:
     """Thread `unresolved` through each stage in `stage_sequence`, in order,
     writing every returned Decision to the audit log immediately and
     removing resolved credits before the next stage runs. A stage never
     sees a credit an earlier stage already claimed.
+
+    Before L2 and L3, `candidate_lines` on every remaining credit is rebuilt
+    from `settlements` minus whatever payment_ids any earlier decision this
+    run already matched — L0/L1 match whole batches and never touch it, but
+    composition needs the individual lines that are actually still up for
+    grabs. Pass `settlements=None` (the default) to skip this entirely,
+    which is what the runner-behaviour tests do with fake stages that don't
+    look at candidate_lines anyway.
 
     Under `ctx.no_llm`, anything still unresolved after the last stage gets
     a terminal exception Decision (stage=L4, reason="no_llm_unresolved") —
@@ -146,12 +158,20 @@ def run_cascade(
     """
     counts: dict[str, int] = {}
     remaining = unresolved
+    consumed_payment_ids: set[str] = set()
 
     for stage, stage_fn in stage_sequence:
+        if settlements is not None and stage in _CANDIDATE_LINE_STAGES:
+            available = [
+                line for line in settlements if line.payment_id not in consumed_payment_ids
+            ]
+            remaining = [u.model_copy(update={"candidate_lines": available}) for u in remaining]
+
         decisions = stage_fn(remaining, ctx)
         resolved_ids = {decision.credit_id for decision in decisions}
         for decision in decisions:
             audit.record(conn, decision)
+            consumed_payment_ids.update(decision.matched_payment_ids)
         counts[stage.value] = len(decisions)
         remaining = [u for u in remaining if u.credit.txn_id not in resolved_ids]
 

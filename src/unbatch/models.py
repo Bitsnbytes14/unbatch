@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from unbatch.money import Paise
 
@@ -174,11 +174,19 @@ class CandidateExplanation(BaseModel):
 class UnresolvedCredit(BaseModel):
     """A bank credit still unresolved after earlier stages, paired with
     whatever candidates the cascade has assembled so far. This is the `Item`
-    in the stage contract `(unresolved: list[Item], ctx) -> list[Decision]`."""
+    in the stage contract `(unresolved: list[Item], ctx) -> list[Decision]`.
+
+    `candidate_lines` is the pool of individual settlement lines still
+    available for L2/L3 to compose from — the cascade runner rebuilds it
+    before each of those stages, excluding whatever earlier decisions
+    already matched, so a stage never has to reach outside its own inputs
+    to know what's left. L0/L1 match whole expected batches and ignore it.
+    """
 
     credit: BankStatementRecord
     expected_batches: list[ExpectedBatch]
-    candidates: list[CandidateExplanation]
+    candidate_lines: list[SettlementLine] = Field(default_factory=list)
+    candidates: list[CandidateExplanation] = Field(default_factory=list)
 
 
 class AdjudicationResult(BaseModel):

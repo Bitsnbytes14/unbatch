@@ -11,7 +11,6 @@ from pathlib import Path
 
 from unbatch.generate import (
     AMBIGUOUS_COMPOSITION_BATCH_INDEX,
-    AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX,
     DUPLICATE_UTR_BATCH_INDEX_A,
     DUPLICATE_UTR_BATCH_INDEX_B,
     FEE_TIER_CHANGE_BATCH_INDEX,
@@ -165,35 +164,48 @@ def test_ambiguous_composition_has_a_genuine_alternate_subset() -> None:
     the credit's amount would equal the batch's WHOLE total, which is
     exactly what compute_expected_batches groups by UTR, so L0/L1 would
     resolve it via a clean exact match before composition search (L2) ever
-    ran. See FAILURES.md's 2026-08-30 entry."""
+    ran. See FAILURES.md's 2026-08-30 entry.
+
+    The decoy pair lives inside ORPHAN_SETTLEMENT_BATCH_INDEX rather than
+    its own batch — an independently "clean" decoy would have its lines
+    consumed by L0 before L2 ever ran (the runner removes matched
+    payment_ids between stages), so the coincidence would never actually be
+    reachable. Orphan lines are never claimed by any Decision, so they stay
+    in the pool for the whole run. See FAILURES.md's second 2026-08-30
+    entry for this one."""
     _, _, batches, _bank_statement, ground_truth = _full_pipeline()
     target_batch = batches[AMBIGUOUS_COMPOSITION_BATCH_INDEX]
-    decoy_batch = batches[AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX]
+    orphan_batch = batches[ORPHAN_SETTLEMENT_BATCH_INDEX]
 
     target_lines = target_batch.lines[:-1]
     target_total = sum(line.net_paise for line in target_lines)
-    decoy_payment_lines = [line for line in decoy_batch.lines if line.type.value == "payment"]
-    decoy_pair_sum = decoy_payment_lines[0].net_paise + decoy_payment_lines[1].net_paise
+    orphan_payment_lines = [line for line in orphan_batch.lines if line.type.value == "payment"]
+    decoy_pair_sum = orphan_payment_lines[0].net_paise + orphan_payment_lines[1].net_paise
 
     assert decoy_pair_sum == target_total
+
+    # the decoy pair settles on or before the target, within L2's 3-day
+    # backward-looking window — otherwise it would never enter the pool
+    # when searching from the target credit's date.
+    assert orphan_batch.settled_date <= target_batch.settled_date
+    assert (target_batch.settled_date - orphan_batch.settled_date).days <= 3
 
     ambiguous_credit = next(
         c for c in ground_truth.credits if c.break_type == BreakType.AMBIGUOUS_COMPOSITION
     )
     assert set(ambiguous_credit.payment_ids) == {line.payment_id for line in target_lines}
-    assert ambiguous_credit.txn_id  # sanity: it's still a real, tagged credit
 
     # the leftover line is never claimed by any ground-truth credit
     leftover_payment_id = target_batch.lines[-1].payment_id
     all_credited_payment_ids = {pid for c in ground_truth.credits for pid in c.payment_ids}
     assert leftover_payment_id not in all_credited_payment_ids
 
-    # the decoy batch's own credit still ties out despite the mutated line
-    decoy_payment_ids = {ln.payment_id for ln in decoy_batch.lines}
-    decoy_credit = next(
-        c for c in ground_truth.credits if set(c.payment_ids) == decoy_payment_ids
-    )
-    assert decoy_credit.break_type == BreakType.CLEAN
+    # the decoy pair's payment_ids are orphaned too — never claimed by any
+    # credit, exactly like the rest of ORPHAN_SETTLEMENT_BATCH_INDEX
+    decoy_payment_ids = {line.payment_id for line in orphan_payment_lines[:2]}
+    assert decoy_payment_ids.isdisjoint(all_credited_payment_ids)
+    orphan_entry = ground_truth.orphan_settlements[0]
+    assert decoy_payment_ids <= set(orphan_entry.payment_ids)
 
 
 def test_unrelated_credit_has_no_settlement_ties_and_is_unresolvable() -> None:
