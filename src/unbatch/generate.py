@@ -30,6 +30,7 @@ from pathlib import Path
 
 from unbatch.fees import compute_fee_paise, compute_net_paise, compute_tax_paise
 from unbatch.models import (
+    BankStatementRecord,
     OrderLedgerRecord,
     OrderStatus,
     PaymentMethod,
@@ -63,6 +64,16 @@ N_FAILED_ORDERS = 6
 REFUND_BATCH_INDEX = 2
 CHARGEBACK_BATCH_INDEX = 3
 LARGE_VALUE_BATCH_INDEX = 4
+
+# Same deterministic-by-construction approach for narration variety: batch
+# NARRATION_TRUNCATED_BATCH_INDEX always gets a truncated UTR and
+# NARRATION_NO_UTR_BATCH_INDEX always gets no UTR at all, so narration_mangled
+# has a guaranteed instance regardless of the random draw. Every other batch
+# gets a full, correct UTR — chosen NEFT- or IMPS-style at random.
+NARRATION_TRUNCATED_BATCH_INDEX = 5
+NARRATION_NO_UTR_BATCH_INDEX = 6
+
+OPENING_BALANCE_PAISE = 10_000_000  # ~Rs 1,00,000 starting balance, illustrative
 
 _METHOD_WEIGHTS: dict[PaymentMethod, float] = {
     PaymentMethod.UPI: 0.55,
@@ -344,6 +355,89 @@ def generate_orders_and_settlements(
 
     settlements = [line for batch in batches for line in batch.lines]
     return orders, settlements, batches
+
+
+def _narration_neft_full(utr: str) -> str:
+    return f"NEFT-{utr}-RAZORPAY SOFTWARE PVT"
+
+
+def _narration_imps_full(utr: str) -> str:
+    return f"IMPS/{utr}/RZPY"
+
+
+def _narration_truncated(utr: str) -> str:
+    return f"NEFT-{utr[:10]}..."
+
+
+def _narration_no_utr() -> str:
+    return "NEFT-XXXXXXXXXXXX-MISC SETTLEMENT CREDIT"
+
+
+def generate_bank_statement_baseline(
+    rng: random.Random, batches: list[Batch]
+) -> list[BankStatementRecord]:
+    """One bank credit per batch: amount = sum(net) of that batch's
+    settlement lines, value_date = the batch's settled date (credited the
+    same day), narration realistically varied. This is the
+    pre-break-injection baseline — the next generation step splits, drops,
+    or relabels specific rows from here to inject DATA_SPEC.md's break
+    types; this function only knows about realistic narration variety and a
+    consistent running balance.
+    """
+    records: list[BankStatementRecord] = []
+    running_balance = OPENING_BALANCE_PAISE
+
+    for batch in batches:
+        credit = sum(line.net_paise for line in batch.lines)
+
+        if batch.index == NARRATION_TRUNCATED_BATCH_INDEX:
+            narration = _narration_truncated(batch.settlement_utr)
+        elif batch.index == NARRATION_NO_UTR_BATCH_INDEX:
+            narration = _narration_no_utr()
+        elif rng.random() < 0.5:
+            narration = _narration_neft_full(batch.settlement_utr)
+        else:
+            narration = _narration_imps_full(batch.settlement_utr)
+
+        running_balance += credit
+        records.append(
+            BankStatementRecord(
+                txn_id=_random_id(rng, "txn_"),
+                value_date=batch.settled_date,
+                narration=narration,
+                credit_paise=credit,
+                debit_paise=None,
+                balance_paise=running_balance,
+            )
+        )
+
+    return records
+
+
+BANK_STATEMENT_HEADER = [
+    "txn_id",
+    "value_date",
+    "narration",
+    "credit",
+    "debit",
+    "balance",
+]
+
+
+def _bank_statement_row(record: BankStatementRecord) -> list[str]:
+    return [
+        record.txn_id,
+        record.value_date.isoformat(),
+        record.narration,
+        format_paise_to_rupees(record.credit_paise) if record.credit_paise is not None else "",
+        format_paise_to_rupees(record.debit_paise) if record.debit_paise is not None else "",
+        format_paise_to_rupees(record.balance_paise),
+    ]
+
+
+def write_bank_statement_csv(records: list[BankStatementRecord], path: Path) -> None:
+    """Write data/bank_statement.csv per DATA_SPEC.md."""
+    _write_csv(path, BANK_STATEMENT_HEADER, [_bank_statement_row(r) for r in records])
 
 
 def _write_csv(path: Path, header: list[str], rows: list[list[str]]) -> None:
