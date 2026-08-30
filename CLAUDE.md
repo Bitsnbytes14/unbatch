@@ -82,3 +82,12 @@ This is not housekeeping. The application form asks "what broke, and how you got
 - Prefer boring code. This gets read by a hiring panel; cleverness that needs a paragraph of explanation is a liability.
 - If a task is ambiguous, state the assumption in one line and proceed — don't stall.
 - Do not write README.md yet. It gets written last, once real numbers exist.
+
+## Commit conventions
+
+This repo's history is part of the submission — commit like it will be read.
+
+- Commit in logical units, not one dump. Split scaffold/tooling, package skeleton, docs, and CLI changes into separate commits even within one session.
+- Messages: imperative mood, lowercase, under 60 chars, no emoji, no "Generated with Claude Code" footer, no Co-Authored-By trailer.
+- Never `git add -A` blindly; stage files deliberately by name.
+- Push after each completed milestone, not after every commit.
