@@ -22,15 +22,28 @@ has touched the RNG.
 from __future__ import annotations
 
 import csv
+import json
 import random
 import string
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta, timezone
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
-from unbatch.fees import compute_fee_paise, compute_net_paise, compute_tax_paise
+from unbatch.fees import (
+    FEE_RATES,
+    compute_batch_fee_and_tax_paise,
+    compute_fee_paise,
+    compute_net_paise,
+    compute_tax_paise,
+)
 from unbatch.models import (
     BankStatementRecord,
+    BreakType,
+    GroundTruth,
+    GroundTruthCredit,
+    GroundTruthOrphanSettlement,
     OrderLedgerRecord,
     OrderStatus,
     PaymentMethod,
@@ -74,6 +87,25 @@ NARRATION_TRUNCATED_BATCH_INDEX = 5
 NARRATION_NO_UTR_BATCH_INDEX = 6
 
 OPENING_BALANCE_PAISE = 10_000_000  # ~Rs 1,00,000 starting balance, illustrative
+
+# Break-type batch assignments (commit 10). Every batch index gets exactly
+# one role; whatever is left over is ground-truthed as `clean`. Reusing
+# LARGE_VALUE_BATCH_INDEX for rounding_delta is deliberate: it makes the
+# biggest credit in the dataset also the one with a rounding quirk, so both
+# "value-weighted diverges from count" and "rounding_delta exists" land on
+# the same story.
+ROUNDING_DELTA_BATCH_INDEX = LARGE_VALUE_BATCH_INDEX
+SETTLEMENT_SPLIT_BATCH_INDEX = 7
+FEE_TIER_CHANGE_BATCH_INDEX = 8
+DATE_SKEW_BATCH_INDEX = 9
+DUPLICATE_UTR_BATCH_INDEX_A = 10
+DUPLICATE_UTR_BATCH_INDEX_B = 11
+ORPHAN_SETTLEMENT_BATCH_INDEX = 12
+AMBIGUOUS_COMPOSITION_BATCH_INDEX = 13
+AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX = 14
+
+FEE_TIER_BUMP = Decimal("0.002")  # a 0.2 point rate change, "small delta" per DATA_SPEC.md
+UNRELATED_CREDIT_PAISE = 25_000  # ~Rs 250, a plausible-looking stray inbound transfer
 
 _METHOD_WEIGHTS: dict[PaymentMethod, float] = {
     PaymentMethod.UPI: 0.55,
@@ -414,6 +446,284 @@ def generate_bank_statement_baseline(
     return records
 
 
+def _payment_lines(batch: Batch) -> list[SettlementLine]:
+    return [line for line in batch.lines if line.type == SettlementLineType.PAYMENT]
+
+
+def _apply_fee_tier_change(
+    batch: Batch, orders_by_payment_id: dict[str, OrderLedgerRecord]
+) -> None:
+    """Mutate one payment line in place so settlement_report's declared fee
+    no longer matches the rate that produced the bank credit already fixed
+    by generate_bank_statement_baseline — the "fee rate changed mid-window"
+    break. Only the batch's first payment line moves."""
+    target = _payment_lines(batch)[0]
+    method = orders_by_payment_id[target.payment_id].method
+    bumped_rate = FEE_RATES[method] + FEE_TIER_BUMP
+    new_fee = int(
+        (Decimal(target.gross_paise) * bumped_rate).to_integral_value(rounding=ROUND_HALF_UP)
+    )
+    new_tax = compute_tax_paise(new_fee)
+    new_net = compute_net_paise(target.gross_paise, new_fee, new_tax)
+    updated = target.model_copy(
+        update={"fee_paise": new_fee, "tax_paise": new_tax, "net_paise": new_net}
+    )
+    batch.lines[batch.lines.index(target)] = updated
+
+
+def _apply_duplicate_utr(batch_a: Batch, batch_b: Batch) -> None:
+    """Reassign every line in batch_b to batch_a's settlement_utr — a
+    gateway bug where two different payouts got tagged with the same UTR."""
+    shared_utr = batch_a.settlement_utr
+    batch_b.lines[:] = [
+        line.model_copy(update={"settlement_utr": shared_utr}) for line in batch_b.lines
+    ]
+
+
+def _apply_ambiguous_decoy(batch: Batch, target_sum_paise: int) -> None:
+    """Adjust the second of this batch's first two payment lines so those
+    two lines' net sum exactly matches `target_sum_paise` — a genuine
+    coincidental alternate composition for whichever credit target_sum_paise
+    belongs to. Bypasses standard fee derivation for the adjusted line
+    (fee=tax=0) to hit the target exactly instead of fighting rounding;
+    this batch's own credit is recomputed afterward so it still ties out."""
+    first, second = _payment_lines(batch)[:2]
+    needed_net = target_sum_paise - first.net_paise
+    updated = second.model_copy(
+        update={
+            "gross_paise": needed_net,
+            "fee_paise": 0,
+            "tax_paise": 0,
+            "net_paise": needed_net,
+        }
+    )
+    batch.lines[batch.lines.index(second)] = updated
+
+
+def _alternate_batch_credit_with_batch_rounding(
+    batch: Batch, orders_by_payment_id: dict[str, OrderLedgerRecord]
+) -> int:
+    """The actual bank credit for the rounding_delta batch: fee/tax applied
+    once per payment-method group across the whole batch, instead of summed
+    from settlement_report's per-line figures. See fees.py's module
+    docstring for why the two totals differ."""
+    gross_by_method: dict[PaymentMethod, list[int]] = defaultdict(list)
+    other_net_total = 0
+    for line in batch.lines:
+        if line.type == SettlementLineType.PAYMENT:
+            method = orders_by_payment_id[line.payment_id].method
+            gross_by_method[method].append(line.gross_paise)
+        else:
+            other_net_total += line.net_paise
+
+    total = other_net_total
+    for method, gross_values in gross_by_method.items():
+        fee, tax = compute_batch_fee_and_tax_paise(gross_values, method)
+        total += sum(gross_values) - fee - tax
+    return total
+
+
+def _ground_truth_credit(
+    txn_id: str,
+    lines: list[SettlementLine],
+    break_type: BreakType,
+    *,
+    resolvable: bool = True,
+) -> GroundTruthCredit:
+    return GroundTruthCredit(
+        txn_id=txn_id,
+        settlement_ids=[line.settlement_id for line in lines],
+        payment_ids=[line.payment_id for line in lines],
+        break_type=break_type,
+        resolvable=resolvable,
+    )
+
+
+def inject_breaks(
+    rng: random.Random,
+    orders: list[OrderLedgerRecord],
+    batches: list[Batch],
+    baseline_records: list[BankStatementRecord],
+) -> tuple[list[SettlementLine], list[BankStatementRecord], GroundTruth]:
+    """Mutate the baseline economic data and bank statement to inject every
+    break type in DATA_SPEC.md's catalogue, and build the matching
+    ground_truth.json contents. See the *_BATCH_INDEX constants above for
+    which batch plays which role; whatever is left over is ground-truthed
+    as `clean`.
+    """
+    orders_by_payment_id = {o.payment_id: o for o in orders}
+
+    _apply_fee_tier_change(batches[FEE_TIER_CHANGE_BATCH_INDEX], orders_by_payment_id)
+    _apply_duplicate_utr(
+        batches[DUPLICATE_UTR_BATCH_INDEX_A], batches[DUPLICATE_UTR_BATCH_INDEX_B]
+    )
+    ambiguous_target = sum(
+        line.net_paise for line in batches[AMBIGUOUS_COMPOSITION_BATCH_INDEX].lines
+    )
+    _apply_ambiguous_decoy(batches[AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX], ambiguous_target)
+
+    settlements = [line for batch in batches for line in batch.lines]
+
+    credits: list[GroundTruthCredit] = []
+    orphan_settlements: list[GroundTruthOrphanSettlement] = []
+    final_records: list[BankStatementRecord] = []
+
+    for batch in batches:
+        record = baseline_records[batch.index]
+
+        if batch.index == ROUNDING_DELTA_BATCH_INDEX:
+            actual_credit = _alternate_batch_credit_with_batch_rounding(
+                batch, orders_by_payment_id
+            )
+            record = record.model_copy(update={"credit_paise": actual_credit})
+            final_records.append(record)
+            credits.append(
+                _ground_truth_credit(record.txn_id, batch.lines, BreakType.ROUNDING_DELTA)
+            )
+
+        elif batch.index == DATE_SKEW_BATCH_INDEX:
+            record = record.model_copy(
+                update={"value_date": batch.settled_date + timedelta(days=1)}
+            )
+            final_records.append(record)
+            credits.append(_ground_truth_credit(record.txn_id, batch.lines, BreakType.DATE_SKEW))
+
+        elif batch.index == SETTLEMENT_SPLIT_BATCH_INDEX:
+            midpoint = len(batch.lines) // 2
+            group_a, group_b = batch.lines[:midpoint], batch.lines[midpoint:]
+            credit_a = BankStatementRecord(
+                txn_id=_random_id(rng, "txn_"),
+                value_date=batch.settled_date,
+                narration=record.narration,
+                credit_paise=sum(line.net_paise for line in group_a),
+                debit_paise=None,
+                balance_paise=0,
+            )
+            credit_b = BankStatementRecord(
+                txn_id=_random_id(rng, "txn_"),
+                value_date=batch.settled_date + timedelta(days=1),
+                narration=record.narration,
+                credit_paise=sum(line.net_paise for line in group_b),
+                debit_paise=None,
+                balance_paise=0,
+            )
+            final_records.extend([credit_a, credit_b])
+            credits.append(
+                _ground_truth_credit(credit_a.txn_id, group_a, BreakType.SETTLEMENT_SPLIT)
+            )
+            credits.append(
+                _ground_truth_credit(credit_b.txn_id, group_b, BreakType.SETTLEMENT_SPLIT)
+            )
+
+        elif batch.index in (DUPLICATE_UTR_BATCH_INDEX_A, DUPLICATE_UTR_BATCH_INDEX_B):
+            shared_utr = batches[DUPLICATE_UTR_BATCH_INDEX_A].settlement_utr
+            record = record.model_copy(update={"narration": _narration_neft_full(shared_utr)})
+            final_records.append(record)
+            credits.append(
+                _ground_truth_credit(record.txn_id, batch.lines, BreakType.DUPLICATE_UTR)
+            )
+
+        elif batch.index == ORPHAN_SETTLEMENT_BATCH_INDEX:
+            orphan_settlements.append(
+                GroundTruthOrphanSettlement(
+                    settlement_ids=[line.settlement_id for line in batch.lines],
+                    payment_ids=[line.payment_id for line in batch.lines],
+                )
+            )
+
+        elif batch.index == AMBIGUOUS_COMPOSITION_BATCH_INDEX:
+            final_records.append(record)
+            credits.append(
+                _ground_truth_credit(record.txn_id, batch.lines, BreakType.AMBIGUOUS_COMPOSITION)
+            )
+
+        elif batch.index == AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX:
+            # its own credit must still tie to its (now-mutated) lines
+            recomputed_credit = sum(line.net_paise for line in batch.lines)
+            record = record.model_copy(update={"credit_paise": recomputed_credit})
+            final_records.append(record)
+            credits.append(_ground_truth_credit(record.txn_id, batch.lines, BreakType.CLEAN))
+
+        elif batch.index in (NARRATION_TRUNCATED_BATCH_INDEX, NARRATION_NO_UTR_BATCH_INDEX):
+            final_records.append(record)
+            credits.append(
+                _ground_truth_credit(record.txn_id, batch.lines, BreakType.NARRATION_MANGLED)
+            )
+
+        elif batch.index == REFUND_BATCH_INDEX:
+            final_records.append(record)
+            credits.append(
+                _ground_truth_credit(record.txn_id, batch.lines, BreakType.REFUND_IN_WINDOW)
+            )
+
+        elif batch.index == CHARGEBACK_BATCH_INDEX:
+            final_records.append(record)
+            credits.append(
+                _ground_truth_credit(record.txn_id, batch.lines, BreakType.CHARGEBACK_DEDUCTION)
+            )
+
+        elif batch.index == FEE_TIER_CHANGE_BATCH_INDEX:
+            final_records.append(record)
+            credits.append(
+                _ground_truth_credit(record.txn_id, batch.lines, BreakType.FEE_TIER_CHANGE)
+            )
+
+        else:
+            final_records.append(record)
+            credits.append(_ground_truth_credit(record.txn_id, batch.lines, BreakType.CLEAN))
+
+    unrelated_txn_id = _random_id(rng, "txn_")
+    unrelated_record = BankStatementRecord(
+        txn_id=unrelated_txn_id,
+        value_date=EPOCH + timedelta(days=15),
+        narration="NEFT-000000000000-VENDOR REFUND MISC",
+        credit_paise=UNRELATED_CREDIT_PAISE,
+        debit_paise=None,
+        balance_paise=0,
+    )
+    final_records.append(unrelated_record)
+    credits.append(
+        GroundTruthCredit(
+            txn_id=unrelated_txn_id,
+            settlement_ids=[],
+            payment_ids=[],
+            break_type=BreakType.UNRELATED_CREDIT,
+            resolvable=False,
+        )
+    )
+
+    final_records.sort(key=lambda r: r.value_date)
+    balance = OPENING_BALANCE_PAISE
+    recomputed_records: list[BankStatementRecord] = []
+    for r in final_records:
+        balance += r.credit_paise
+        recomputed_records.append(r.model_copy(update={"balance_paise": balance}))
+
+    ground_truth = GroundTruth(credits=credits, orphan_settlements=orphan_settlements)
+    return settlements, recomputed_records, ground_truth
+
+
+def write_ground_truth_json(ground_truth: GroundTruth, path: Path) -> None:
+    """Write data/ground_truth.json. Read ONLY by metrics.py — CLAUDE.md
+    invariant 7."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        json.dump(ground_truth.model_dump(mode="json"), f, indent=2)
+        f.write("\n")
+
+
+def print_break_distribution(ground_truth: GroundTruth) -> None:
+    """Print how many credits landed in each break type, plus orphan
+    settlements, so the mix is visible without opening the files."""
+    counts = Counter(credit.break_type.value for credit in ground_truth.credits)
+    print("break-type distribution:")
+    for break_type in BreakType:
+        if break_type is BreakType.ORPHAN_SETTLEMENT:
+            continue
+        print(f"  {break_type.value:<24} {counts.get(break_type.value, 0)}")
+    print(f"  {'orphan_settlement':<24} {len(ground_truth.orphan_settlements)}")
+
+
 BANK_STATEMENT_HEADER = [
     "txn_id",
     "value_date",
@@ -515,5 +825,22 @@ def write_settlement_report_csv(settlements: list[SettlementLine], path: Path) -
 def generate(seed: int, out_dir: Path = DEFAULT_OUT_DIR) -> None:
     """Generate order_ledger.csv, settlement_report.csv, bank_statement.csv,
     and ground_truth.json under `out_dir` for `seed`, then print the
-    break-type distribution to stdout."""
-    raise NotImplementedError
+    break-type distribution to stdout.
+
+    Each phase gets its own `random.Random(seed)`, re-seeded fresh at the
+    phase boundary rather than threading one rng through everything — so
+    every phase's random draws are reproducible on their own, and a change
+    to one phase's random usage can't shift what a later phase draws.
+    """
+    orders, _baseline_settlements, batches = generate_orders_and_settlements(seed)
+    baseline_records = generate_bank_statement_baseline(random.Random(seed), batches)
+    settlements, bank_statement, ground_truth = inject_breaks(
+        random.Random(seed), orders, batches, baseline_records
+    )
+
+    write_order_ledger_csv(orders, out_dir / "order_ledger.csv")
+    write_settlement_report_csv(settlements, out_dir / "settlement_report.csv")
+    write_bank_statement_csv(bank_statement, out_dir / "bank_statement.csv")
+    write_ground_truth_json(ground_truth, out_dir / "ground_truth.json")
+
+    print_break_distribution(ground_truth)
