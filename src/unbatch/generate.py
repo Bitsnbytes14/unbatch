@@ -57,7 +57,14 @@ DEFAULT_OUT_DIR = Path("data")
 IST = timezone(timedelta(hours=5, minutes=30))
 EPOCH = date(2024, 1, 1)
 WINDOW_DAYS = 30
-N_BATCHES = 18
+
+# 68 baseline batches -> 70 final credits after settlement_split adds 2 and
+# orphan_settlement removes 1 (see commit 12 / FAILURES.md-adjacent rationale
+# in inject_breaks' docstring for the exact arithmetic). Batch dates are drawn
+# WITH replacement (multiple credits can land on the same day, which is
+# realistic for an active merchant) since 68 batches no longer fits in 30
+# unique days.
+N_BATCHES = 68
 
 AMOUNT_MIN_PAISE = 15_000  # ~Rs 150
 AMOUNT_MAX_PAISE = 2_500_000  # ~Rs 25,000
@@ -78,34 +85,102 @@ REFUND_BATCH_INDEX = 2
 CHARGEBACK_BATCH_INDEX = 3
 LARGE_VALUE_BATCH_INDEX = 4
 
-# Same deterministic-by-construction approach for narration variety: batch
-# NARRATION_TRUNCATED_BATCH_INDEX always gets a truncated UTR and
+# Same deterministic-by-construction approach for narration variety: batches
+# in NARRATION_TRUNCATED_BATCH_INDICES always get a truncated UTR and
 # NARRATION_NO_UTR_BATCH_INDEX always gets no UTR at all, so narration_mangled
-# has a guaranteed instance regardless of the random draw. Every other batch
-# gets a full, correct UTR — chosen NEFT- or IMPS-style at random.
-NARRATION_TRUNCATED_BATCH_INDEX = 5
+# has guaranteed instances regardless of the random draw. Two truncated
+# instances (rather than one) keeps narration_mangled's total (3) strictly
+# ahead of the one-off duplicate_utr pair (2) — see commit 12. Every other
+# batch gets a full, correct UTR — chosen NEFT- or IMPS-style at random.
+NARRATION_TRUNCATED_BATCH_INDICES = (5, 16)
 NARRATION_NO_UTR_BATCH_INDEX = 6
 
 OPENING_BALANCE_PAISE = 10_000_000  # ~Rs 1,00,000 starting balance, illustrative
 
-# Break-type batch assignments (commit 10). Every batch index gets exactly
-# one role; whatever is left over is ground-truthed as `clean`. Reusing
-# LARGE_VALUE_BATCH_INDEX for rounding_delta is deliberate: it makes the
-# biggest credit in the dataset also the one with a rounding quirk, so both
-# "value-weighted diverges from count" and "rounding_delta exists" land on
-# the same story.
+# Break-type batch assignments (commit 10, rebalanced in commit 12). Every
+# batch index gets exactly one role; whatever is left over is ground-truthed
+# as `clean` (~83% of final credits — see inject_breaks' docstring for the
+# exact count). Reusing LARGE_VALUE_BATCH_INDEX for rounding_delta is
+# deliberate: it makes the biggest credit in the dataset also the one with a
+# rounding quirk, so both "value-weighted diverges from count" and
+# "rounding_delta exists" land on the same story.
+#
+# narration_mangled (3 batches) and settlement_split (2 batches, each
+# becoming 2 credits) are deliberately the most common non-clean types,
+# ahead of the one-off duplicate_utr pair and ambiguous_composition — a
+# realistic long tail, not a flat one.
 ROUNDING_DELTA_BATCH_INDEX = LARGE_VALUE_BATCH_INDEX
-SETTLEMENT_SPLIT_BATCH_INDEX = 7
-FEE_TIER_CHANGE_BATCH_INDEX = 8
-DATE_SKEW_BATCH_INDEX = 9
-DUPLICATE_UTR_BATCH_INDEX_A = 10
-DUPLICATE_UTR_BATCH_INDEX_B = 11
-ORPHAN_SETTLEMENT_BATCH_INDEX = 12
-AMBIGUOUS_COMPOSITION_BATCH_INDEX = 13
-AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX = 14
+SETTLEMENT_SPLIT_BATCH_INDICES = (7, 8)
+FEE_TIER_CHANGE_BATCH_INDEX = 9
+DATE_SKEW_BATCH_INDEX = 10
+DUPLICATE_UTR_BATCH_INDEX_A = 11
+DUPLICATE_UTR_BATCH_INDEX_B = 12
+ORPHAN_SETTLEMENT_BATCH_INDEX = 13
+AMBIGUOUS_COMPOSITION_BATCH_INDEX = 14
+AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX = 15
 
-FEE_TIER_BUMP = Decimal("0.002")  # a 0.2 point rate change, "small delta" per DATA_SPEC.md
+# rounding_delta is the floor of L3's tolerance band (a paise-level gap from
+# per-line vs per-batch rounding — see fees.py). fee_tier_change is the
+# ceiling: a forced Rs 10,000 line with a full half-point rate bump produces
+# a delta in the tens of rupees, so L3 gets exercised at both ends rather
+# than only at the floor.
+FEE_TIER_TARGET_GROSS_PAISE = 1_000_000  # Rs 10,000, forced so the delta is predictable
+FEE_TIER_BUMP = Decimal("0.005")  # a 0.5 point rate change -> tens of rupees, not paise
 UNRELATED_CREDIT_PAISE = 25_000  # ~Rs 250, a plausible-looking stray inbound transfer
+
+# Every designated batch above is deliberately built by hand, not by the
+# generic random draw: organic refund/chargeback/adjustment noise is
+# suppressed for all of them (see the `not in _SPECIAL_BATCH_INDICES` guards
+# in generate_orders_and_settlements) so their composition stays predictable
+# enough to split, subtract, or resum without accidentally going negative.
+# That realism belongs in the ordinary "clean" population instead, where it
+# doesn't need to be reasoned about precisely.
+_SPECIAL_BATCH_INDICES = frozenset(
+    {
+        REFUND_BATCH_INDEX,
+        CHARGEBACK_BATCH_INDEX,
+        LARGE_VALUE_BATCH_INDEX,
+        *NARRATION_TRUNCATED_BATCH_INDICES,
+        NARRATION_NO_UTR_BATCH_INDEX,
+        *SETTLEMENT_SPLIT_BATCH_INDICES,
+        FEE_TIER_CHANGE_BATCH_INDEX,
+        DATE_SKEW_BATCH_INDEX,
+        DUPLICATE_UTR_BATCH_INDEX_A,
+        DUPLICATE_UTR_BATCH_INDEX_B,
+        ORPHAN_SETTLEMENT_BATCH_INDEX,
+        AMBIGUOUS_COMPOSITION_BATCH_INDEX,
+        AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX,
+    }
+)
+
+# settlement_split and ambiguous_composition need more than the general 2-4
+# line range to split or subtract safely without landing on a near-empty or
+# negative group; CHARGEBACK_BATCH_INDEX needs enough other lines to absorb
+# the flat CHARGEBACK_FEE_PAISE penalty without the batch total going
+# negative; ROUNDING_DELTA_BATCH_INDEX needs room for its two boundary lines
+# alongside the large-value line. All forced to a fixed 4 lines instead of
+# left to chance.
+_FORCED_N_LINES: dict[int, int] = dict.fromkeys(
+    (
+        *SETTLEMENT_SPLIT_BATCH_INDICES,
+        AMBIGUOUS_COMPOSITION_BATCH_INDEX,
+        AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX,
+        CHARGEBACK_BATCH_INDEX,
+        ROUNDING_DELTA_BATCH_INDEX,
+    ),
+    4,
+)
+
+AMBIGUOUS_DECOY_ANCHOR_GROSS_PAISE = AMOUNT_MIN_PAISE  # forced small so the decoy's
+# adjusted second line can always be raised to hit the target sum without going negative
+
+# Two lines at this gross, both CARD, each land exactly on a half-paise fee
+# boundary (500025 * 2% = 10000.5, rounds up to 10001); their combined gross
+# (1000050 * 2% = 20001.0) needs no rounding at all. Per-line sum (20002) vs
+# per-batch (20001) is the guaranteed 1-paise rounding_delta gap.
+ROUNDING_BOUNDARY_GROSS_PAISE = 500_025
+
+MIN_BATCH_NET_BUFFER_PAISE = 100  # floor for a running batch total after an organic refund
 
 _METHOD_WEIGHTS: dict[PaymentMethod, float] = {
     PaymentMethod.UPI: 0.55,
@@ -293,8 +368,11 @@ def generate_orders_and_settlements(
     """
     rng = random.Random(seed)
 
+    # Sampled WITH replacement: N_BATCHES (68) exceeds WINDOW_DAYS (30), so
+    # several batches necessarily share a settled date — realistic for an
+    # active merchant receiving more than one payout a day.
     settled_dates = sorted(
-        EPOCH + timedelta(days=offset) for offset in rng.sample(range(WINDOW_DAYS), N_BATCHES)
+        EPOCH + timedelta(days=rng.randrange(WINDOW_DAYS)) for _ in range(N_BATCHES)
     )
     batches = [
         Batch(index=i, settled_date=d, settlement_utr=_random_utr(rng))
@@ -305,20 +383,34 @@ def generate_orders_and_settlements(
 
     for batch in batches:
         captured_date = batch.settled_date - timedelta(days=rng.choice([1, 1, 1, 2]))
-        n_lines = rng.randint(4, 9)
+        n_lines = _FORCED_N_LINES.get(batch.index, rng.randint(2, 4))
+        is_special = batch.index in _SPECIAL_BATCH_INDICES
         captured_this_batch: list[OrderLedgerRecord] = []
 
         for i in range(n_lines):
             gross_paise = None
+            method_override = None
             if batch.index == LARGE_VALUE_BATCH_INDEX and i == 0:
                 gross_paise = LARGE_VALUE_PAISE
+            elif batch.index == ROUNDING_DELTA_BATCH_INDEX and i in (1, 2):
+                # Two identical CARD lines sitting exactly on a half-paise fee
+                # boundary: each rounds 10000.5 -> 10001 paise individually,
+                # but their combined gross rounds to an exact 20001 once —
+                # guarantees the per-line-vs-per-batch gap deterministically
+                # rather than hoping some random line lands on a boundary.
+                gross_paise = ROUNDING_BOUNDARY_GROSS_PAISE
+                method_override = PaymentMethod.CARD
             elif batch.index == CHARGEBACK_BATCH_INDEX and i == 0:
                 gross_paise = CHARGEBACK_ELIGIBLE_MIN_PAISE + _random_gross_paise(rng)
+            elif batch.index == FEE_TIER_CHANGE_BATCH_INDEX and i == 0:
+                gross_paise = FEE_TIER_TARGET_GROSS_PAISE
+            elif batch.index == AMBIGUOUS_COMPOSITION_DECOY_BATCH_INDEX and i == 0:
+                gross_paise = AMBIGUOUS_DECOY_ANCHOR_GROSS_PAISE
 
             status = OrderStatus.CAPTURED
             if batch.index == REFUND_BATCH_INDEX and i == 0:
                 status = OrderStatus.REFUNDED
-            elif gross_paise is None:
+            elif gross_paise is None and not is_special:
                 roll = rng.random()
                 if roll < 0.05:
                     status = OrderStatus.REFUNDED
@@ -331,22 +423,41 @@ def generate_orders_and_settlements(
                 batch.settled_date,
                 batch.settlement_utr,
                 gross_paise=gross_paise,
+                method=method_override,
                 status=status,
             )
+
+            refund_line = None
+            is_forced_refund = batch.index == REFUND_BATCH_INDEX and i == 0
+            if status is not OrderStatus.CAPTURED:
+                refund_line = _make_refund_line(
+                    rng,
+                    order,
+                    batch.settlement_utr,
+                    batch.settled_date,
+                    partial=status is OrderStatus.PARTIALLY_REFUNDED,
+                )
+                # A small batch with only a line or two can't always absorb an
+                # organic refund without its running total going negative
+                # (BankStatementRecord requires credit_paise >= 0). Only the
+                # dedicated REFUND_BATCH_INDEX instance is exempt — it is the
+                # one guaranteed refund_in_window example and always has
+                # enough other lines to stay positive overall.
+                projected_total = (
+                    sum(existing.net_paise for existing in batch.lines)
+                    + line.net_paise
+                    + refund_line.net_paise
+                )
+                if not is_forced_refund and projected_total < MIN_BATCH_NET_BUFFER_PAISE:
+                    status = OrderStatus.CAPTURED
+                    order = order.model_copy(update={"status": OrderStatus.CAPTURED})
+                    refund_line = None
+
             orders.append(order)
             batch.lines.append(line)
             captured_this_batch.append(order)
-
-            if status is not OrderStatus.CAPTURED:
-                batch.lines.append(
-                    _make_refund_line(
-                        rng,
-                        order,
-                        batch.settlement_utr,
-                        batch.settled_date,
-                        partial=status is OrderStatus.PARTIALLY_REFUNDED,
-                    )
-                )
+            if refund_line is not None:
+                batch.lines.append(refund_line)
 
         if batch.index == CHARGEBACK_BATCH_INDEX:
             batch.lines.append(
@@ -354,7 +465,7 @@ def generate_orders_and_settlements(
                     rng, captured_this_batch[0], batch.settlement_utr, batch.settled_date
                 )
             )
-        elif rng.random() < 0.15:
+        elif not is_special and rng.random() < 0.15:
             eligible = [o for o in captured_this_batch if o.status == OrderStatus.CAPTURED]
             if eligible:
                 target = rng.choice(eligible)
@@ -362,7 +473,7 @@ def generate_orders_and_settlements(
                     _make_chargeback_line(rng, target, batch.settlement_utr, batch.settled_date)
                 )
 
-        if rng.random() < 0.2 and captured_this_batch:
+        if not is_special and rng.random() < 0.2 and captured_this_batch:
             ref_order = rng.choice(captured_this_batch)
             batch.lines.append(
                 _make_adjustment_line(
@@ -422,7 +533,7 @@ def generate_bank_statement_baseline(
     for batch in batches:
         credit = sum(line.net_paise for line in batch.lines)
 
-        if batch.index == NARRATION_TRUNCATED_BATCH_INDEX:
+        if batch.index in NARRATION_TRUNCATED_BATCH_INDICES:
             narration = _narration_truncated(batch.settlement_utr)
         elif batch.index == NARRATION_NO_UTR_BATCH_INDEX:
             narration = _narration_no_utr()
@@ -456,7 +567,11 @@ def _apply_fee_tier_change(
     """Mutate one payment line in place so settlement_report's declared fee
     no longer matches the rate that produced the bank credit already fixed
     by generate_bank_statement_baseline — the "fee rate changed mid-window"
-    break. Only the batch's first payment line moves."""
+    break. Only the batch's first payment line moves; its gross is forced to
+    FEE_TIER_TARGET_GROSS_PAISE so the resulting delta is a predictable
+    tens-of-rupees figure, not whatever a random gross happens to produce —
+    this is the ceiling case for L3's tolerance band, rounding_delta is the
+    floor."""
     target = _payment_lines(batch)[0]
     method = orders_by_payment_id[target.payment_id].method
     bumped_rate = FEE_RATES[method] + FEE_TIER_BUMP
@@ -588,7 +703,7 @@ def inject_breaks(
             final_records.append(record)
             credits.append(_ground_truth_credit(record.txn_id, batch.lines, BreakType.DATE_SKEW))
 
-        elif batch.index == SETTLEMENT_SPLIT_BATCH_INDEX:
+        elif batch.index in SETTLEMENT_SPLIT_BATCH_INDICES:
             midpoint = len(batch.lines) // 2
             group_a, group_b = batch.lines[:midpoint], batch.lines[midpoint:]
             credit_a = BankStatementRecord(
@@ -644,7 +759,7 @@ def inject_breaks(
             final_records.append(record)
             credits.append(_ground_truth_credit(record.txn_id, batch.lines, BreakType.CLEAN))
 
-        elif batch.index in (NARRATION_TRUNCATED_BATCH_INDEX, NARRATION_NO_UTR_BATCH_INDEX):
+        elif batch.index in (*NARRATION_TRUNCATED_BATCH_INDICES, NARRATION_NO_UTR_BATCH_INDEX):
             final_records.append(record)
             credits.append(
                 _ground_truth_credit(record.txn_id, batch.lines, BreakType.NARRATION_MANGLED)

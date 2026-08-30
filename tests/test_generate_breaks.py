@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import ast
 import random
+from collections import Counter
 from pathlib import Path
 
 from unbatch.generate import (
@@ -16,6 +17,7 @@ from unbatch.generate import (
     FEE_TIER_CHANGE_BATCH_INDEX,
     ORPHAN_SETTLEMENT_BATCH_INDEX,
     ROUNDING_DELTA_BATCH_INDEX,
+    SETTLEMENT_SPLIT_BATCH_INDICES,
     generate_bank_statement_baseline,
     generate_orders_and_settlements,
     inject_breaks,
@@ -33,6 +35,32 @@ def _full_pipeline(seed: int = SEED):
         random.Random(seed), orders, batches, baseline
     )
     return orders, settlements, batches, bank_statement, ground_truth
+
+
+def test_distribution_is_a_realistic_long_tail() -> None:
+    """~70 credits, mostly clean, narration_mangled and settlement_split
+    clearly more common than the one-off duplicate_utr/ambiguous_composition
+    pairs (commit 12's rebalance).
+
+    Clean lands at ~79%, short of the 82-85% real-world target quoted when
+    this was requested: every one of the 12 break types needs at least one
+    representative, and settlement_split/duplicate_utr each inherently touch
+    2 bank credits per occurrence, so ~15 non-clean credits is close to the
+    structural floor at a ~70-credit scale. Asserting the honest range here
+    rather than the aspirational one.
+    """
+    _, _, _batches, bank_statement, ground_truth = _full_pipeline()
+
+    assert 65 <= len(bank_statement) <= 75
+
+    counts = Counter(c.break_type for c in ground_truth.credits)
+    clean_fraction = counts[BreakType.CLEAN] / len(bank_statement)
+    assert 0.75 <= clean_fraction <= 0.90
+
+    assert counts[BreakType.NARRATION_MANGLED] > counts[BreakType.DUPLICATE_UTR]
+    assert counts[BreakType.NARRATION_MANGLED] > counts[BreakType.AMBIGUOUS_COMPOSITION]
+    assert counts[BreakType.SETTLEMENT_SPLIT] > counts[BreakType.DUPLICATE_UTR]
+    assert counts[BreakType.SETTLEMENT_SPLIT] > counts[BreakType.AMBIGUOUS_COMPOSITION]
 
 
 def test_every_break_type_appears_at_least_once() -> None:
@@ -92,22 +120,31 @@ def test_duplicate_utr_credits_share_the_same_utr_in_narration() -> None:
     assert utrs_b == {shared_utr}
 
 
-def test_settlement_split_produces_two_credits_covering_the_whole_batch() -> None:
+def test_settlement_split_produces_two_credits_per_occurrence() -> None:
     _, _, batches, bank_statement, ground_truth = _full_pipeline()
     split_credits = [c for c in ground_truth.credits if c.break_type == BreakType.SETTLEMENT_SPLIT]
-    assert len(split_credits) == 2
+    # SETTLEMENT_SPLIT_BATCH_INDICES has more than one occurrence deliberately
+    # (it's meant to be more common than the one-off duplicate_utr/ambiguous
+    # pairs), each occurrence contributing 2 credits.
+    assert len(split_credits) == 2 * len(SETTLEMENT_SPLIT_BATCH_INDICES)
 
-    records = [next(r for r in bank_statement if r.txn_id == c.txn_id) for c in split_credits]
-    dates = sorted(r.value_date for r in records)
-    assert (dates[1] - dates[0]).days == 1
+    for batch_index in SETTLEMENT_SPLIT_BATCH_INDICES:
+        original_batch = batches[batch_index]
+        original_payment_id_set = {line.payment_id for line in original_batch.lines}
+        original_payment_ids = sorted(original_payment_id_set)
 
-    combined_payment_ids = sorted(split_credits[0].payment_ids + split_credits[1].payment_ids)
-    original_batch = next(
-        b for b in batches if sorted(line.payment_id for line in b.lines) == combined_payment_ids
-    )
-    assert sum(r.credit_paise for r in records) == sum(
-        line.net_paise for line in original_batch.lines
-    )
+        pair = [c for c in split_credits if set(c.payment_ids) <= original_payment_id_set]
+        assert len(pair) == 2, f"expected 2 split credits for batch {batch_index}"
+
+        records = [next(r for r in bank_statement if r.txn_id == c.txn_id) for c in pair]
+        dates = sorted(r.value_date for r in records)
+        assert (dates[1] - dates[0]).days == 1
+
+        combined_payment_ids = sorted(pair[0].payment_ids + pair[1].payment_ids)
+        assert combined_payment_ids == original_payment_ids
+        assert sum(r.credit_paise for r in records) == sum(
+            line.net_paise for line in original_batch.lines
+        )
 
 
 def test_orphan_settlement_has_no_matching_bank_credit() -> None:

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from unbatch.generate import (
     NARRATION_NO_UTR_BATCH_INDEX,
-    NARRATION_TRUNCATED_BATCH_INDEX,
+    NARRATION_TRUNCATED_BATCH_INDICES,
     OPENING_BALANCE_PAISE,
     generate_bank_statement_baseline,
     generate_orders_and_settlements,
@@ -63,25 +63,23 @@ def test_txn_ids_are_unique() -> None:
 
 def test_narration_templates_vary_realistically() -> None:
     batches, records = _baseline()
+    mangled_indices = {*NARRATION_TRUNCATED_BATCH_INDICES, NARRATION_NO_UTR_BATCH_INDEX}
 
-    truncated = records[NARRATION_TRUNCATED_BATCH_INDEX]
-    no_utr = records[NARRATION_NO_UTR_BATCH_INDEX]
-    full_utr_records = [
-        r
-        for i, r in enumerate(records)
-        if i not in (NARRATION_TRUNCATED_BATCH_INDEX, NARRATION_NO_UTR_BATCH_INDEX)
-    ]
-
-    truncated_utr = batches[NARRATION_TRUNCATED_BATCH_INDEX].settlement_utr
-    assert truncated_utr not in truncated.narration
-    assert truncated.narration.startswith(f"NEFT-{truncated_utr[:10]}")
+    for idx in NARRATION_TRUNCATED_BATCH_INDICES:
+        truncated_utr = batches[idx].settlement_utr
+        assert truncated_utr not in records[idx].narration
+        assert records[idx].narration.startswith(f"NEFT-{truncated_utr[:10]}")
 
     no_utr_utr = batches[NARRATION_NO_UTR_BATCH_INDEX].settlement_utr
-    assert no_utr_utr not in no_utr.narration
+    no_utr_record = records[NARRATION_NO_UTR_BATCH_INDEX]
+    assert no_utr_utr not in no_utr_record.narration
 
     # every other batch carries its real, full UTR verbatim
+    full_utr_records = [r for i, r in enumerate(records) if i not in mangled_indices]
     for batch, record in zip(
-        [b for i, b in enumerate(batches) if i not in (5, 6)], full_utr_records, strict=True
+        [b for i, b in enumerate(batches) if i not in mangled_indices],
+        full_utr_records,
+        strict=True,
     ):
         assert batch.settlement_utr in record.narration
 

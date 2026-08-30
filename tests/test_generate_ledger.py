@@ -4,14 +4,17 @@ construction (a refund, a chargeback, one deliberately large line)."""
 
 from __future__ import annotations
 
+from datetime import timedelta
 from pathlib import Path
 
 from unbatch.generate import (
     CHARGEBACK_BATCH_INDEX,
+    EPOCH,
     LARGE_VALUE_BATCH_INDEX,
     LARGE_VALUE_PAISE,
     N_BATCHES,
     REFUND_BATCH_INDEX,
+    WINDOW_DAYS,
     generate_orders_and_settlements,
     write_order_ledger_csv,
     write_settlement_report_csv,
@@ -39,7 +42,10 @@ def test_different_seeds_produce_different_data() -> None:
 def test_produces_the_documented_batch_count() -> None:
     _, _, batches = generate_orders_and_settlements(SEED)
     assert len(batches) == N_BATCHES
-    assert len({b.settled_date for b in batches}) == N_BATCHES, "batch dates must be distinct"
+    # N_BATCHES exceeds WINDOW_DAYS, so dates are sampled with replacement —
+    # several batches legitimately share a date (multiple payouts a day).
+    assert all(EPOCH <= b.settled_date < EPOCH + timedelta(days=WINDOW_DAYS) for b in batches)
+    assert len({b.settled_date for b in batches}) < N_BATCHES, "dates should repeat at this scale"
 
 
 def test_batch_shares_one_utr_across_its_lines() -> None:
@@ -86,6 +92,17 @@ def test_every_settlement_line_net_equals_gross_minus_fee_minus_tax() -> None:
     _, settlements, _ = generate_orders_and_settlements(SEED)
     for line in settlements:
         assert line.net_paise == line.gross_paise - line.fee_paise - line.tax_paise
+
+
+def test_every_batch_total_is_non_negative() -> None:
+    """Regression for the commit-12 rebalance bug: a fixed-cost break (a
+    flat chargeback fee, a full refund) against a too-small batch can drive
+    the batch's total negative, which BankStatementRecord's validator
+    rejects outright. See FAILURES.md's 2026-08-30 entry."""
+    _, _, batches = generate_orders_and_settlements(SEED)
+    for batch in batches:
+        total = sum(line.net_paise for line in batch.lines)
+        assert total >= 0, f"batch {batch.index} netted negative: {total}"
 
 
 def test_refund_and_chargeback_lines_have_negative_gross() -> None:
