@@ -38,24 +38,24 @@ def _full_pipeline(seed: int = SEED):
 
 
 def test_distribution_is_a_realistic_long_tail() -> None:
-    """~70 credits, mostly clean, narration_mangled and settlement_split
+    """~105 credits, ~85% clean, narration_mangled and settlement_split
     clearly more common than the one-off duplicate_utr/ambiguous_composition
-    pairs (commit 12's rebalance).
+    pairs (commit 12's rebalance, scaled up further to hit the target
+    percentage in commit 16).
 
-    Clean lands at ~79%, short of the 82-85% real-world target quoted when
-    this was requested: every one of the 12 break types needs at least one
-    representative, and settlement_split/duplicate_utr each inherently touch
-    2 bank credits per occurrence, so ~15 non-clean credits is close to the
-    structural floor at a ~70-credit scale. Asserting the honest range here
-    rather than the aspirational one.
+    The 16 non-clean credits that "at least one of every break type" plus
+    the relative-frequency ordering structurally requires are a fixed count
+    (see commit 12's FAILURES.md entries) — growing the scale from ~70 to
+    ~105 credits is what moves clean from ~77% to ~85%, since the floor
+    stays flat while the denominator grows.
     """
     _, _, _batches, bank_statement, ground_truth = _full_pipeline()
 
-    assert 65 <= len(bank_statement) <= 75
+    assert 100 <= len(bank_statement) <= 110
 
     counts = Counter(c.break_type for c in ground_truth.credits)
     clean_fraction = counts[BreakType.CLEAN] / len(bank_statement)
-    assert 0.75 <= clean_fraction <= 0.90
+    assert 0.80 <= clean_fraction <= 0.90
 
     assert counts[BreakType.NARRATION_MANGLED] > counts[BreakType.DUPLICATE_UTR]
     assert counts[BreakType.NARRATION_MANGLED] > counts[BreakType.AMBIGUOUS_COMPOSITION]

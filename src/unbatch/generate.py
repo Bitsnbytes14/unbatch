@@ -58,13 +58,18 @@ IST = timezone(timedelta(hours=5, minutes=30))
 EPOCH = date(2024, 1, 1)
 WINDOW_DAYS = 30
 
-# 68 baseline batches -> 70 final credits after settlement_split adds 2 and
-# orphan_settlement removes 1 (see commit 12 / FAILURES.md-adjacent rationale
-# in inject_breaks' docstring for the exact arithmetic). Batch dates are drawn
-# WITH replacement (multiple credits can land on the same day, which is
-# realistic for an active merchant) since 68 batches no longer fits in 30
-# unique days.
-N_BATCHES = 68
+# 103 baseline batches -> 105 final credits after settlement_split adds 2 and
+# orphan_settlement removes 1 (see inject_breaks' docstring for the exact
+# arithmetic). The 16 non-clean credits that "at least one of every break
+# type" structurally requires (see commit 12's FAILURES.md entry) are a fixed
+# count regardless of scale, so growing the batch count is what moves the
+# clean rate: 16/105 lands at ~84.8%, versus 16/70 at ~77%. It also makes a
+# single credit ~0.95% of the dataset, so METRICS.md's sub-1% false-match
+# target is finally representable at all (one credit was 1.43% at 70).
+# Batch dates are drawn WITH replacement (multiple credits can land on the
+# same day, which is realistic for an active merchant) since this many
+# batches no longer fits in 30 unique days.
+N_BATCHES = 103
 
 AMOUNT_MIN_PAISE = 15_000  # ~Rs 150
 AMOUNT_MAX_PAISE = 2_500_000  # ~Rs 25,000
@@ -97,13 +102,13 @@ NARRATION_NO_UTR_BATCH_INDEX = 6
 
 OPENING_BALANCE_PAISE = 10_000_000  # ~Rs 1,00,000 starting balance, illustrative
 
-# Break-type batch assignments (commit 10, rebalanced in commit 12). Every
-# batch index gets exactly one role; whatever is left over is ground-truthed
-# as `clean` (~83% of final credits — see inject_breaks' docstring for the
-# exact count). Reusing LARGE_VALUE_BATCH_INDEX for rounding_delta is
-# deliberate: it makes the biggest credit in the dataset also the one with a
-# rounding quirk, so both "value-weighted diverges from count" and
-# "rounding_delta exists" land on the same story.
+# Break-type batch assignments (commit 10, rebalanced in commits 12/16).
+# Every batch index gets exactly one role; whatever is left over is
+# ground-truthed as `clean` (~85% of final credits — see inject_breaks'
+# docstring for the exact count). Reusing LARGE_VALUE_BATCH_INDEX for
+# rounding_delta is deliberate: it makes the biggest credit in the dataset
+# also the one with a rounding quirk, so both "value-weighted diverges from
+# count" and "rounding_delta exists" land on the same story.
 #
 # narration_mangled (3 batches) and settlement_split (2 batches, each
 # becoming 2 credits) are deliberately the most common non-clean types,
