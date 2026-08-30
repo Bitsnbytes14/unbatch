@@ -45,6 +45,8 @@ uv run pytest -q
 ```
 src/unbatch/
   models.py        pydantic schemas — the contract, read first
+  money.py         paise parsing/formatting — the money-handling boundary
+  fees.py          per-method fee rates, GST, net; the rounding decision
   generate.py      seeded synthetic data + ground_truth.json
   compose.py       batch composition / bounded subset-sum
   stages/          l0_utr.py l1_exact.py l2_compose.py l3_tolerance.py l4_llm.py

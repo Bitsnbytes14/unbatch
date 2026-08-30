@@ -1,11 +1,11 @@
 """Pydantic schemas — the contract for every record, decision, and LLM output
 in the pipeline. Read this file first.
 
-All money fields are `int` paise. Never float, never `Decimal`. See CLAUDE.md
-invariant 1.
+All money fields use `Paise` (see `unbatch.money`): a strict `int`, never
+float, never `Decimal`. See CLAUDE.md invariant 1.
 
-Field shapes mirror DATA_SPEC.md (source records) and ARCHITECTURE.md
-(the audit row and the L4 adjudication output).
+Field shapes mirror DATA_SPEC.md (source records and ground_truth.json) and
+ARCHITECTURE.md (the audit row and the L4 adjudication output).
 """
 
 from __future__ import annotations
@@ -13,7 +13,9 @@ from __future__ import annotations
 from datetime import date, datetime
 from enum import StrEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
+
+from unbatch.money import Paise
 
 
 class OrderStatus(StrEnum):
@@ -68,12 +70,33 @@ class BreakReason(StrEnum):
     OTHER = "other"
 
 
+class BreakType(StrEnum):
+    """The generator's ground-truth label — the full catalogue from
+    DATA_SPEC.md's injected break-type table. Distinct from `BreakReason`,
+    which is the narrower vocabulary the L4 model is asked to classify
+    against; `metrics.py` compares one to the other, nothing under stages/
+    ever sees this enum."""
+
+    CLEAN = "clean"
+    NARRATION_MANGLED = "narration_mangled"
+    SETTLEMENT_SPLIT = "settlement_split"
+    REFUND_IN_WINDOW = "refund_in_window"
+    CHARGEBACK_DEDUCTION = "chargeback_deduction"
+    FEE_TIER_CHANGE = "fee_tier_change"
+    ROUNDING_DELTA = "rounding_delta"
+    DATE_SKEW = "date_skew"
+    DUPLICATE_UTR = "duplicate_utr"
+    UNRELATED_CREDIT = "unrelated_credit"
+    ORPHAN_SETTLEMENT = "orphan_settlement"
+    AMBIGUOUS_COMPOSITION = "ambiguous_composition"
+
+
 class OrderLedgerRecord(BaseModel):
     """One row of data/order_ledger.csv."""
 
     order_id: str
     payment_id: str
-    amount_paise: int
+    amount_paise: Paise
     currency: str
     status: OrderStatus
     captured_at: datetime
@@ -88,23 +111,35 @@ class SettlementLine(BaseModel):
     settlement_utr: str
     payment_id: str
     type: SettlementLineType
-    gross_paise: int
-    fee_paise: int
-    tax_paise: int
-    net_paise: int
+    gross_paise: Paise
+    fee_paise: Paise
+    tax_paise: Paise
+    net_paise: Paise
     settled_at: datetime
 
 
 class BankStatementRecord(BaseModel):
     """One row of data/bank_statement.csv. `credit_paise` is None for debit
-    rows; only credit rows are candidates for reconciliation."""
+    rows; only credit rows are candidates for reconciliation. Exactly one of
+    credit_paise/debit_paise is set, matching DATA_SPEC.md's "blank for
+    debits" / "blank for credits" convention — never both, never neither."""
 
     txn_id: str
     value_date: date
     narration: str
-    credit_paise: int | None
-    debit_paise: int | None
-    balance_paise: int
+    credit_paise: Paise | None
+    debit_paise: Paise | None
+    balance_paise: Paise
+
+    @model_validator(mode="after")
+    def _exactly_one_of_credit_or_debit(self) -> BankStatementRecord:
+        if (self.credit_paise is None) == (self.debit_paise is None):
+            raise ValueError("exactly one of credit_paise or debit_paise must be set")
+        if self.credit_paise is not None and self.credit_paise < 0:
+            raise ValueError("credit_paise must be non-negative")
+        if self.debit_paise is not None and self.debit_paise < 0:
+            raise ValueError("debit_paise must be non-negative")
+        return self
 
 
 class ExpectedBatch(BaseModel):
@@ -113,7 +148,7 @@ class ExpectedBatch(BaseModel):
 
     settlement_ids: list[str]
     payment_ids: list[str]
-    net_paise: int
+    net_paise: Paise
     window_start: date
     window_end: date
 
@@ -123,7 +158,7 @@ class CandidateExplanation(BaseModel):
     L4 as a fact, never as an arithmetic task."""
 
     payment_ids: list[str]
-    delta_paise: int
+    delta_paise: Paise
     hint: str
 
 
@@ -159,11 +194,11 @@ class Decision(BaseModel):
     matched_payment_ids: list[str]
     outcome: DecisionOutcome
     confidence: float
-    delta_paise: int
+    delta_paise: Paise
     reason: str
     rationale: str | None
     llm_model: str | None
-    llm_cost_paise: int | None
+    llm_cost_paise: Paise | None
     created_at: datetime
 
 
@@ -177,3 +212,36 @@ class RunContext(BaseModel):
     llm_only: bool = False
     max_pool: int = 48
     max_subset: int = 25
+
+
+class GroundTruthCredit(BaseModel):
+    """One ground-truth entry for a bank credit line, keyed by `txn_id`.
+
+    `settlement_ids` is a list, not DATA_SPEC.md's single `settlement_id`: a
+    settlement batch is normally many settlement_report.csv rows (one per
+    payment), so a credit composed from a real batch needs more than one id.
+    Empty for `unrelated_credit`, which ties to no settlement at all."""
+
+    txn_id: str
+    settlement_ids: list[str]
+    payment_ids: list[str]
+    break_type: BreakType
+    resolvable: bool
+
+
+class GroundTruthOrphanSettlement(BaseModel):
+    """orphan_settlement is the one break type with no bank credit to key on
+    — settlement_report.csv line(s) that never got paid out — so it cannot
+    live in `GroundTruth.credits`, which is keyed by txn_id."""
+
+    settlement_ids: list[str]
+    payment_ids: list[str]
+
+
+class GroundTruth(BaseModel):
+    """The full contents of data/ground_truth.json. Read ONLY by
+    metrics.py — CLAUDE.md invariant 7. If any module under stages/ imports
+    this, that is a scoring leak."""
+
+    credits: list[GroundTruthCredit]
+    orphan_settlements: list[GroundTruthOrphanSettlement]

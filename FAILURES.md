@@ -24,11 +24,11 @@ Rules for keeping this useful:
 
 ## Log
 
-### 2026-08-30 — seeded (delete this entry once the first real one lands)
-**Broke:** nothing yet.
-**Cause:** —
-**Fix:** —
-**Kept:** —
+### 2026-08-30 — generated CSVs had CRLF (and doubled CRs) on Windows
+**Broke:** while building the money-handling round-trip tests for `generate.py`, a quick manual check of a naively-written CSV showed `b'a,b\r\r\n1,2\r\r\n'` — a doubled `\r` before every `\n`, not just a normal CRLF.
+**Cause:** two independent things stacked. First, Python's default text-mode file writing on Windows translates every `\n` byte to `os.linesep` (`\r\n`) on write. Second, the stdlib `csv.writer` *also* defaults its own line terminator to `\r\n` regardless of platform. Writing `\r\n` through a text-mode handle that then translates `\n`→`\r\n` produces `\r\r\n`. I assumed "no newline handling in my code" meant "no newline surprises" — wrong; the default is never neutral on Windows.
+**Fix:** open every generated file (CSV and JSON) with `newline=""` to disable the platform translation, and pass `lineterminator="\n"` explicitly to `csv.writer`. Verified byte-for-byte: `b'a,b\n1,2\n'`.
+**Kept:** DATA_SPEC.md's "byte-identical on any machine" requirement is not automatically true just because the generator has no explicit newline logic — it has to be enforced at every `open()` call. Added a determinism test that inspects raw bytes for `\r` rather than trusting a round-trip-through-pandas comparison, since that would have hidden this exact bug (pandas would decode-and-recompare consistently within one OS and never notice the encoding was platform-dependent).
 
 <!--
 Likely candidates, based on where the design is thin. Delete as they either happen or don't:
