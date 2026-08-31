@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1326,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated credit and hold for reconciliation; investigate matching against the 4 candidate alternate batches and confirm which net aligns with the settled payment lines.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_Uvh7i71S87XwXa\", \"setl_ppTQOpQCcLIflZ\", \"setl_QFMgUla3FElVPf\", \"setl_8vX8VbRmSsxtXu\", \"setl_sbVeWSt04B2lDC\"],\n  \"human_review_required\": true\n}"
+}

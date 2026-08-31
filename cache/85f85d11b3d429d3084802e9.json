@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1328,
+  "output_tokens": 151,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated_credit for human reconciliation and investigate matching batch visibility to confirm no valid batch net matches the 4523964 paise.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_xrzuLWOefQrSO4\", \"setl_373hiRLvI0jKwP\", \"setl_8ymflLZZb6xdOe\", \"setl_GHemmo67tSkv7g\", \"setl_iCXPklakfEYHlM\"],\n  \"human_review_required\": true\n}"
+}

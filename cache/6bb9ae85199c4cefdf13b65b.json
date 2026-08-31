@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1334,
+  "output_tokens": 114,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as not matched to any confirmed batch and escalate for manual reconciliation; review the listed alternative batches and determine if the credit should be re-associated or flagged as orphan.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_tDjdg3vSFkpBBG\", \"ICICR931160790534\"],\n  \"human_review_required\": true\n}"
+}

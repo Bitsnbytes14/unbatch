@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1228,
+  "output_tokens": 122,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as tentatively matched to the batch on 2024-01-05 within tolerance and request human review to select the correct batch among close candidates.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_oRRCQ5WMO5AHO4\", \"setl_Jq4NwWQzCBvDr7\"],\n  \"human_review_required\": true\n}"
+}

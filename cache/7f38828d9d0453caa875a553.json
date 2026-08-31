@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1161,
+  "output_tokens": 175,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate posting dates: the credit and batch net align, but the alternative candidate batches with different windows imply date-based mismatches; confirm the actual settlement batch and ensure the credit is tied to the correct date window.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_IyDN8pbWvTMVTu\",\"SBIN0563937606335\",\"setl_icCYKQaD4ZO2Jt\",\"setl_G2p2jGzqHcAmH9\",\"pay_G6YlQSoiAy55Xx\",\"pay_OXGzIn1vKrDhZf\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1337,
+  "output_tokens": 144,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the candidate alternative batches; determine if any single set of payment lines uniquely explains the credit, otherwise escalate for human review.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"setl_RC07hxMbcaguQB\",\"setl_me8danYlgmKG1V\",\"setl_KGEAQO7ndcqego\",\"setl_QsoFUWgXuEvHPp\",\"txn_1rWz5FYrsK9EjH\"],\n  \"human_review_required\": true\n}"
+}

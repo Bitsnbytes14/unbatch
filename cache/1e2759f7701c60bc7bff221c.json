@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1300,
+  "output_tokens": 165,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate matching bank credit txn_IHCtlRJoWcURYx to the primary batch SBIN0854339459654; if no exact match found, flag as unrelated and route for manual reconciliation against the other candidate batches to confirm no net impact.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_IHCtlRJoWcURYx\", \"setl_ZhXJXvga5jQGrI\", \"setl_Vpzmss5ClWZfGR\", \"setl_GI7i3NjMS6XMme\"],\n  \"human_review_required\": true\n}"
+}

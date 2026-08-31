@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1338,
+  "output_tokens": 124,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock the primary batch as the reconciled source and flag others as candidates for tolerance review; escalate for human confirmation of the correct settlement batch within tolerance band.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_gW2zMj518Y2bTu\",\"SBIN0276983513963\",\"setl_yLQiXRByQkNzM5\"],\n  \"human_review_required\": true\n}"
+}

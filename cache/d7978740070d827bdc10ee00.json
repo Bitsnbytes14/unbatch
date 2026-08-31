@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1162,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as unrelated to the confirmed batch nets and escalate for manual reconciliation against the postal batch registry to identify the correct settlement mapping.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_4szi6sEg3iCPU6\", \"setl_ppTsSCKG9q3uxj\", \"setl_hoCgIs2tB9f1Fy\"],\n  \"human_review_required\": true\n}"
+}

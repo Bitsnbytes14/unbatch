@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1277,
+  "output_tokens": 138,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Identify a single settlement batch whose net most closely matches the credit within the tolerance window, or flag for manual review if no unique close match exists.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_TH8xIZM1JRcore\", \"settlement_AXISP042076275400\", \"setl_BwGxXF6xxV4JOj\", \"setl_rORJI7UwcVu3YV\"],\n  \"human_review_required\": true\n}"
+}

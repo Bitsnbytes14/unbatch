@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1236,
+  "output_tokens": 148,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm the correct settlement batch by comparing posting windows and identifiers; if multiple batches fall within tolerance, escalate for manual verification against bank statements and internal mappings.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_vTYYojmLVOkVEU\", \"setl_51H4Ogz5t2fuTi\", \"setl_rp1hAOE8zlphlN\", \"setl_dCrz2irAaWGKvN\"],\n  \"human_review_required\": true\n}"
+}

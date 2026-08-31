@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1196,
+  "output_tokens": 131,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated credit to existing batch since delta is zero but candidate batches exist; further investigation to confirm which batch this credit belongs to or mark as orphaned and reconcile separately.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_f2pCLxb0lnXv2R\", \"setl_oYO68922ei5Xlx\", \"setl_nAxj0pfUsGocFu\"],\n  \"human_review_required\": true\n}"
+}

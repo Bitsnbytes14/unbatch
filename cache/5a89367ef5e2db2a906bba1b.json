@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1346,
+  "output_tokens": 152,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the case as tolerance_ambiguous and review batch nets within tolerance to identify the correct settlement batch or confirm a reconciliation hold.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_NIQ0Wobtqn62tO\", \"setl_ZEOQpY7NEkXkSE\", \"setl_e7CpRsZe9ObzxD\", \"setl_UvgoeLMK8uNWBo\", \"setl_qjkrsWw6SEMCia\"],\n  \"human_review_required\": true\n}"
+}

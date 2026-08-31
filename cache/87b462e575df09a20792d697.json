@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1252,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated_credit and perform batch reconciliation lookup to identify the correct settlement batch or confirm no match; if a match is found, reclassify accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_1cb51JJRzhbuXM\", \"setl_8YO9ali8wQZwJc\", \"setl_CRcd2j9hSrutoD\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1211,
+  "output_tokens": 122,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Reconcile by selecting the batch within the tolerance band that best matches historic settlement patterns, and flag for manual review if ambiguity persists.\",\n \"confidence\": 0.56,\n \"evidence_refs\": [\"txn_tpf7ZJ69PqcUDO\",\"setl_5FFSq0sqhnHsN6\",\"setl_1yBTAjDECYkJ6l\"],\n \"human_review_required\": true\n}"
+}

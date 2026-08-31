@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1333,
+  "output_tokens": 197,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity; present all candidate batches within tolerance for human confirmation and select the one with exact net match or closest alignment.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_N59UAgN2BR4cXs\",\"setl_zFjE2mlCkzVSDg\",\"setl_K6gsvI3J0Autli\",\"setl_EfirP8XUnejuCT\",\"setl_sosEXywDfg2Ur8\",\"pay_GdDGBqZsppVwCU\",\"pay_keFGyAhRosuZuL\",\"pay_r2tvkrEnk6qLgo\",\"pay_cgRGlIZM6MpK2n\"],\n  \"human_review_required\": true\n}"
+}

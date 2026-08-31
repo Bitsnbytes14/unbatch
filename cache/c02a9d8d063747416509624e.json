@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1250,
+  "output_tokens": 126,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit for manual reconciliation to determine which batch within tolerance matches, notifying operations to review candidate batches.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_wXILft9SGVZe8N\", \"setl_kI32F3P2mYzUFN\", \"setl_1YpehL7h4RvKJH\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1336,
+  "output_tokens": 153,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag this credit as within tolerance to multiple batches and require human audit to identify the correct batch or confirm a split compromise.\",\n  \"confidence\": 0.32,\n  \"evidence_refs\": [\"txn_lu17rNy8H6h8l7\", \"setl_zFjE2mlCkzVSDg\", \"setl_K6gsvI3J0Autli\", \"setl_EfirP8XUnejuCT\", \"setl_sosEXywDfg2Ur8\"],\n  \"human_review_required\": true\n}"
+}

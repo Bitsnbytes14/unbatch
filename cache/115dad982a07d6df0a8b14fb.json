@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1272,
+  "output_tokens": 139,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated_credit and surface for manual verification against batch postings; confirm alignment with settlement batch HDFCR957181375021 or reject if no match.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_NbUnAvwSWJfdjM\",\"setl_TxBZn4D6Fz2NoG\",\"setl_4JvsZGzqAOV3iV\",\"HDFCR957181375021\"],\n  \"human_review_required\": true\n}"
+}

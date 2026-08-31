@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1331,
+  "output_tokens": 132,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag the credit as within tolerance of multiple possible batch nets and escalate for manual review to select the correct settlement batch.\", \"confidence\":0.52, \"evidence_refs\":[\"txn_qE40fAraVNqTIA\",\"setl_ODH0A2TVwyJmIe\",\"setl_IZMLhfx9IwiLyc\",\"setl_6gbtjQzW52Tdim\",\"setl_ZqIqgTod4noguD\"],\"human_review_required\":true}"
+}

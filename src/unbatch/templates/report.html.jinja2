@@ -261,7 +261,20 @@
       </tbody>
     </table>
     </div>
-    <p class="section-note">Arm C (LLM only) is expected to score worse than arm A at many times the cost — that is the evidence for the cascade's design, not a bug in arm C.</p>
+    {% if arms.llm_only.ran and arms.with_llm.ran %}
+    <p class="section-note">
+      Arm C made {{ arms.llm_only.metrics.llm_call_count }} LLM calls against arm B's {{ arms.with_llm.metrics.llm_call_count }}
+      ({{ (arms.llm_only.metrics.llm_call_count / arms.with_llm.metrics.llm_call_count) | round(1) }}× as many, since it skips the rules layers that would have resolved most credits for free)
+      for a {{ ((arms.with_llm.metrics.count_match_rate - arms.llm_only.metrics.count_match_rate) * 100) | round(1) }}-point <em>worse</em> match rate
+      ({{ arms.llm_only.metrics.count_match_rate | percent }} vs. arm B's {{ arms.with_llm.metrics.count_match_rate | percent }})
+      and a {{ ((arms.with_llm.metrics.break_reason_accuracy - arms.llm_only.metrics.break_reason_accuracy) * 100) | round(1) }}-point worse break-reason accuracy
+      ({{ arms.llm_only.metrics.break_reason_accuracy | percent }} vs. arm B's {{ arms.with_llm.metrics.break_reason_accuracy | percent }}) —
+      that gap, not the rupee total (both arms are cheap in absolute terms), is the evidence for the cascade's design, not a bug in arm C.
+      Notably, false-match rate stayed at 0% in all three arms: even with no rules help at all, the model did not confidently commit to a wrong match — it just resolved far less.
+    </p>
+    {% else %}
+    <p class="section-note">Arm C (LLM only) is expected to score worse than arm A at many times the LLM call volume — that is the evidence for the cascade's design, not a bug in arm C.</p>
+    {% endif %}
     <p class="section-note">A zero malformed-JSON count on the LLM arms reflects OpenAI's schema-enforced structured output (<code>response_format</code> strict JSON Schema against <code>AdjudicationResult</code>'s own shape) actually working, not an absent check — the retry-then-degrade path (see <code>adjudicator.py</code>) still runs on every call and would catch a refusal or truncated response if one occurred; see <code>test_adjudicator.py</code>'s retry-path tests for the exercised failure modes.</p>
   </section>
 

@@ -356,3 +356,130 @@ def test_render_with_arm_b_populated_shows_delta_and_break_reason_accuracy(
     # break-reason accuracy called out separately from the delta
     assert "What the delta doesn&#39;t show" in html or "What the delta doesn't show" in html
     assert "break-reason accuracy on arm B is 100.0%" in html
+
+
+def test_render_with_all_three_arms_states_the_c_vs_b_comparison_precisely(
+    tmp_path: Path,
+) -> None:
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _write_ground_truth(data_dir / "ground_truth.json")
+    _write_bank_statement(data_dir / "bank_statement.csv")
+    (data_dir / "order_ledger.csv").write_text(
+        "order_id,payment_id,amount,currency,status,captured_at,customer_ref,method\n",
+        encoding="utf-8",
+        newline="",
+    )
+    (data_dir / "settlement_report.csv").write_text(
+        "settlement_id,settlement_utr,payment_id,type,gross,fee,tax,net,settled_at\n",
+        encoding="utf-8",
+        newline="",
+    )
+
+    db_path = tmp_path / "audit.db"
+    conn = audit.connect(db_path)
+    seed = 7
+
+    def _llm_decision(
+        run_id: str, txn_id: str, *, outcome: DecisionOutcome, matched: list[str], reason: str
+    ) -> Decision:
+        return Decision(
+            run_id=run_id,
+            seed=seed,
+            stage=Stage.L4,
+            credit_id=txn_id,
+            matched_payment_ids=matched,
+            outcome=outcome,
+            confidence=0.9 if outcome == DecisionOutcome.MATCHED else 0.3,
+            delta_paise=0,
+            reason=reason,
+            rationale="x",
+            llm_model="gpt-5-nano",
+            llm_cost_paise=5,
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
+        )
+
+    # arm B: 2 calls (txn_ambiguous, txn_unrelated), both classified correctly
+    with_llm_run_id = audit.derive_run_id(seed, data_dir, arm="with_llm")
+    audit.record(
+        conn,
+        Decision(
+            run_id=with_llm_run_id,
+            seed=seed,
+            stage=Stage.L0,
+            credit_id="txn_ok",
+            matched_payment_ids=["pay_a"],
+            outcome=DecisionOutcome.MATCHED,
+            confidence=1.0,
+            delta_paise=0,
+            reason="utr_exact_match",
+            rationale=None,
+            llm_model=None,
+            llm_cost_paise=None,
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
+        ),
+    )
+    audit.record(
+        conn,
+        _llm_decision(
+            with_llm_run_id,
+            "txn_ambiguous",
+            outcome=DecisionOutcome.MATCHED,
+            matched=["pay_b"],
+            reason="ambiguous_composition",
+        ),
+    )
+    audit.record(
+        conn,
+        _llm_decision(
+            with_llm_run_id,
+            "txn_unrelated",
+            outcome=DecisionOutcome.EXCEPTION,
+            matched=[],
+            reason="unrelated_credit",
+        ),
+    )
+
+    # arm C: 3 calls (every credit), only 1 resolved, 2/3 classified correctly
+    llm_only_run_id = audit.derive_run_id(seed, data_dir, arm="llm_only")
+    audit.record(
+        conn,
+        _llm_decision(
+            llm_only_run_id,
+            "txn_ok",
+            outcome=DecisionOutcome.MATCHED,
+            matched=["pay_a"],
+            reason="clean",
+        ),
+    )
+    audit.record(
+        conn,
+        _llm_decision(
+            llm_only_run_id,
+            "txn_ambiguous",
+            outcome=DecisionOutcome.EXCEPTION,
+            matched=[],
+            reason="ambiguous_composition",
+        ),
+    )
+    audit.record(
+        conn,
+        _llm_decision(
+            llm_only_run_id,
+            "txn_unrelated",
+            outcome=DecisionOutcome.EXCEPTION,
+            matched=[],
+            reason="tolerance_ambiguous",  # wrong — ground truth is unrelated_credit
+        ),
+    )
+
+    out_path = report.render(seed, data_dir=data_dir, db=db_path, out_path=tmp_path / "report.html")
+    html = out_path.read_text(encoding="utf-8")
+
+    # arm B: 2 calls, 2/3 resolved (txn_unrelated correctly stays an
+    # exception) = 66.7%, both LLM classifications correct = 100%
+    # arm C: 3 calls, 1/3 resolved (33.3%), 2/3 correct (66.7%)
+    assert "Arm C made 3 LLM calls against arm B's 2" in html
+    assert "1.5× as many" in html
+    assert "33.3-point" in html  # both gaps happen to be 33.3 points here:
+    # match-rate 66.7% - 33.3%, break-reason-accuracy 100.0% - 66.7%

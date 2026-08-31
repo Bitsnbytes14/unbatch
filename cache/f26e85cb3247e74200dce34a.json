@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1139,
+  "output_tokens": 174,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of payment lines that produced the 1794126 paise credit; if multiple batches could explain within tolerance, lock in the primary batch ICICR593915826368 and reconcile others as potential duplicates or reclassify accordingly.\",\n  \"confidence\": 0.45,\n  \"evidence_refs\": [\"txn_NZRBT7qYHDBTq0\", \"settlement_utr_ICICR593915826368\", \"pay_GKgaSK04hFwDMl\", \"setl_4WvPR8LuJ7MzkC\", \"alternate_candidates_with_tolerances\"],\n  \"human_review_required\": true\n}"
+}

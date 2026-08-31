@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1212,
+  "output_tokens": 167,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as unrelated to the selected batch and escalate for matching across batches; verify against alternate batches and determine which batch (if any) aligns with the credit, then reconcile accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_0LYTH8xIZM1JRc\",\"AXISP751014580988\",\"setl_KQxVrpFT6EMBVe\",\"setl_wrixxtYKO0lmTQ\",\"pay_7PidxB2zZOHT7Z\",\"pay_cG7cR8IYUd48e1\"],\n  \"human_review_required\": true\n}"
+}

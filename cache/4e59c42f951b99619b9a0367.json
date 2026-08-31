@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1175,
+  "output_tokens": 109,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity; require human review to confirm which batch net within tolerance band matches the credit.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_UhY7gbtP7ySeQM\", \"setl_6A9qQCwV2nrABa\"],\n  \"human_review_required\": true\n}"
+}

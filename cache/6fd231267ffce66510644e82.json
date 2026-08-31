@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1278,
+  "output_tokens": 158,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches within tolerance and revalidate which batch net aligns most plausibly with the credit, selecting a single authoritative batch or inflating the tolerance check if needed.\",\n \"confidence\": 0.55,\n \"evidence_refs\": [\"txn_OaYsP6ihgIqLSm\",\"setl_BwGxXF6xxV4JOj\",\"setl_rORJI7UwcVu3YV\",\"setl_vXnNQpesIVhuyJ\",\"setl_f2xZsGkxcmfFX4\"],\n \"human_review_required\": true\n}"
+}

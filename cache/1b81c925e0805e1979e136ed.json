@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1278,
+  "output_tokens": 110,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches within tolerance and verify which fits the payment line items; if none uniquely fits, escalate for manual review.\",\n  \"confidence\": 0.46,\n  \"evidence_refs\": [\"settlement_utr:HDFCR321230713758\",\"txn_TQGOAwwln6Eoie\"],\n  \"human_review_required\": true\n}"
+}

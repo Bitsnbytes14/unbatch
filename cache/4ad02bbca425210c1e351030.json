@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1296,
+  "output_tokens": 123,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate and confirm the posting date alignment between the credit and the settlement batch; if the correct batch is SBIN0031934278352 but posting date differs, adjust or re-map to the correct batch window.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_eVmn1uj3a1iipk\", \"SBIN0031934278352\"],\n  \"human_review_required\": true\n}"
+}
