@@ -43,21 +43,26 @@ def test_no_false_matches_on_the_real_dataset(tmp_path: Path) -> None:
 
 
 def test_count_and_exception_rate_match_the_known_distribution(tmp_path: Path) -> None:
-    """clean(89) + narration_mangled(3) + settlement_split(4) + date_skew(1)
+    """clean(79) + narration_mangled(3) + settlement_split(4) + date_skew(1)
     + refund_in_window(1) + chargeback_deduction(1) + duplicate_utr(2) +
-    rounding_delta(1) + fee_tier_change(1) = 103 resolved; ambiguous_
-    composition(1) + unrelated_credit(1) = 2 exceptions."""
+    rounding_delta(1) + fee_tier_change(1) = 93 resolved; ambiguous_
+    composition(7) + tolerance_ambiguous(4) + unrelated_credit(1) = 12
+    exceptions. D0a (FAILURES.md's 2026-08-31 entry) deliberately raised
+    ambiguous_composition from 1 to 7 and added tolerance_ambiguous (4) so
+    the adjudicator has more than one genuinely ambiguous case to prove
+    itself on — clean dropped from ~85% to ~75% as a direct result, reported
+    honestly rather than tuned back."""
     run_id = _run_no_llm_cascade(tmp_path / "audit.db")
     conn = audit.connect(tmp_path / "audit.db")
 
     report = metrics.score(conn, run_id)
 
-    assert report.count_match_rate == 103 / 105
-    assert report.exception_rate == 2 / 105
+    assert report.count_match_rate == 93 / 105
+    assert report.exception_rate == 12 / 105
     assert report.precision == 1.0  # every resolved match is correct
 
 
-def test_correctly_rejected_is_unrelated_credit_plus_the_orphan_settlement(
+def test_correctly_rejected_is_unrelated_credit_plus_the_orphan_settlements(
     tmp_path: Path,
 ) -> None:
     run_id = _run_no_llm_cascade(tmp_path / "audit.db")
@@ -65,7 +70,9 @@ def test_correctly_rejected_is_unrelated_credit_plus_the_orphan_settlement(
 
     report = metrics.score(conn, run_id)
 
-    assert report.correctly_rejected == 2  # unrelated_credit + orphan_settlement
+    # unrelated_credit(1) + 7 orphan_settlement entries (one per
+    # ambiguous_composition decoy, D0a)
+    assert report.correctly_rejected == 8
 
 
 def test_stage_funnel_matches_the_per_stage_resolution_counts(tmp_path: Path) -> None:
@@ -74,11 +81,11 @@ def test_stage_funnel_matches_the_per_stage_resolution_counts(tmp_path: Path) ->
 
     report = metrics.score(conn, run_id)
 
-    assert report.stage_funnel["l0"] == 89
+    assert report.stage_funnel["l0"] == 79
     assert report.stage_funnel["l1"] == 3
     assert report.stage_funnel["l2"] == 9
     assert report.stage_funnel["l3"] == 2
-    assert report.stage_funnel["l4"] == 2  # the terminal no_llm_unresolved exceptions
+    assert report.stage_funnel["l4"] == 12  # the terminal no_llm_unresolved exceptions
 
 
 def test_value_weighted_match_rate_is_within_a_few_points_of_count_rate(

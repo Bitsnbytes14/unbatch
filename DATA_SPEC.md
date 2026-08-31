@@ -88,8 +88,11 @@ The generator deliberately produces each of these. This catalogue is the spine o
 | `unrelated_credit` | inbound transfer that is not a settlement at all | exception |
 | `orphan_settlement` | settlement report line with no bank credit | exception |
 | `ambiguous_composition` | two different payment subsets compose the same amount | L4 |
+| `tolerance_ambiguous` | two different settlement batches' nets both fall inside L3's tolerance band of the same credit | L4 |
 
-The last three are **meant to stay unresolved or need judgment**. A run that reports 100% resolution is a broken run — it means something is matching things it shouldn't. The honest exception list is the deliverable, not an embarrassment.
+The last four are **meant to stay unresolved by rules alone, or need judgment**. A run that reports 100% resolution is a broken run — it means something is matching things it shouldn't. The honest exception list is the deliverable, not an embarrassment.
+
+`ambiguous_composition` (7 instances) and `tolerance_ambiguous` (4 instances, new in D0a — see FAILURES.md's 2026-08-31 entries) are deliberately the largest non-clean categories, not one-offs: with only 1 genuinely ambiguous credit, there was nothing for the LLM adjudicator to meaningfully prove itself against. Raising these two pulled directly from the clean pool, so the overall clean rate dropped from ~85% to ~75% as a direct, honestly-reported consequence — not tuned back toward the old number.
 
 ## Generator requirements
 

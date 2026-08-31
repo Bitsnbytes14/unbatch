@@ -58,18 +58,26 @@ IST = timezone(timedelta(hours=5, minutes=30))
 EPOCH = date(2024, 1, 1)
 WINDOW_DAYS = 30
 
-# 103 baseline batches -> 105 final credits after settlement_split adds 2 and
-# orphan_settlement removes 1 (see inject_breaks' docstring for the exact
-# arithmetic). The 16 non-clean credits that "at least one of every break
-# type" structurally requires (see commit 12's FAILURES.md entry) are a fixed
-# count regardless of scale, so growing the batch count is what moves the
-# clean rate: 16/105 lands at ~84.8%, versus 16/70 at ~77%. It also makes a
-# single credit ~0.95% of the dataset, so METRICS.md's sub-1% false-match
-# target is finally representable at all (one credit was 1.43% at 70).
-# Batch dates are drawn WITH replacement (multiple credits can land on the
-# same day, which is realistic for an active merchant) since this many
+# 105 baseline batches -> 105 final credits (see inject_breaks' docstring for
+# the exact arithmetic — settlement_split's +1-per-batch and the 7 ambiguous
+# decoys' -1-per-batch happen to cancel against the standalone unrelated_credit
+# and tolerance_ambiguous rows, so total credits equals N_BATCHES exactly at
+# this mix). Batch dates are drawn WITH replacement (multiple credits can land
+# on the same day, which is realistic for an active merchant) since this many
 # batches no longer fits in 30 unique days.
-N_BATCHES = 103
+#
+# Raised from 103 (D0a, FAILURES.md's 2026-08-31 ablation-ceiling entry):
+# rules-only was resolving 103/105 credits, leaving the adjudicator exactly
+# one genuinely ambiguous case to prove itself on — nowhere near enough to
+# measure what an LLM adds. ambiguous_composition went from 1 instance to 7,
+# and a new break type, tolerance_ambiguous (4 instances), was added: two
+# settlement batches whose nets both land inside L3's tolerance band of one
+# credit, so L3's exactly-one rule must correctly decline both rather than
+# guess. The 34 non-clean-or-forced credits this now structurally requires
+# come out of what would otherwise be N_BATCHES's generic clean pool, so the
+# clean rate correspondingly drops — see the module docstring for the actual
+# resulting number, reported honestly rather than tuned back toward 85%.
+N_BATCHES = 105
 
 AMOUNT_MIN_PAISE = 15_000  # ~Rs 150
 AMOUNT_MAX_PAISE = 2_500_000  # ~Rs 25,000
@@ -120,8 +128,57 @@ FEE_TIER_CHANGE_BATCH_INDEX = 9
 DATE_SKEW_BATCH_INDEX = 10
 DUPLICATE_UTR_BATCH_INDEX_A = 11
 DUPLICATE_UTR_BATCH_INDEX_B = 12
-ORPHAN_SETTLEMENT_BATCH_INDEX = 13
-AMBIGUOUS_COMPOSITION_BATCH_INDEX = 14
+# 13, 14, 15 are deliberately unassigned — free indices left over once
+# ambiguous_composition moved off this single pair (D0a); they fall through
+# to the generic clean pool like any other unassigned index.
+
+# D0a (FAILURES.md's 2026-08-31 entry): ambiguous_composition raised from 1
+# instance to 7, each with its own dedicated (target, decoy) pair rather than
+# 7 targets sharing one decoy pool. A shared pool was considered and rejected:
+# its ExpectedBatch window would span every target's anchor date at once,
+# wide enough to risk coincidentally falling inside some unrelated credit's
+# L1/L3 check purely by chance — exactly the "hoping the odds are favorable"
+# trap FAILURES.md already warned about once (2026-08-30, rounding_delta).
+# Seven small, narrowly-dated pairs keep each decoy's window scoped to just
+# its own target, the same isolation the original single pair had.
+AMBIGUOUS_COMPOSITION_N = 7
+AMBIGUOUS_COMPOSITION_TARGET_INDICES: tuple[int, ...] = tuple(
+    range(17, 17 + AMBIGUOUS_COMPOSITION_N)
+)
+AMBIGUOUS_COMPOSITION_DECOY_INDICES: tuple[int, ...] = tuple(
+    range(17 + AMBIGUOUS_COMPOSITION_N, 17 + 2 * AMBIGUOUS_COMPOSITION_N)
+)
+
+# New break type (D0a): two settlement batches' nets both fall inside L3's
+# tolerance band of one credit, so L3's "exactly one within tolerance" rule
+# must correctly decline rather than guess. Four (P, Q) sibling pairs, each a
+# single forced-gross UPI line so the resulting net is exactly predictable —
+# see _tolerance_ambiguous_gross_paise. P's net (plus a small offset so L0/L1
+# don't tie on it exactly) is the credit amount; Q is a coincidentally close
+# decoy. Both siblings resolve as ordinary `clean` credits of their own —
+# unlike the ambiguous_composition decoys, nothing about being a tolerance
+# rival requires a sibling to go unclaimed.
+TOLERANCE_AMBIGUOUS_N = 4
+_TOLERANCE_AMBIGUOUS_START = 17 + 2 * AMBIGUOUS_COMPOSITION_N
+TOLERANCE_AMBIGUOUS_SIBLING_INDICES: tuple[int, ...] = tuple(
+    range(_TOLERANCE_AMBIGUOUS_START, _TOLERANCE_AMBIGUOUS_START + 2 * TOLERANCE_AMBIGUOUS_N)
+)
+TOLERANCE_AMBIGUOUS_P_INDICES: tuple[int, ...] = TOLERANCE_AMBIGUOUS_SIBLING_INDICES[0::2]
+TOLERANCE_AMBIGUOUS_Q_INDICES: tuple[int, ...] = TOLERANCE_AMBIGUOUS_SIBLING_INDICES[1::2]
+
+# One base gross per pair, spread across the realistic amount range so the
+# four instances aren't all the same size. DELTA is deliberately small and
+# FLAT (not scaled per base): net_delta = gross_delta * (1 - fee_rate*(1+gst))
+# is ~constant regardless of base for a fixed method, while L3's tolerance
+# band (0.6% of the credit) grows with base — so a flat, small delta clears
+# every base's band with margin, verified numerically for this exact mix
+# rather than assumed (smallest base: diff_q=473 paise against a 1196-paise
+# band). CREDIT_OFFSET keeps the credit off P's net exactly, so L1's exact-tie
+# check still declines it instead of resolving it before L3 ever runs.
+TOLERANCE_AMBIGUOUS_BASE_GROSS_PAISE: tuple[int, ...] = (200_000, 600_000, 1_000_000, 1_800_000)
+TOLERANCE_AMBIGUOUS_SIBLING_DELTA_PAISE = 500
+TOLERANCE_AMBIGUOUS_CREDIT_OFFSET_PAISE = 25
+TOLERANCE_AMBIGUOUS_NARRATION = "NEFT-UNKNOWN00000000-RAZORPAY SOFTWARE PVT"
 
 # rounding_delta is the floor of L3's tolerance band (a paise-level gap from
 # per-line vs per-batch rounding — see fees.py). fee_tier_change is the
@@ -132,35 +189,41 @@ FEE_TIER_TARGET_GROSS_PAISE = 1_000_000  # Rs 10,000, forced so the delta is pre
 FEE_TIER_BUMP = Decimal("0.005")  # a 0.5 point rate change -> tens of rupees, not paise
 UNRELATED_CREDIT_PAISE = 25_000  # ~Rs 250, a plausible-looking stray inbound transfer
 
-# settlement_split and ambiguous_composition need more than the general 2-4
-# line range to split or subtract safely without landing on a near-empty or
-# negative group; CHARGEBACK_BATCH_INDEX needs enough other lines to absorb
-# the flat CHARGEBACK_FEE_PAISE penalty without the batch total going
-# negative; ROUNDING_DELTA_BATCH_INDEX needs room for its two boundary lines
-# alongside the large-value line; ORPHAN_SETTLEMENT_BATCH_INDEX needs at
-# least 2 lines to host the ambiguous_composition decoy pair (see below).
-# All forced to a fixed 4 lines instead of left to chance.
-_FORCED_N_LINES: dict[int, int] = dict.fromkeys(
-    (
-        *SETTLEMENT_SPLIT_BATCH_INDICES,
-        AMBIGUOUS_COMPOSITION_BATCH_INDEX,
-        ORPHAN_SETTLEMENT_BATCH_INDEX,
-        CHARGEBACK_BATCH_INDEX,
-        ROUNDING_DELTA_BATCH_INDEX,
+# settlement_split and each ambiguous_composition target need more than the
+# general 2-4 line range to split or subtract safely without landing on a
+# near-empty or negative group; CHARGEBACK_BATCH_INDEX needs enough other
+# lines to absorb the flat CHARGEBACK_FEE_PAISE penalty without the batch
+# total going negative; ROUNDING_DELTA_BATCH_INDEX needs room for its two
+# boundary lines alongside the large-value line; each tolerance_ambiguous
+# sibling is exactly the 1 forced-gross line that defines its net.
+#
+# Each ambiguous_composition decoy is exactly 2 lines. An earlier version of
+# this forced 4-6 lines instead, first to avoid an L1 false-match (see
+# FAILURES.md's 2026-08-31 entry) and then padded further to avoid an L3
+# false-match — both real bugs, but the extra lines were the wrong fix: with
+# 7 decoys now contributing up to 4 padding lines each, L2's candidate pools
+# for OTHER unrelated credits nearby swelled to within a few lines of
+# MAX_POOL (48), reintroducing the exact clustering risk FAILURES.md's
+# 2026-08-30 entry already covered once. `_apply_ambiguous_decoy` below
+# fixes the root cause instead: the manipulated line's type, not its
+# quantity.
+_FORCED_N_LINES: dict[int, int] = {
+    **dict.fromkeys(
+        (*SETTLEMENT_SPLIT_BATCH_INDICES, CHARGEBACK_BATCH_INDEX, ROUNDING_DELTA_BATCH_INDEX), 4
     ),
-    4,
-)
+    **dict.fromkeys(AMBIGUOUS_COMPOSITION_TARGET_INDICES, 4),
+    **dict.fromkeys(AMBIGUOUS_COMPOSITION_DECOY_INDICES, 2),
+    **dict.fromkeys(TOLERANCE_AMBIGUOUS_SIBLING_INDICES, 1),
+}
 
-# The ambiguous_composition decoy lives inside ORPHAN_SETTLEMENT_BATCH_INDEX,
-# not its own batch: a decoy that resolves cleanly on its own (as an
-# independent "clean" batch originally did) gets its lines consumed by L0
-# before L2 ever runs, since the runner removes matched payment_ids between
-# stages — the coincidental alternate subset would already be gone from the
-# pool by the time it could matter. Orphan lines are never claimed by any
-# decision, so they stay available for the whole run. See FAILURES.md's
-# 2026-08-30 entry.
-AMBIGUOUS_DECOY_ANCHOR_GROSS_PAISE = AMOUNT_MIN_PAISE  # forced small so the decoy's
-# adjusted second line can always be raised to hit the target sum without going negative
+# Each ambiguous_composition decoy's first line is forced small so
+# `_apply_ambiguous_decoy`'s adjustment of the second line can always be
+# raised to hit its (larger, 3-line) target sum without going negative. A
+# decoy's lines are never claimed by any Decision — see FAILURES.md's
+# 2026-08-30 entry — so they stay available in L2's candidate pool for the
+# entire run, which is what makes the coincidental alternate subset
+# discoverable at all.
+AMBIGUOUS_DECOY_ANCHOR_GROSS_PAISE = AMOUNT_MIN_PAISE
 
 # Two lines at this gross, both CARD, each land exactly on a half-paise fee
 # boundary (500025 * 2% = 10000.5, rounds up to 10001); their combined gross
@@ -213,6 +276,16 @@ def _random_method(rng: random.Random) -> PaymentMethod:
 
 def _random_gross_paise(rng: random.Random) -> int:
     return rng.randint(AMOUNT_MIN_PAISE, AMOUNT_MAX_PAISE)
+
+
+def _tolerance_ambiguous_gross_paise(batch_index: int) -> int:
+    """P's gross is this pair's base; Q's is base + a small flat delta (see
+    TOLERANCE_AMBIGUOUS_SIBLING_DELTA_PAISE's derivation above)."""
+    if batch_index in TOLERANCE_AMBIGUOUS_P_INDICES:
+        pair = TOLERANCE_AMBIGUOUS_P_INDICES.index(batch_index)
+        return TOLERANCE_AMBIGUOUS_BASE_GROSS_PAISE[pair]
+    pair = TOLERANCE_AMBIGUOUS_Q_INDICES.index(batch_index)
+    return TOLERANCE_AMBIGUOUS_BASE_GROSS_PAISE[pair] + TOLERANCE_AMBIGUOUS_SIBLING_DELTA_PAISE
 
 
 def _datetime_at(day: date, rng: random.Random) -> datetime:
@@ -364,19 +437,30 @@ def generate_orders_and_settlements(
         for i, d in enumerate(settled_dates)
     ]
 
-    # ambiguous_composition needs its decoy within L2's [D-3d, D] window of
-    # the target on purpose — that proximity is what makes the coincidental
-    # alternate subset discoverable at all. The window only looks BACKWARD
-    # from a credit's date, so the decoy must settle on or before the
-    # target's date, never after, or its lines would never even enter the
-    # target's candidate pool. Independently random dates (now that dates no
-    # longer correlate with index — see the note above) would only
-    # occasionally land the decoy in range at all, let alone on the correct
-    # side, so it is anchored here explicitly rather than left to chance.
-    target_date = batches[AMBIGUOUS_COMPOSITION_BATCH_INDEX].settled_date
-    decoy_offset = rng.choice([-3, -2, -1])
-    decoy_date = max(target_date + timedelta(days=decoy_offset), EPOCH)
-    batches[ORPHAN_SETTLEMENT_BATCH_INDEX].settled_date = decoy_date
+    # Each ambiguous_composition decoy needs to land within L2's [D-3d, D]
+    # window of its own target on purpose — that proximity is what makes the
+    # coincidental alternate subset discoverable at all. The window only
+    # looks BACKWARD from a credit's date, so a decoy must settle on or
+    # before its target's date, never after, or its lines would never even
+    # enter the target's candidate pool. Independently random dates (now that
+    # dates no longer correlate with index — see the note above) would only
+    # occasionally land a decoy in range at all, let alone on the correct
+    # side, so each pair is anchored here explicitly rather than left to
+    # chance.
+    for target_idx, decoy_idx in zip(
+        AMBIGUOUS_COMPOSITION_TARGET_INDICES, AMBIGUOUS_COMPOSITION_DECOY_INDICES, strict=True
+    ):
+        target_date = batches[target_idx].settled_date
+        decoy_offset = rng.choice([-3, -2, -1])
+        decoy_date = max(target_date + timedelta(days=decoy_offset), EPOCH)
+        batches[decoy_idx].settled_date = decoy_date
+
+    # tolerance_ambiguous needs both siblings dated so a single credit's
+    # 3-day backward window covers them both — simplest is the same day.
+    for p_idx, q_idx in zip(
+        TOLERANCE_AMBIGUOUS_P_INDICES, TOLERANCE_AMBIGUOUS_Q_INDICES, strict=True
+    ):
+        batches[q_idx].settled_date = batches[p_idx].settled_date
 
     orders: list[OrderLedgerRecord] = []
 
@@ -402,8 +486,11 @@ def generate_orders_and_settlements(
                 gross_paise = CHARGEBACK_ELIGIBLE_MIN_PAISE + _random_gross_paise(rng)
             elif batch.index == FEE_TIER_CHANGE_BATCH_INDEX and i == 0:
                 gross_paise = FEE_TIER_TARGET_GROSS_PAISE
-            elif batch.index == ORPHAN_SETTLEMENT_BATCH_INDEX and i == 0:
+            elif batch.index in AMBIGUOUS_COMPOSITION_DECOY_INDICES and i == 0:
                 gross_paise = AMBIGUOUS_DECOY_ANCHOR_GROSS_PAISE
+            elif batch.index in TOLERANCE_AMBIGUOUS_SIBLING_INDICES and i == 0:
+                gross_paise = _tolerance_ambiguous_gross_paise(batch.index)
+                method_override = PaymentMethod.UPI
 
             status = OrderStatus.CAPTURED
             if batch.index == REFUND_BATCH_INDEX and i == 0:
@@ -570,15 +657,25 @@ def _apply_ambiguous_decoy(batch: Batch, target_sum_paise: int) -> None:
     coincidental alternate composition for whichever credit target_sum_paise
     belongs to. Bypasses standard fee derivation for the adjusted line
     (fee=tax=0) to hit the target exactly instead of fighting rounding.
-    Intended for ORPHAN_SETTLEMENT_BATCH_INDEX specifically: its lines are
-    never claimed by any Decision, so they stay in L2's candidate pool for
-    the entire run — a batch that resolves to its own credit would have its
-    lines consumed the moment that credit matched, making the "coincidence"
-    unreachable by the time anything went looking for it."""
+    Intended for one of AMBIGUOUS_COMPOSITION_DECOY_INDICES specifically: its
+    lines are never claimed by any Decision, so they stay in L2's candidate
+    pool for the entire run — a batch that resolves to its own credit would
+    have its lines consumed the moment that credit matched, making the
+    "coincidence" unreachable by the time anything went looking for it.
+
+    The adjusted line's type is set to ADJUSTMENT, not left as PAYMENT (see
+    FAILURES.md's 2026-08-31 entry). L2's composition search doesn't filter
+    by line type, so this line is still just as discoverable as a
+    composition candidate — but compute_expected_batches's net_paise sums
+    PAYMENT lines only, so the decoy's own ExpectedBatch (still the anchor
+    line's small, harmless net) no longer accidentally equals the target sum
+    it was built from. That equality is exactly what let L1 resolve the real
+    target credit against the decoy's own batch as a false exact match."""
     first, second = _payment_lines(batch)[:2]
     needed_net = target_sum_paise - first.net_paise
     updated = second.model_copy(
         update={
+            "type": SettlementLineType.ADJUSTMENT,
             "gross_paise": needed_net,
             "fee_paise": 0,
             "tax_paise": 0,
@@ -645,17 +742,20 @@ def inject_breaks(
     _apply_duplicate_utr(
         batches[DUPLICATE_UTR_BATCH_INDEX_A], batches[DUPLICATE_UTR_BATCH_INDEX_B]
     )
-    # The credit only ever accounts for all-but-the-last of this batch's
-    # lines — the last line is a deliberate leftover, never claimed by any
-    # ground-truth credit. Without this, the credit's amount would equal the
-    # WHOLE batch's total, which is exactly what compute_expected_batches
-    # groups by UTR, so L0/L1 would resolve it via a clean, unambiguous
-    # exact match before composition search (L2) ever ran — silently
-    # defeating the entire point of "two subsets compose the same amount."
-    # See FAILURES.md's 2026-08-30 entry.
-    ambiguous_lines = batches[AMBIGUOUS_COMPOSITION_BATCH_INDEX].lines[:-1]
-    ambiguous_target = sum(line.net_paise for line in ambiguous_lines)
-    _apply_ambiguous_decoy(batches[ORPHAN_SETTLEMENT_BATCH_INDEX], ambiguous_target)
+    # Each target's credit only ever accounts for all-but-the-last of its
+    # batch's lines — the last line is a deliberate leftover, never claimed
+    # by any ground-truth credit. Without this, the credit's amount would
+    # equal the WHOLE batch's total, which is exactly what
+    # compute_expected_batches groups by UTR, so L0/L1 would resolve it via a
+    # clean, unambiguous exact match before composition search (L2) ever ran
+    # — silently defeating the entire point of "two subsets compose the same
+    # amount." See FAILURES.md's 2026-08-30 entry.
+    for target_idx, decoy_idx in zip(
+        AMBIGUOUS_COMPOSITION_TARGET_INDICES, AMBIGUOUS_COMPOSITION_DECOY_INDICES, strict=True
+    ):
+        ambiguous_lines = batches[target_idx].lines[:-1]
+        ambiguous_target = sum(line.net_paise for line in ambiguous_lines)
+        _apply_ambiguous_decoy(batches[decoy_idx], ambiguous_target)
 
     settlements = [line for batch in batches for line in batch.lines]
 
@@ -718,7 +818,7 @@ def inject_breaks(
                 _ground_truth_credit(record.txn_id, batch.lines, BreakType.DUPLICATE_UTR)
             )
 
-        elif batch.index == ORPHAN_SETTLEMENT_BATCH_INDEX:
+        elif batch.index in AMBIGUOUS_COMPOSITION_DECOY_INDICES:
             orphan_settlements.append(
                 GroundTruthOrphanSettlement(
                     settlement_ids=[line.settlement_id for line in batch.lines],
@@ -726,7 +826,7 @@ def inject_breaks(
                 )
             )
 
-        elif batch.index == AMBIGUOUS_COMPOSITION_BATCH_INDEX:
+        elif batch.index in AMBIGUOUS_COMPOSITION_TARGET_INDICES:
             lines = batch.lines[:-1]  # excludes the deliberate leftover line
             record = record.model_copy(
                 update={"credit_paise": sum(line.net_paise for line in lines)}
@@ -763,6 +863,30 @@ def inject_breaks(
         else:
             final_records.append(record)
             credits.append(_ground_truth_credit(record.txn_id, batch.lines, BreakType.CLEAN))
+
+    # tolerance_ambiguous: a standalone credit, not derived from any batch's
+    # own baseline record (same pattern as unrelated_credit below), priced at
+    # P's net plus a small offset (so L1's exact-tie check still declines it)
+    # and dated to match both siblings so their windows both cover it. P is
+    # the "true" match ground truth records; Q is the coincidentally close
+    # rival L3 must correctly refuse to pick over it.
+    for p_idx in TOLERANCE_AMBIGUOUS_P_INDICES:
+        p_line = _payment_lines(batches[p_idx])[0]
+        credit_paise = p_line.net_paise + TOLERANCE_AMBIGUOUS_CREDIT_OFFSET_PAISE
+        txn_id = _random_id(rng, "txn_")
+        final_records.append(
+            BankStatementRecord(
+                txn_id=txn_id,
+                value_date=batches[p_idx].settled_date,
+                narration=TOLERANCE_AMBIGUOUS_NARRATION,
+                credit_paise=credit_paise,
+                debit_paise=None,
+                balance_paise=0,
+            )
+        )
+        credits.append(
+            _ground_truth_credit(txn_id, batches[p_idx].lines, BreakType.TOLERANCE_AMBIGUOUS)
+        )
 
     unrelated_txn_id = _random_id(rng, "txn_")
     unrelated_record = BankStatementRecord(

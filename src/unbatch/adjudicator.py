@@ -75,6 +75,8 @@ Classify the break using exactly one of these reasons:
 - duplicate_utr: two real batches share one settlement UTR.
 - ambiguous_composition: more than one candidate set of payment lines fits
   equally well.
+- tolerance_ambiguous: more than one settlement batch's net lands within the
+  tolerance band of this credit, with no single one clearly right.
 - unrelated_credit: this bank credit does not correspond to any settlement
   batch at all.
 - other: none of the above explain the evidence.

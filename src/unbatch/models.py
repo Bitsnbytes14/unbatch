@@ -66,6 +66,7 @@ class BreakReason(StrEnum):
     DATE_SKEW = "date_skew"
     DUPLICATE_UTR = "duplicate_utr"
     AMBIGUOUS_COMPOSITION = "ambiguous_composition"
+    TOLERANCE_AMBIGUOUS = "tolerance_ambiguous"
     UNRELATED_CREDIT = "unrelated_credit"
     OTHER = "other"
 
@@ -89,6 +90,7 @@ class BreakType(StrEnum):
     UNRELATED_CREDIT = "unrelated_credit"
     ORPHAN_SETTLEMENT = "orphan_settlement"
     AMBIGUOUS_COMPOSITION = "ambiguous_composition"
+    TOLERANCE_AMBIGUOUS = "tolerance_ambiguous"
 
 
 class OrderLedgerRecord(BaseModel):

@@ -1,8 +1,9 @@
 """L0 -> L1 -> L2 -> L3 against the real seed-42 fixtures: rounding_delta
 (the 1-paise floor case) and fee_tier_change (the ~Rs 59 ceiling case) both
-resolve at L3 with their real delta recorded; ambiguous_composition and
-unrelated_credit must still not resolve anywhere in the deterministic
-cascade — they are the two credits meant to stay unresolved."""
+resolve at L3 with their real delta recorded; every ambiguous_composition,
+tolerance_ambiguous, and unrelated_credit instance must still not resolve
+anywhere in the deterministic cascade — they are the 12 credits meant to
+stay unresolved for L4 (D0a, FAILURES.md's 2026-08-31 entry)."""
 
 from __future__ import annotations
 
@@ -71,23 +72,31 @@ def test_l3_resolves_rounding_delta_and_fee_tier_change_with_their_real_delta() 
     assert abs(fee_tier_decision.delta_paise) == 5900  # the guaranteed Rs 59.00 gap
 
 
-def test_ambiguous_composition_and_unrelated_credit_stay_unresolved() -> None:
-    """The two credits this deterministic cascade is supposed to leave for
-    L4: a genuine composition ambiguity, and a credit with nothing to tie to
-    at all."""
+def test_ambiguous_and_unrelated_credits_all_stay_unresolved() -> None:
+    """The 12 credits this deterministic cascade is supposed to leave for
+    L4 (D0a): every ambiguous_composition (7) and tolerance_ambiguous (4)
+    instance — genuine ambiguities the exactly-one rule must decline rather
+    than guess between — plus the one unrelated_credit with nothing to tie
+    to at all."""
     _decisions, remaining = _run_full_cascade()
     remaining_ids = {u.credit.txn_id for u in remaining}
 
     break_types = _ground_truth_break_types()
-    ambiguous_id = next(
+    ambiguous_ids = {
         t for t, bt in break_types.items() if bt == BreakType.AMBIGUOUS_COMPOSITION.value
-    )
-    unrelated_id = next(
-        t for t, bt in break_types.items() if bt == BreakType.UNRELATED_CREDIT.value
-    )
+    }
+    tolerance_ambiguous_ids = {
+        t for t, bt in break_types.items() if bt == BreakType.TOLERANCE_AMBIGUOUS.value
+    }
+    unrelated_ids = {t for t, bt in break_types.items() if bt == BreakType.UNRELATED_CREDIT.value}
 
-    assert ambiguous_id in remaining_ids
-    assert unrelated_id in remaining_ids
+    assert len(ambiguous_ids) == 7
+    assert len(tolerance_ambiguous_ids) == 4
+    assert len(unrelated_ids) == 1
+    assert ambiguous_ids <= remaining_ids
+    assert tolerance_ambiguous_ids <= remaining_ids
+    assert unrelated_ids <= remaining_ids
+    assert len(remaining_ids) == 12
 
 
 def test_no_false_matches_anywhere_in_the_deterministic_cascade() -> None:

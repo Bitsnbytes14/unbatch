@@ -9,19 +9,22 @@ from collections import Counter
 from pathlib import Path
 
 from unbatch.generate import (
-    AMBIGUOUS_COMPOSITION_BATCH_INDEX,
+    AMBIGUOUS_COMPOSITION_DECOY_INDICES,
+    AMBIGUOUS_COMPOSITION_TARGET_INDICES,
     DUPLICATE_UTR_BATCH_INDEX_A,
     DUPLICATE_UTR_BATCH_INDEX_B,
     FEE_TIER_CHANGE_BATCH_INDEX,
-    ORPHAN_SETTLEMENT_BATCH_INDEX,
     ROUNDING_DELTA_BATCH_INDEX,
     SETTLEMENT_SPLIT_BATCH_INDICES,
+    TOLERANCE_AMBIGUOUS_P_INDICES,
+    TOLERANCE_AMBIGUOUS_Q_INDICES,
     generate_bank_statement_baseline,
     generate_orders_and_settlements,
     inject_breaks,
     write_ground_truth_json,
 )
 from unbatch.models import BreakType
+from unbatch.stages.l3_tolerance import TOLERANCE_FLOOR_PAISE, TOLERANCE_RATE
 
 SEED = 42
 
@@ -36,16 +39,18 @@ def _full_pipeline(seed: int = SEED):
 
 
 def test_distribution_is_a_realistic_long_tail() -> None:
-    """~105 credits, ~85% clean, narration_mangled and settlement_split
-    clearly more common than the one-off duplicate_utr/ambiguous_composition
-    pairs (commit 12's rebalance, scaled up further to hit the target
-    percentage in commit 16).
+    """~105 credits total. Clean dropped from ~85% to ~75% in D0a
+    (FAILURES.md's 2026-08-31 ablation-ceiling entry): ambiguous_composition
+    grew from 1 instance to 7 and a new break type, tolerance_ambiguous (4
+    instances), was added specifically to give the adjudicator more than one
+    genuinely ambiguous case to prove itself on — both counts pulled directly
+    from what would otherwise be the generic clean pool, reported honestly
+    rather than tuned back toward the old percentage.
 
-    The 16 non-clean credits that "at least one of every break type" plus
-    the relative-frequency ordering structurally requires are a fixed count
-    (see commit 12's FAILURES.md entries) — growing the scale from ~70 to
-    ~105 credits is what moves clean from ~77% to ~85%, since the floor
-    stays flat while the denominator grows.
+    narration_mangled and settlement_split are still clearly more common
+    than the one-off duplicate_utr pair — but ambiguous_composition is now
+    deliberately the LARGEST non-clean category, not the smallest, so it no
+    longer belongs in that same "rare long tail" comparison.
     """
     _, _, _batches, bank_statement, ground_truth = _full_pipeline()
 
@@ -53,12 +58,12 @@ def test_distribution_is_a_realistic_long_tail() -> None:
 
     counts = Counter(c.break_type for c in ground_truth.credits)
     clean_fraction = counts[BreakType.CLEAN] / len(bank_statement)
-    assert 0.80 <= clean_fraction <= 0.90
+    assert 0.70 <= clean_fraction <= 0.80
 
     assert counts[BreakType.NARRATION_MANGLED] > counts[BreakType.DUPLICATE_UTR]
-    assert counts[BreakType.NARRATION_MANGLED] > counts[BreakType.AMBIGUOUS_COMPOSITION]
     assert counts[BreakType.SETTLEMENT_SPLIT] > counts[BreakType.DUPLICATE_UTR]
-    assert counts[BreakType.SETTLEMENT_SPLIT] > counts[BreakType.AMBIGUOUS_COMPOSITION]
+    assert counts[BreakType.AMBIGUOUS_COMPOSITION] == 7
+    assert counts[BreakType.TOLERANCE_AMBIGUOUS] == 4
 
 
 def test_every_break_type_appears_at_least_once() -> None:
@@ -146,65 +151,135 @@ def test_settlement_split_produces_two_credits_per_occurrence() -> None:
 
 
 def test_orphan_settlement_has_no_matching_bank_credit() -> None:
-    _, _, batches, bank_statement, ground_truth = _full_pipeline()
-    orphan_batch = batches[ORPHAN_SETTLEMENT_BATCH_INDEX]
-    orphan_payment_ids = {line.payment_id for line in orphan_batch.lines}
+    """One orphan_settlement entry per ambiguous_composition decoy (D0a) —
+    each decoy batch is itself an orphan: its lines are never claimed by any
+    bank credit, which is exactly what keeps them available in L2's pool for
+    the whole run (see FAILURES.md's 2026-08-30 entry)."""
+    _, _, batches, _bank_statement, ground_truth = _full_pipeline()
+    orphan_payment_ids: set[str] = set()
+    for decoy_idx in AMBIGUOUS_COMPOSITION_DECOY_INDICES:
+        orphan_payment_ids |= {line.payment_id for line in batches[decoy_idx].lines}
 
-    assert len(ground_truth.orphan_settlements) == 1
-    assert set(ground_truth.orphan_settlements[0].payment_ids) == orphan_payment_ids
+    assert len(ground_truth.orphan_settlements) == len(AMBIGUOUS_COMPOSITION_DECOY_INDICES)
+    all_orphan_entry_payment_ids = {
+        pid for entry in ground_truth.orphan_settlements for pid in entry.payment_ids
+    }
+    assert all_orphan_entry_payment_ids == orphan_payment_ids
 
     bank_credit_payment_ids = {pid for c in ground_truth.credits for pid in c.payment_ids}
     assert orphan_payment_ids.isdisjoint(bank_credit_payment_ids)
 
 
 def test_ambiguous_composition_has_a_genuine_alternate_subset() -> None:
-    """The target credit covers all-but-the-last line of its batch — the
-    last line is a deliberate, permanently unclaimed leftover. Without that,
-    the credit's amount would equal the batch's WHOLE total, which is
-    exactly what compute_expected_batches groups by UTR, so L0/L1 would
-    resolve it via a clean exact match before composition search (L2) ever
-    ran. See FAILURES.md's 2026-08-30 entry.
+    """Each of the 7 targets (D0a) covers all-but-the-last line of its own
+    batch — the last line is a deliberate, permanently unclaimed leftover.
+    Without that, the credit's amount would equal the batch's WHOLE total,
+    which is exactly what compute_expected_batches groups by UTR, so L0/L1
+    would resolve it via a clean exact match before composition search (L2)
+    ever ran. See FAILURES.md's 2026-08-30 entry.
 
-    The decoy pair lives inside ORPHAN_SETTLEMENT_BATCH_INDEX rather than
-    its own batch — an independently "clean" decoy would have its lines
+    Each decoy pair lives inside its own dedicated decoy batch rather than
+    an independently "clean" one — a clean decoy would have its lines
     consumed by L0 before L2 ever ran (the runner removes matched
     payment_ids between stages), so the coincidence would never actually be
     reachable. Orphan lines are never claimed by any Decision, so they stay
     in the pool for the whole run. See FAILURES.md's second 2026-08-30
-    entry for this one."""
+    entry for this one, and its 2026-08-31 entry for why each target keeps
+    its own decoy rather than sharing one pool."""
     _, _, batches, _bank_statement, ground_truth = _full_pipeline()
-    target_batch = batches[AMBIGUOUS_COMPOSITION_BATCH_INDEX]
-    orphan_batch = batches[ORPHAN_SETTLEMENT_BATCH_INDEX]
-
-    target_lines = target_batch.lines[:-1]
-    target_total = sum(line.net_paise for line in target_lines)
-    orphan_payment_lines = [line for line in orphan_batch.lines if line.type.value == "payment"]
-    decoy_pair_sum = orphan_payment_lines[0].net_paise + orphan_payment_lines[1].net_paise
-
-    assert decoy_pair_sum == target_total
-
-    # the decoy pair settles on or before the target, within L2's 3-day
-    # backward-looking window — otherwise it would never enter the pool
-    # when searching from the target credit's date.
-    assert orphan_batch.settled_date <= target_batch.settled_date
-    assert (target_batch.settled_date - orphan_batch.settled_date).days <= 3
-
-    ambiguous_credit = next(
+    ambiguous_credits = [
         c for c in ground_truth.credits if c.break_type == BreakType.AMBIGUOUS_COMPOSITION
-    )
-    assert set(ambiguous_credit.payment_ids) == {line.payment_id for line in target_lines}
+    ]
+    assert len(ambiguous_credits) == len(AMBIGUOUS_COMPOSITION_TARGET_INDICES)
 
-    # the leftover line is never claimed by any ground-truth credit
-    leftover_payment_id = target_batch.lines[-1].payment_id
     all_credited_payment_ids = {pid for c in ground_truth.credits for pid in c.payment_ids}
-    assert leftover_payment_id not in all_credited_payment_ids
+    all_orphan_payment_ids = {
+        pid for entry in ground_truth.orphan_settlements for pid in entry.payment_ids
+    }
 
-    # the decoy pair's payment_ids are orphaned too — never claimed by any
-    # credit, exactly like the rest of ORPHAN_SETTLEMENT_BATCH_INDEX
-    decoy_payment_ids = {line.payment_id for line in orphan_payment_lines[:2]}
-    assert decoy_payment_ids.isdisjoint(all_credited_payment_ids)
-    orphan_entry = ground_truth.orphan_settlements[0]
-    assert decoy_payment_ids <= set(orphan_entry.payment_ids)
+    for target_idx, decoy_idx in zip(
+        AMBIGUOUS_COMPOSITION_TARGET_INDICES, AMBIGUOUS_COMPOSITION_DECOY_INDICES, strict=True
+    ):
+        target_batch = batches[target_idx]
+        decoy_batch = batches[decoy_idx]
+
+        target_lines = target_batch.lines[:-1]
+        target_total = sum(line.net_paise for line in target_lines)
+        # The decoy is exactly 2 lines: an anchor (still type=payment) and
+        # the manipulated line, whose type is deliberately ADJUSTMENT, not
+        # PAYMENT (see FAILURES.md's 2026-08-31 entry — this is what keeps
+        # the decoy's own ExpectedBatch.net_paise, which sums PAYMENT lines
+        # only, from accidentally equaling this same target_total).
+        assert decoy_batch.lines[0].type.value == "payment"
+        assert decoy_batch.lines[1].type.value == "adjustment"
+        decoy_pair_sum = decoy_batch.lines[0].net_paise + decoy_batch.lines[1].net_paise
+
+        assert decoy_pair_sum == target_total
+
+        # the decoy settles on or before its target, within L2's 3-day
+        # backward-looking window — otherwise it would never enter the pool
+        # when searching from the target credit's date.
+        assert decoy_batch.settled_date <= target_batch.settled_date
+        assert (target_batch.settled_date - decoy_batch.settled_date).days <= 3
+
+        target_payment_ids = {line.payment_id for line in target_lines}
+        matching_credit = next(
+            c for c in ambiguous_credits if set(c.payment_ids) == target_payment_ids
+        )
+        assert matching_credit is not None
+
+        # the leftover line is never claimed by any ground-truth credit
+        leftover_payment_id = target_batch.lines[-1].payment_id
+        assert leftover_payment_id not in all_credited_payment_ids
+
+        # the decoy pair's payment_ids are orphaned too — never claimed by
+        # any credit, exactly like the rest of their decoy batch
+        decoy_payment_ids = {line.payment_id for line in decoy_batch.lines}
+        assert decoy_payment_ids.isdisjoint(all_credited_payment_ids)
+        assert decoy_payment_ids <= all_orphan_payment_ids
+
+
+def test_tolerance_ambiguous_has_two_batches_within_band_of_one_credit() -> None:
+    """D0a's new break type: P and Q are ordinary resolvable ('clean')
+    batches on their own, but their nets both land inside L3's tolerance
+    band of one credit priced near P's — L3's exactly-one rule must decline
+    both rather than guess which one is real. See FAILURES.md's 2026-08-31
+    entry."""
+    _, _, batches, bank_statement, ground_truth = _full_pipeline()
+    tolerance_credits = [
+        c for c in ground_truth.credits if c.break_type == BreakType.TOLERANCE_AMBIGUOUS
+    ]
+    assert len(tolerance_credits) == len(TOLERANCE_AMBIGUOUS_P_INDICES)
+
+    for p_idx, q_idx, credit in zip(
+        TOLERANCE_AMBIGUOUS_P_INDICES, TOLERANCE_AMBIGUOUS_Q_INDICES, tolerance_credits, strict=True
+    ):
+        p_batch, q_batch = batches[p_idx], batches[q_idx]
+        p_net = sum(line.net_paise for line in p_batch.lines)
+        q_net = sum(line.net_paise for line in q_batch.lines)
+        record = next(r for r in bank_statement if r.txn_id == credit.txn_id)
+        tolerance = max(TOLERANCE_FLOOR_PAISE, round(record.credit_paise * TOLERANCE_RATE))
+
+        assert abs(record.credit_paise - p_net) <= tolerance
+        assert abs(record.credit_paise - q_net) <= tolerance
+        assert p_net != q_net  # a genuine near-miss, not a coincidental exact tie
+        assert record.credit_paise != p_net  # L1's exact-tie check must still decline
+
+        # both siblings settle on/before the credit's date, inside the same
+        # 3-day backward window, so L3 actually sees both as candidates
+        assert p_batch.settled_date == q_batch.settled_date == record.value_date
+
+        # P is ground truth's "real" match; both siblings still resolve as
+        # ordinary clean credits of their own, unlike the ambiguous_composition
+        # decoys, which are never claimed by anything
+        assert set(credit.payment_ids) == {line.payment_id for line in p_batch.lines}
+        p_own_credit = next(
+            c
+            for c in ground_truth.credits
+            if c.break_type == BreakType.CLEAN
+            and set(c.payment_ids) == {line.payment_id for line in p_batch.lines}
+        )
+        assert p_own_credit.txn_id != credit.txn_id
 
 
 def test_unrelated_credit_has_no_settlement_ties_and_is_unresolvable() -> None:
