@@ -62,7 +62,7 @@ Wider admits deltas only explainable by a genuinely wrong batch — a false matc
 
 ### L4 — the LLM boundary
 
-This is the only place a model is called, and its job is narrow.
+This is the only place a model is called, and its job is narrow. Provider: OpenAI, model `gpt-5-nano` — the cheapest model on OpenAI's own pricing page at the time this was chosen (D0.5), picked deliberately for narrow single-label classification at ablation scale (~117 calls total across the with-LLM and llm-only arms), not defaulted to a mid-tier model. Structured output is schema-enforced at the API boundary (`response_format` strict JSON Schema, generated straight from `AdjudicationResult`'s own pydantic schema) — see adjudicator.py's module docstring for the full reasoning and for why this was originally Anthropic/claude-sonnet-5 until only an OpenAI key was available.
 
 **Input:** one unresolved bank credit, the expected batch the rules computed, the numeric delta, and up to four competing candidate batches as alternate explanations. No earlier stage records anything into `UnresolvedCredit.candidates` — L2/L3 either resolve a credit outright or drop it unresolved with nothing kept — so L4 builds its own top-k the same way L2/L3 build their date windows: every batch whose settlement window overlaps `[D - 3d, D]` is scored by `|credit − batch.net|`; the closest becomes the "expected batch," the next few become candidates. A credit with nothing in its window at all (the `unrelated_credit` shape) falls back to the single globally-nearest batch, so the model always reasons against something concrete instead of an empty prompt.
 
@@ -80,7 +80,9 @@ human_review_required  bool
 
 **Degradation:** malformed JSON → retry once with the validation error appended → still bad → exception with reason `adjudication_failed`. The pipeline never crashes on model output.
 
-**Caching:** responses stored in `cache/` keyed by a hash of the prompt payload. Committed to the repo. `--cached` replays a full measured run with no API key, which makes the reported metrics independently verifiable by anyone who clones it.
+**Caching:** responses stored in `cache/` keyed by a hash of the prompt payload (including the model name — a provider or model swap invalidates every prior entry automatically, no migration step needed). Committed to the repo. `--cached` replays a full measured run with no API key, which makes the reported metrics independently verifiable by anyone who clones it.
+
+**Reproducibility comes from this committed cache, not from sampling configuration.** No `temperature` (or equivalent) is sent to the model at all — both providers used in this project's history reject or ignore sampling controls on their current model families, and it wouldn't help anyway: a `--cached` run always replays the exact bytes recorded here, regardless of what a live call would produce on any given day. Determinism is a property of the cache file, never of the request.
 
 ## Confidence bands
 

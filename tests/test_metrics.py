@@ -305,7 +305,7 @@ def llm_scenario(tmp_path: Path):
             stage=Stage.L4,
             matched_payment_ids=["pay_a"],
             reason="fee_tier_change",  # correct
-            llm_model="claude-sonnet-5",
+            llm_model="gpt-5-nano",
             llm_cost_paise=10,
             llm_retried=False,
         ),
@@ -317,7 +317,7 @@ def llm_scenario(tmp_path: Path):
             stage=Stage.L4,
             matched_payment_ids=["pay_b"],
             reason="other",  # wrong — ground truth is duplicate_utr
-            llm_model="claude-sonnet-5",
+            llm_model="gpt-5-nano",
             llm_cost_paise=15,
             llm_retried=True,
         ),
@@ -329,7 +329,7 @@ def llm_scenario(tmp_path: Path):
             stage=Stage.L4,
             matched_payment_ids=["pay_c"],
             reason="ambiguous_composition",  # correct
-            llm_model="claude-sonnet-5",
+            llm_model="gpt-5-nano",
             llm_cost_paise=12,
             llm_retried=False,
         ),
@@ -342,7 +342,7 @@ def llm_scenario(tmp_path: Path):
             outcome=DecisionOutcome.EXCEPTION,
             matched_payment_ids=[],
             reason="adjudication_failed",
-            llm_model="claude-sonnet-5",
+            llm_model="gpt-5-nano",
             llm_cost_paise=0,
             llm_retried=True,
         ),

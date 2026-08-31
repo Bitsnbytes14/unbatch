@@ -262,6 +262,7 @@
     </table>
     </div>
     <p class="section-note">Arm C (LLM only) is expected to score worse than arm A at many times the cost — that is the evidence for the cascade's design, not a bug in arm C.</p>
+    <p class="section-note">A zero malformed-JSON count on the LLM arms reflects OpenAI's schema-enforced structured output (<code>response_format</code> strict JSON Schema against <code>AdjudicationResult</code>'s own shape) actually working, not an absent check — the retry-then-degrade path (see <code>adjudicator.py</code>) still runs on every call and would catch a refusal or truncated response if one occurred; see <code>test_adjudicator.py</code>'s retry-path tests for the exercised failure modes.</p>
   </section>
 
   <!-- ============ PER-ARM DETAIL ============ -->

@@ -1,12 +1,57 @@
 """LLM boundary: prompt construction, response cache, output validation, and
-degradation. The only module that talks to the Anthropic API — used solely by
-`unbatch.stages.l4_llm`.
+degradation. The only module that talks to any LLM provider's SDK — used
+solely by `unbatch.stages.l4_llm`. No module outside this one imports an SDK;
+that boundary is what made the D0.5 provider swap (Anthropic -> OpenAI, this
+session's only available key was OPENAI_API_KEY, not an Anthropic one)
+a change to this file alone.
+
+**Provider: OpenAI, Chat Completions API** (`client.chat.completions.create`),
+not the newer Responses API. OpenAI's current docs recommend Responses for
+new projects, but Chat Completions is confirmed still fully supported (not
+deprecated) as of 2026-08-31 (checked at developers.openai.com/api/docs, not
+assumed from training data) — used here because it is what strict structured
+outputs via `response_format={"type": "json_schema", ...}` was originally
+documented against, matching this milestone's explicit shape.
+
+**Model: gpt-5-nano** — $0.05 / $0.40 per 1M input/output tokens, the
+cheapest model on OpenAI's own pricing page at the time of this swap,
+undercutting even the new cost-tier flagship (gpt-5.6-luna, $0.20/$1.20).
+Deliberately the smallest tier, not a mid-range default: this session's
+whole with-LLM-arm-plus-llm-only-arm ablation is ~117 calls of single-label
+classification over a pre-computed delta, on an explicit small budget —
+choosing the cheapest capable model for narrow, low-stakes-per-call
+classification is itself part of the "right tool, right place" argument
+CLAUDE.md already asks the cascade design to make.
 
 The prompt hands the model pre-computed deltas and candidate explanations as
 facts; it never asks the model to calculate, sum, or compute anything (CLAUDE.md
 invariant 2). Responses are cached in cache/ keyed by a hash of the prompt
 payload (including model and prompt version, so a prompt change invalidates
-stale entries) so `--cached` runs need no API key.
+stale entries) so `--cached` runs need no API key. The cache key already
+included the model name before this swap, so switching provider/model here
+invalidates every previously-cached (Anthropic) entry automatically — nothing
+about the cache format itself needed to change.
+
+**Structured output**: `response_format` is set to a strict JSON Schema
+derived directly from `AdjudicationResult.model_json_schema()`, so the API
+itself refuses to emit anything that doesn't validate against the pydantic
+model's shape — CLAUDE.md invariant 2's "schema-enforced at the API boundary"
+is literal here, not just a prompt instruction. This makes malformed output
+rare, not impossible: a refusal (`message.refusal` set instead of
+`message.content`) or truncation (`finish_reason == "length"`, e.g. a
+mid-response cutoff producing invalid JSON) both still bypass the schema
+entirely, so the retry-then-degrade path below is unchanged from the
+previous provider and just as necessary.
+
+No `temperature` is sent — the previous (Anthropic) integration hit exactly
+this wall (see FAILURES.md's 2026-08-31 entry: claude-sonnet-5 rejects
+sampling parameters outright) and this project's reproducibility story
+doesn't need one either: a `--cached` run always replays the exact bytes
+recorded here, regardless of what a live call would produce on any given
+day. `reasoning_effort="minimal"` is sent instead — gpt-5-nano is a
+reasoning-capable model, and this task (single-label classification over an
+already-computed delta) doesn't benefit from spending reasoning tokens,
+which are billed as output tokens.
 
 Malformed JSON is retried once with the validation error appended to the
 prompt; if it is still invalid, adjudication degrades to an
@@ -19,7 +64,7 @@ import hashlib
 import json
 from pathlib import Path
 
-import anthropic
+import openai
 from pydantic import ValidationError
 
 from unbatch.models import (
@@ -29,25 +74,22 @@ from unbatch.models import (
     ExpectedBatch,
 )
 
-MODEL = "claude-sonnet-5"
+MODEL = "gpt-5-nano"
 PROMPT_VERSION = "v1"
 DEFAULT_CACHE_DIR = Path("cache")
 MAX_TOKENS = 4096
+REASONING_EFFORT = "minimal"
+RESPONSE_SCHEMA_NAME = "adjudication_result"
 
-# claude-sonnet-5 rejects temperature/top_p/top_k outright (400) — sampling
-# controls were removed for this model family. Determinism instead comes
-# from the cache: a `--cached` run always replays the exact bytes recorded
-# here, regardless of what a live call would produce this time around.
-#
-# Anthropic bills this model in USD ($2.00 / $10.00 per 1M input/output
-# tokens); the audit log stores every money field in paise (CLAUDE.md
-# invariant 1), so a fixed USD->INR rate is needed just to report LLM spend
-# in the same unit as everything else. This is billing telemetry, not
-# reconciled settlement money — approximate on purpose, and never fed back
-# into any matching decision.
+# OpenAI bills gpt-5-nano in USD ($0.05 / $0.40 per 1M input/output tokens —
+# developers.openai.com/api/docs/pricing, 2026-08-31); the audit log stores
+# every money field in paise (CLAUDE.md invariant 1), so a fixed USD->INR
+# rate is needed just to report LLM spend in the same unit as everything
+# else. This is billing telemetry, not reconciled settlement money —
+# approximate on purpose, and never fed back into any matching decision.
 USD_TO_INR_RATE = 88
-INPUT_COST_USD_PER_MTOK = 2.00
-OUTPUT_COST_USD_PER_MTOK = 10.00
+INPUT_COST_USD_PER_MTOK = 0.05
+OUTPUT_COST_USD_PER_MTOK = 0.40
 
 SYSTEM_PROMPT = """You are the settlement-reconciliation adjudicator for a payment
 gateway's finance-controller pipeline.
@@ -158,31 +200,52 @@ Classify this break and propose a resolution."""
     return SYSTEM_PROMPT, user
 
 
-def _client() -> anthropic.Anthropic:
+def _client() -> openai.OpenAI:
     """A fresh client per call — this is a low-volume, per-credit boundary
     (METRICS.md targets under 20% of credits ever reaching L4), not a hot
     path worth pooling. Tests monkeypatch this function directly, so no
     real client is ever constructed under pytest."""
-    return anthropic.Anthropic()
+    return openai.OpenAI()
+
+
+def _response_schema() -> dict[str, object]:
+    """AdjudicationResult's own pydantic schema, patched with the one field
+    OpenAI's strict mode requires that pydantic doesn't set by default:
+    `additionalProperties: false`. Every field is already required (pydantic
+    has no optional/defaulted fields on this model), which is strict mode's
+    other requirement."""
+    schema = AdjudicationResult.model_json_schema()
+    schema["additionalProperties"] = False
+    return schema
 
 
 def _call_model(system: str, user: str) -> tuple[str | None, int, int]:
-    """One live call to the Messages API. Returns (response_text,
+    """One live call to Chat Completions. Returns (response_text,
     input_tokens, output_tokens) — response_text is None if the model
-    returned no text block at all (e.g. it hit max_tokens mid-thought),
-    which `_require_text` below treats as malformed. No
-    temperature/top_p/top_k — claude-sonnet-5 rejects sampling controls
-    outright; thinking is left unset, which runs adaptive by default on
-    this model, so `response.content` may contain a thinking block ahead
-    of the text block."""
-    response = _client().messages.create(
+    produced no content at all (a refusal, where `message.refusal` is set
+    instead, or truncation with an empty completion), which `_require_text`
+    below treats as malformed. No `temperature` (see module docstring);
+    `reasoning_effort="minimal"` keeps this narrow classification task from
+    spending reasoning tokens it doesn't need."""
+    response = _client().chat.completions.create(
         model=MODEL,
-        max_tokens=MAX_TOKENS,
-        system=system,
-        messages=[{"role": "user", "content": user}],
+        max_completion_tokens=MAX_TOKENS,
+        reasoning_effort=REASONING_EFFORT,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": RESPONSE_SCHEMA_NAME,
+                "schema": _response_schema(),
+                "strict": True,
+            },
+        },
     )
-    text = next((block.text for block in response.content if block.type == "text"), None)
-    return text, response.usage.input_tokens, response.usage.output_tokens
+    message = response.choices[0].message
+    return message.content, response.usage.prompt_tokens, response.usage.completion_tokens
 
 
 def _cache_key(system: str, user: str) -> str:
@@ -229,11 +292,12 @@ def _get_response(
 
 
 def _require_text(text: str | None) -> str:
-    """A response with no text block at all (e.g. truncated at max_tokens
-    before producing any) is malformed in exactly the same sense a bad JSON
-    body is — both go through the same retry-then-degrade path."""
+    """A response with no content at all — a refusal (`message.refusal` set
+    instead of `message.content`) or a completion truncated before producing
+    anything — is malformed in exactly the same sense a bad JSON body is;
+    both go through the same retry-then-degrade path."""
     if text is None:
-        raise _MalformedResponseError("model response had no text block")
+        raise _MalformedResponseError("model response had no content")
     return text
 
 

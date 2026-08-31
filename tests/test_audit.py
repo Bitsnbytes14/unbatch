@@ -63,7 +63,7 @@ def test_insert_and_query_round_trips_every_field(tmp_path: Path) -> None:
         delta_paise=-150,
         reason="fee_tier_change",
         rationale="fee rate looks like it changed mid-window",
-        llm_model="claude-sonnet-5",
+        llm_model="gpt-5-nano",
         llm_cost_paise=12,
     )
     audit.record(conn, decision)

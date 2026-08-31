@@ -23,7 +23,7 @@ Built for the Razorpay AI Buildathon, Track 04 (AI Finance Controller). Judged o
 - Python 3.11+, `uv` for deps and running
 - pandas, rapidfuzz, pydantic v2, typer, jinja2, pytest
 - SQLite (stdlib `sqlite3`) for the audit log
-- Anthropic SDK, `claude-sonnet-5`, temperature 0, JSON out validated by pydantic
+- OpenAI SDK, `gpt-5-nano`, strict `response_format` JSON schema, validated by pydantic (D0.5 — swapped from Anthropic/claude-sonnet-5 when only an OpenAI key was available; see adjudicator.py's module docstring)
 
 Not used, deliberately: Docker, Postgres, LangChain/LlamaIndex, embeddings/vector DB, FastAPI, Streamlit, any frontend framework. Do not add dependencies without asking.
 

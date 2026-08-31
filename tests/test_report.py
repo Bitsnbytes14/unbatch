@@ -323,7 +323,7 @@ def test_render_with_arm_b_populated_shows_delta_and_break_reason_accuracy(
             delta_paise=0,
             reason="ambiguous_composition",  # correct classification
             rationale="picked the closer batch",
-            llm_model="claude-sonnet-5",
+            llm_model="gpt-5-nano",
             llm_cost_paise=10,
             created_at=datetime(2024, 1, 1, tzinfo=UTC),
         ),
@@ -341,7 +341,7 @@ def test_render_with_arm_b_populated_shows_delta_and_break_reason_accuracy(
             delta_paise=0,
             reason="unrelated_credit",
             rationale="nothing to tie to",
-            llm_model="claude-sonnet-5",
+            llm_model="gpt-5-nano",
             llm_cost_paise=8,
             created_at=datetime(2024, 1, 1, tzinfo=UTC),
         ),

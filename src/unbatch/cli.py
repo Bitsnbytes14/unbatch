@@ -26,7 +26,7 @@ from pathlib import Path
 
 import typer
 
-from unbatch import audit
+from unbatch import adjudicator, audit
 from unbatch import generate as generate_module
 from unbatch import metrics as metrics_module
 from unbatch import report as report_module
@@ -255,7 +255,7 @@ def run(
     """
     if llm_only and not cached and not confirm_spend:
         typer.echo(
-            "--llm-only without --cached sends every credit to claude-sonnet-5 "
+            f"--llm-only without --cached sends every credit to {adjudicator.MODEL} "
             "live — that's ~105 calls, not the handful the cascade normally "
             "leaves for L4. Pass --confirm-spend to proceed, or add --cached "
             "to replay from the committed cache/ instead.",
