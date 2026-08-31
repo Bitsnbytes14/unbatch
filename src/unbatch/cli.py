@@ -21,16 +21,18 @@ from __future__ import annotations
 
 import csv
 import json
+import random
 import sqlite3
 import statistics
 import tempfile
+import time
 from collections import defaultdict
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import typer
 
-from unbatch import adjudicator, audit, money
+from unbatch import adjudicator, audit, fees, money
 from unbatch import generate as generate_module
 from unbatch import metrics as metrics_module
 from unbatch import report as report_module
@@ -40,6 +42,7 @@ from unbatch.models import (
     DecisionOutcome,
     ExpectedBatch,
     OrderLedgerRecord,
+    PaymentMethod,
     RunContext,
     SettlementLine,
     SettlementLineType,
@@ -475,27 +478,152 @@ def _score_rules_only_for_seed(
         conn.close()
 
 
-@app.command()
-def bench(
-    seeds: str | None = None,
-    out: Path = Path("bench_multiseed.json"),
-) -> None:
-    """Measure metric stability across independent seeds.
+_SCALE_WINDOW_DAYS = 30
+_SCALE_SPLIT_FRACTION = 0.05
+_SCALE_CLEAN_LINE_RANGE = (2, 4)
+_SCALE_SPLIT_LINE_RANGE = (4, 8)
+_SCALE_LINE_GROSS_RANGE = (5_000, 50_000)
 
-    `--seeds 42,43,44,45,46,47` (comma-separated) generates each seed's own
-    fixtures into a fresh temp directory, runs the rules-only (--no-llm) arm
-    against them, and reports per-metric mean/min/max/stdev across seeds —
-    written to `--out` (default bench_multiseed.json) as well as printed.
-    `data/` and the committed seed-42 fixtures are never touched; every temp
-    directory is cleaned up before this command returns.
 
-    Rules-only ONLY. The with-LLM arm would need a live API call per credit
-    for every seed but 42, and the committed cache/ only covers seed 42 — so
-    this deliberately cannot and does not touch L4.
-    """
-    if not seeds:
-        typer.echo("Pass --seeds, e.g. --seeds 42,43,44,45,46,47", err=True)
-        raise typer.Exit(code=1)
+def _build_settlement_line(
+    index: int,
+    line_index: int,
+    utr: str,
+    method: PaymentMethod,
+    settled_at: datetime,
+    rng: random.Random,
+) -> SettlementLine:
+    gross = rng.randint(*_SCALE_LINE_GROSS_RANGE)
+    fee = fees.compute_fee_paise(gross, method)
+    tax = fees.compute_tax_paise(fee)
+    return SettlementLine(
+        settlement_id=f"scale_setl_{index}_{line_index}",
+        settlement_utr=utr,
+        payment_id=f"scale_pay_{index}_{line_index}",
+        type=SettlementLineType.PAYMENT,
+        gross_paise=gross,
+        fee_paise=fee,
+        tax_paise=tax,
+        net_paise=fees.compute_net_paise(gross, fee, tax),
+        settled_at=settled_at,
+    )
+
+
+def _synthetic_scale_batch(
+    rng: random.Random, index: int, epoch: date
+) -> tuple[list[SettlementLine], list[BankStatementRecord]]:
+    """One throughput-only batch: either a whole-UTR credit that resolves at
+    L0 (narration carries the UTR), or — for `_SCALE_SPLIT_FRACTION` of
+    batches — one UTR's lines split into two credits, neither of which ties
+    to the whole batch net, so both fall through L0/L1 into L2's composition
+    search (the same shape as generate.py's own `settlement_split`, built
+    independently here since it needs to scale to thousands of batches over
+    a *fixed* calendar window — generate.py's fixture generator is tuned for
+    a specific 105-batch dataset with specific injected break types and
+    isn't meant to be scaled up; see FAILURES.md's batch-rebalancing
+    entries). Every subset composes exactly by construction, so at any scale
+    the only thing under test is wall-clock, never match correctness — this
+    never touches ground truth or scoring."""
+    method = rng.choice(list(PaymentMethod))
+    settled_at = datetime.combine(
+        epoch + timedelta(days=rng.randrange(_SCALE_WINDOW_DAYS)), datetime.min.time()
+    )
+    utr = f"SCALEUTR{index:06d}"
+    value_date = settled_at.date()
+
+    if rng.random() < _SCALE_SPLIT_FRACTION:
+        n_lines = rng.randint(*_SCALE_SPLIT_LINE_RANGE)
+        lines = [
+            _build_settlement_line(index, i, utr, method, settled_at, rng) for i in range(n_lines)
+        ]
+        split_at = rng.randint(1, n_lines - 1)
+        groups = [lines[:split_at], lines[split_at:]]
+        bank_records = [
+            BankStatementRecord(
+                txn_id=f"scale_txn_{index}_{group_index}",
+                value_date=value_date,
+                narration="NEFT-MISC SETTLEMENT CREDIT",
+                credit_paise=sum(line.net_paise for line in group),
+                debit_paise=None,
+                balance_paise=sum(line.net_paise for line in group),
+            )
+            for group_index, group in enumerate(groups)
+        ]
+        return lines, bank_records
+
+    n_lines = rng.randint(*_SCALE_CLEAN_LINE_RANGE)
+    lines = [
+        _build_settlement_line(index, i, utr, method, settled_at, rng) for i in range(n_lines)
+    ]
+    net_total = sum(line.net_paise for line in lines)
+    bank_record = BankStatementRecord(
+        txn_id=f"scale_txn_{index}",
+        value_date=value_date,
+        narration=f"NEFT-{utr}-RAZORPAY SOFTWARE PVT",
+        credit_paise=net_total,
+        debit_paise=None,
+        balance_paise=net_total,
+    )
+    return lines, [bank_record]
+
+
+def _generate_scale_data(
+    seed: int, target_credits: int
+) -> tuple[list[SettlementLine], list[BankStatementRecord]]:
+    """Enough clean-plus-split batches to reach ~target_credits bank
+    credits, all dated within a fixed `_SCALE_WINDOW_DAYS`-day window —
+    fixed, not scaled with target_credits, so batch density (and therefore
+    L2's date-windowed candidate pool size) genuinely grows with scale
+    rather than staying artificially constant."""
+    rng = random.Random(seed)
+    epoch = date(2024, 1, 1)
+    settlements: list[SettlementLine] = []
+    bank_records: list[BankStatementRecord] = []
+    index = 0
+    while len(bank_records) < target_credits:
+        lines, records = _synthetic_scale_batch(rng, index, epoch)
+        settlements.extend(lines)
+        bank_records.extend(records)
+        index += 1
+    return settlements, bank_records
+
+
+def _run_rules_only_cascade_timed(
+    ctx: RunContext,
+    unresolved: list[UnresolvedCredit],
+    conn: sqlite3.Connection,
+    settlements: list[SettlementLine],
+) -> tuple[dict[str, int], dict[str, float]]:
+    """The same stage sequence, candidate-line rebuild, and audit-recording
+    behaviour as `run_cascade`, timed per stage — a separate function rather
+    than adding timing to `run_cascade` itself, since that one is shared by
+    every other command and this is purely a benchmarking concern."""
+    counts: dict[str, int] = {}
+    timings: dict[str, float] = {}
+    remaining = unresolved
+    consumed_payment_ids: set[str] = set()
+
+    for stage, stage_fn in STAGE_SEQUENCE:
+        start = time.perf_counter()
+        if stage in _CANDIDATE_LINE_STAGES:
+            available = [
+                line for line in settlements if line.payment_id not in consumed_payment_ids
+            ]
+            remaining = [u.model_copy(update={"candidate_lines": available}) for u in remaining]
+
+        decisions = stage_fn(remaining, ctx)
+        resolved_ids = {decision.credit_id for decision in decisions}
+        for decision in decisions:
+            audit.record(conn, decision)
+            consumed_payment_ids.update(decision.matched_payment_ids)
+        counts[stage.value] = len(decisions)
+        remaining = [u for u in remaining if u.credit.txn_id not in resolved_ids]
+        timings[stage.value] = time.perf_counter() - start
+
+    return counts, timings
+
+
+def _bench_seeds(seeds: str, out: Path) -> None:
     seed_list = [int(s.strip()) for s in seeds.split(",") if s.strip()]
 
     per_seed: dict[str, dict] = {}
@@ -528,6 +656,101 @@ def bench(
             f"\tmax={stats['max']:.4f}\tstdev={stats['stdev']:.4f}"
         )
     typer.echo(f"wrote {out}")
+
+
+def _bench_scale(scale: int, out: Path) -> None:
+    with tempfile.TemporaryDirectory(prefix="unbatch-bench-scale-") as tmp:
+        tmp_root = Path(tmp)
+        settlements, bank_records = _generate_scale_data(seed=42, target_credits=scale)
+        generate_module.write_settlement_report_csv(
+            settlements, tmp_root / "settlement_report.csv"
+        )
+        generate_module.write_bank_statement_csv(bank_records, tmp_root / "bank_statement.csv")
+
+        settlements = generate_module.read_settlement_report_csv(
+            tmp_root / "settlement_report.csv"
+        )
+        bank_records = generate_module.read_bank_statement_csv(tmp_root / "bank_statement.csv")
+        expected_batches = compute_expected_batches(settlements)
+        unresolved = build_unresolved_credits(bank_records, expected_batches)
+
+        ctx = RunContext(run_id=f"bench_scale_{scale}", seed=42, no_llm=True)
+        conn = audit.connect(tmp_root / "audit.db")
+        try:
+            audit.clear_run(conn, ctx.run_id)
+            start = time.perf_counter()
+            counts, timings = _run_rules_only_cascade_timed(ctx, unresolved, conn, settlements)
+            total_seconds = time.perf_counter() - start
+            exceptions = audit.fetch_exceptions(conn, ctx.run_id)
+        finally:
+            conn.close()
+
+    exception_reason_counts: dict[str, int] = {}
+    for decision in exceptions:
+        exception_reason_counts[decision.reason] = (
+            exception_reason_counts.get(decision.reason, 0) + 1
+        )
+
+    payload = {
+        "target_credits": scale,
+        "actual_credits": len(unresolved),
+        "total_seconds": total_seconds,
+        "stage_seconds": timings,
+        "stage_resolved_counts": counts,
+        "exception_count": len(exceptions),
+        "exception_reason_counts": exception_reason_counts,
+        "max_pool": ctx.max_pool,
+        "max_subset": ctx.max_subset,
+    }
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="")
+
+    typer.echo(f"credits: {len(unresolved)} (target {scale})")
+    typer.echo(f"total: {total_seconds:.3f}s")
+    for stage_name, seconds in timings.items():
+        typer.echo(f"{stage_name}\t{seconds:.3f}s\tresolved={counts.get(stage_name, 0)}")
+    typer.echo(f"exceptions: {len(exceptions)} {exception_reason_counts}")
+    typer.echo(f"wrote {out}")
+
+
+@app.command()
+def bench(
+    seeds: str | None = None,
+    scale: int | None = None,
+    out: Path = Path("bench_multiseed.json"),
+    scale_out: Path = Path("bench_scale.json"),
+) -> None:
+    """Measure metric stability across seeds, or cascade throughput at scale.
+
+    `--seeds 42,43,44,45,46,47` (comma-separated) generates each seed's own
+    fixtures into a fresh temp directory, runs the rules-only (--no-llm) arm
+    against them, and reports per-metric mean/min/max/stdev across seeds —
+    written to `--out` (default bench_multiseed.json) as well as printed.
+    `data/` and the committed seed-42 fixtures are never touched; every temp
+    directory is cleaned up before this command returns. Rules-only ONLY:
+    the with-LLM arm would need a live API call per credit for every seed
+    but 42, and the committed cache/ only covers seed 42 — so this
+    deliberately cannot and does not touch L4.
+
+    `--scale 5000` generates ~5000 throughput-only bank credits (NOT
+    generate.py's seeded fixtures — a separate, purpose-built dataset over a
+    fixed calendar window so batch density actually grows with scale) into a
+    temp directory, runs the rules-only cascade once, and reports wall-clock
+    total and per-stage timing — written to `--scale-out` (default
+    bench_scale.json). Caps (MAX_POOL/MAX_SUBSET) are never raised to hit a
+    target number; if they start firing at this scale, the output says so.
+
+    Exactly one of --seeds/--scale must be given.
+    """
+    if bool(seeds) == bool(scale):
+        typer.echo(
+            "Pass exactly one of --seeds (e.g. 42,43,44) or --scale (e.g. 5000)", err=True
+        )
+        raise typer.Exit(code=1)
+    if seeds:
+        _bench_seeds(seeds, out)
+    else:
+        assert scale is not None
+        _bench_scale(scale, scale_out)
 
 
 if __name__ == "__main__":
