@@ -275,16 +275,20 @@ def adjudicate(
     *,
     cached: bool = False,
     cache_dir: Path = DEFAULT_CACHE_DIR,
-) -> tuple[AdjudicationResult, int]:
+) -> tuple[AdjudicationResult, int, bool]:
     """Classify one unresolved break and propose a resolution. Returns
-    (result, llm_cost_paise) — the caller (l4_llm) logs both onto the
-    Decision it writes.
+    (result, llm_cost_paise, retried) — the caller (l4_llm) logs all three
+    onto the Decision it writes. `retried` is True whenever the first
+    response was malformed and a second call was needed to recover, even if
+    that second call succeeded — this is METRICS.md's `retry_count` signal.
 
     Checks the cache first; if `cached` is True and no entry exists, raises
     CacheMissError rather than calling the API. On a live call, validates
     the response against AdjudicationResult; a malformed response is retried
     once with the validation error appended to the prompt, and a second
-    failure raises AdjudicationFailedError rather than crashing the cascade.
+    failure raises AdjudicationFailedError rather than crashing the cascade
+    (a caller catching that should treat it as retried=True too — degrading
+    only ever happens after exactly one retry, by construction).
     """
     system, user = build_prompt(credit, expected_batch, delta_paise, candidates)
     text, input_tokens, output_tokens = _get_response(
@@ -293,7 +297,7 @@ def adjudicate(
     cost_paise = _cost_paise(input_tokens, output_tokens)
 
     try:
-        return _parse_response(_require_text(text)), cost_paise
+        return _parse_response(_require_text(text)), cost_paise, False
     except _MalformedResponseError as first_error:
         retry_user = _append_validation_error(user, str(first_error))
         retry_text, retry_input, retry_output = _get_response(
@@ -301,6 +305,6 @@ def adjudicate(
         )
         cost_paise += _cost_paise(retry_input, retry_output)
         try:
-            return _parse_response(_require_text(retry_text)), cost_paise
+            return _parse_response(_require_text(retry_text)), cost_paise, True
         except _MalformedResponseError as second_error:
             raise AdjudicationFailedError(str(second_error)) from second_error

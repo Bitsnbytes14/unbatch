@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS decisions (
     rationale TEXT,
     llm_model TEXT,
     llm_cost_paise INTEGER,
+    llm_retried INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
 )
 """
@@ -50,8 +51,8 @@ _INSERT_SQL = """
 INSERT INTO decisions (
     run_id, seed, stage, credit_id, matched_payment_ids, outcome,
     confidence, delta_paise, reason, rationale, llm_model, llm_cost_paise,
-    created_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    llm_retried, created_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """
 
 
@@ -97,6 +98,7 @@ def record(conn: sqlite3.Connection, decision: Decision) -> None:
             decision.rationale,
             decision.llm_model,
             decision.llm_cost_paise,
+            int(decision.llm_retried),
             decision.created_at.isoformat(),
         ),
     )
@@ -117,6 +119,7 @@ def _row_to_decision(row: sqlite3.Row) -> Decision:
         rationale=row["rationale"],
         llm_model=row["llm_model"],
         llm_cost_paise=row["llm_cost_paise"],
+        llm_retried=bool(row["llm_retried"]),
         created_at=datetime.fromisoformat(row["created_at"]),
     )
 

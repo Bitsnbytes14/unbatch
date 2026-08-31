@@ -33,6 +33,23 @@ single per-stage wall-clock measurement would be fabricating precision the
 data doesn't have. Per METRICS.md's own rule ("if a number in the README
 does not have a line in metrics.py producing it, delete the number"), it is
 left out entirely rather than reported as a fake zero.
+
+**Break-reason classification accuracy** (D0a/D0b — see METRICS.md's own
+section on this): count and value-weighted match rate score WHETHER a
+credit resolved and to what payment_ids, never WHY. Every credit that
+reaches L4 already ties to *some* expected batch by construction (L4 always
+picks the closest one, per l4_llm.py) — the model's real job there is
+naming the right `break_reason`, which the match-rate numbers above cannot
+see at all, since they only look at `matched_payment_ids`. This is scored
+separately: `decision.reason` (the model's `BreakReason`) against the
+matching `GroundTruthCredit.break_type` for every credit whose Decision
+carries an `llm_model` (i.e. actually reached the adjudicator) and did not
+degrade to `adjudication_failed` — that outcome means no classification was
+produced at all, so it is excluded from the accuracy denominator and left
+visible only in `adjudication_failed_count`. `BreakReason` and `BreakType`
+intentionally share their string values for the categories that can reach
+L4 (see models.py), so `decision.reason == ground_truth.break_type.value`
+is a direct, correct comparison — not a mapping to maintain.
 """
 
 from __future__ import annotations
@@ -73,6 +90,9 @@ class MetricsReport(BaseModel):
     malformed_json_count: int
     retry_count: int
     adjudication_failed_count: int
+
+    break_reason_accuracy: float
+    break_reason_confusion: dict[str, dict[str, int]]
 
 
 def _load_ground_truth(path: Path) -> GroundTruth:
@@ -152,9 +172,34 @@ def score(
     llm_call_count = len(llm_decisions)
     llm_call_rate = llm_call_count / total_credits if total_credits else 0.0
     llm_cost_paise = sum(d.llm_cost_paise or 0 for d in llm_decisions)
-    malformed_json_count = sum(1 for d in decisions if d.reason == "malformed_json")
-    retry_count = sum(1 for d in decisions if d.reason == "adjudication_retry")
-    adjudication_failed_count = sum(1 for d in decisions if d.reason == "adjudication_failed")
+    adjudication_failed_count = sum(1 for d in llm_decisions if d.reason == "adjudication_failed")
+    retry_count = sum(1 for d in llm_decisions if d.llm_retried)
+    # Every retried credit means one malformed first response; a credit that
+    # retried AND still failed means both attempts were malformed.
+    malformed_json_count = retry_count + sum(
+        1 for d in llm_decisions if d.llm_retried and d.reason == "adjudication_failed"
+    )
+
+    gt_by_txn = {credit.txn_id: credit for credit in ground_truth.credits}
+    break_reason_confusion: dict[str, dict[str, int]] = {}
+    break_reason_correct = 0
+    break_reason_total = 0
+    for decision in llm_decisions:
+        if decision.reason == "adjudication_failed":
+            continue  # no classification was produced at all
+        gt_credit = gt_by_txn.get(decision.credit_id)
+        if gt_credit is None:
+            continue
+        actual = gt_credit.break_type.value
+        predicted = decision.reason
+        by_actual = break_reason_confusion.setdefault(actual, {})
+        by_actual[predicted] = by_actual.get(predicted, 0) + 1
+        break_reason_total += 1
+        if predicted == actual:
+            break_reason_correct += 1
+    break_reason_accuracy = (
+        break_reason_correct / break_reason_total if break_reason_total else 0.0
+    )
 
     return MetricsReport(
         run_id=run_id,
@@ -173,4 +218,6 @@ def score(
         malformed_json_count=malformed_json_count,
         retry_count=retry_count,
         adjudication_failed_count=adjudication_failed_count,
+        break_reason_accuracy=break_reason_accuracy,
+        break_reason_confusion=break_reason_confusion,
     )

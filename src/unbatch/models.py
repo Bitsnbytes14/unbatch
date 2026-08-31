@@ -218,6 +218,7 @@ class Decision(BaseModel):
     rationale: str | None
     llm_model: str | None
     llm_cost_paise: Paise | None
+    llm_retried: bool = False
     created_at: datetime
 
 

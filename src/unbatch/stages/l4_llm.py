@@ -106,6 +106,7 @@ def _decision(
     matched_payment_ids: list[str],
     rationale: str | None,
     llm_cost_paise: int,
+    llm_retried: bool,
 ) -> Decision:
     return Decision(
         run_id=ctx.run_id,
@@ -120,6 +121,7 @@ def _decision(
         rationale=rationale,
         llm_model=adjudicator.MODEL,
         llm_cost_paise=llm_cost_paise,
+        llm_retried=llm_retried,
         created_at=now,
     )
 
@@ -137,7 +139,7 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
         primary_batch, delta_paise, candidates = _pick_batch_and_candidates(unresolved_credit)
 
         try:
-            result, cost_paise = adjudicator.adjudicate(
+            result, cost_paise, retried = adjudicator.adjudicate(
                 credit, primary_batch, delta_paise, candidates, cached=ctx.cached
             )
         except adjudicator.AdjudicationFailedError:
@@ -153,6 +155,10 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
                     matched_payment_ids=[],
                     rationale=None,
                     llm_cost_paise=0,
+                    # degrading to adjudication_failed only ever happens
+                    # after exactly one retry, by construction (see
+                    # adjudicator.adjudicate's docstring)
+                    llm_retried=True,
                 )
             )
             continue
@@ -173,6 +179,7 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
                 matched_payment_ids=matched_payment_ids,
                 rationale=result.proposed_resolution,
                 llm_cost_paise=cost_paise,
+                llm_retried=retried,
             )
         )
 

@@ -122,11 +122,14 @@ def test_adjudicate_parses_a_valid_response(monkeypatch, tmp_path: Path) -> None
         monkeypatch, [_text_response(_VALID_JSON, input_tokens=200, output_tokens=80)]
     )
 
-    result, cost_paise = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+    result, cost_paise, retried = adjudicator.adjudicate(
+        _CREDIT, _BATCH, -775, [], cache_dir=tmp_path
+    )
 
     assert result.break_reason == BreakReason.FEE_TIER_CHANGE
     assert result.confidence == 0.9
     assert cost_paise > 0
+    assert retried is False
 
 
 def test_adjudicate_writes_one_cache_entry_per_prompt(monkeypatch, tmp_path: Path) -> None:
@@ -141,15 +144,18 @@ def test_adjudicate_writes_one_cache_entry_per_prompt(monkeypatch, tmp_path: Pat
 
 def test_cached_replay_makes_no_api_call(monkeypatch, tmp_path: Path) -> None:
     _install_fake_client(monkeypatch, [_text_response(_VALID_JSON)])
-    first_result, first_cost = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+    first_result, first_cost, first_retried = adjudicator.adjudicate(
+        _CREDIT, _BATCH, -775, [], cache_dir=tmp_path
+    )
 
     _no_client_allowed(monkeypatch)
-    second_result, second_cost = adjudicator.adjudicate(
+    second_result, second_cost, second_retried = adjudicator.adjudicate(
         _CREDIT, _BATCH, -775, [], cached=True, cache_dir=tmp_path
     )
 
     assert second_result == first_result
     assert second_cost == first_cost
+    assert second_retried == first_retried
 
 
 def test_cached_true_raises_on_cache_miss(monkeypatch, tmp_path: Path) -> None:
@@ -185,9 +191,10 @@ def test_malformed_then_valid_retries_once_and_succeeds(monkeypatch, tmp_path: P
         monkeypatch, [_text_response(_MALFORMED_JSON), _text_response(_VALID_JSON)]
     )
 
-    result, _cost = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+    result, _cost, retried = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
 
     assert result.break_reason == BreakReason.FEE_TIER_CHANGE
+    assert retried is True
     assert len(fake.messages.calls) == 2
     retry_prompt = fake.messages.calls[1]["messages"][0]["content"]
     assert "could not be read as valid JSON" in retry_prompt
@@ -198,9 +205,10 @@ def test_invalid_shape_then_valid_retries_once_and_succeeds(monkeypatch, tmp_pat
         monkeypatch, [_text_response(_INVALID_SHAPE_JSON), _text_response(_VALID_JSON)]
     )
 
-    result, _cost = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+    result, _cost, retried = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
 
     assert result.break_reason == BreakReason.FEE_TIER_CHANGE
+    assert retried is True
     assert len(fake.messages.calls) == 2
 
 
@@ -233,6 +241,7 @@ def test_a_response_with_no_text_block_is_treated_as_malformed(monkeypatch, tmp_
     no_text_response = _FakeResponse(content=[], usage=_FakeUsage(10, 0), stop_reason="max_tokens")
     _install_fake_client(monkeypatch, [no_text_response, _text_response(_VALID_JSON)])
 
-    result, _cost = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+    result, _cost, retried = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
 
     assert result.break_reason == BreakReason.FEE_TIER_CHANGE
+    assert retried is True

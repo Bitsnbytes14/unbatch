@@ -239,6 +239,161 @@ def test_llm_fields_are_zero_when_no_decision_used_an_llm(scenario) -> None:
     assert report.adjudication_failed_count == 0
 
 
+def _write_llm_ground_truth(path: Path) -> None:
+    data = {
+        "credits": [
+            {
+                "txn_id": "txn_a",
+                "settlement_ids": ["setl_a"],
+                "payment_ids": ["pay_a"],
+                "break_type": "fee_tier_change",
+                "resolvable": True,
+            },
+            {
+                "txn_id": "txn_b",
+                "settlement_ids": ["setl_b"],
+                "payment_ids": ["pay_b"],
+                "break_type": "duplicate_utr",
+                "resolvable": True,
+            },
+            {
+                "txn_id": "txn_c",
+                "settlement_ids": ["setl_c"],
+                "payment_ids": ["pay_c"],
+                "break_type": "ambiguous_composition",
+                "resolvable": True,
+            },
+            {
+                "txn_id": "txn_d",
+                "settlement_ids": ["setl_d"],
+                "payment_ids": ["pay_d"],
+                "break_type": "tolerance_ambiguous",
+                "resolvable": True,
+            },
+        ],
+        "orphan_settlements": [],
+    }
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+
+def _write_llm_bank_statement(path: Path) -> None:
+    rows = [("txn_a", "1000.00"), ("txn_b", "2000.00"), ("txn_c", "3000.00"), ("txn_d", "4000.00")]
+    lines = ["txn_id,value_date,narration,credit,debit,balance"]
+    balance = 0
+    for txn_id, amount in rows:
+        balance += int(float(amount) * 100)
+        lines.append(f"{txn_id},2024-01-05,test,{amount},,{balance / 100:.2f}")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="")
+
+
+@pytest.fixture
+def llm_scenario(tmp_path: Path):
+    """Four credits that all reached L4: two correct classifications, one
+    wrong classification, and one adjudication_failed (degraded after a
+    retry, per adjudicator.adjudicate's contract) — enough to exercise
+    break_reason_accuracy/confusion and the retry/malformed derivation."""
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _write_llm_ground_truth(data_dir / "ground_truth.json")
+    _write_llm_bank_statement(data_dir / "bank_statement.csv")
+
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(
+        conn,
+        _decision(
+            "txn_a",
+            stage=Stage.L4,
+            matched_payment_ids=["pay_a"],
+            reason="fee_tier_change",  # correct
+            llm_model="claude-sonnet-5",
+            llm_cost_paise=10,
+            llm_retried=False,
+        ),
+    )
+    audit.record(
+        conn,
+        _decision(
+            "txn_b",
+            stage=Stage.L4,
+            matched_payment_ids=["pay_b"],
+            reason="other",  # wrong — ground truth is duplicate_utr
+            llm_model="claude-sonnet-5",
+            llm_cost_paise=15,
+            llm_retried=True,
+        ),
+    )
+    audit.record(
+        conn,
+        _decision(
+            "txn_c",
+            stage=Stage.L4,
+            matched_payment_ids=["pay_c"],
+            reason="ambiguous_composition",  # correct
+            llm_model="claude-sonnet-5",
+            llm_cost_paise=12,
+            llm_retried=False,
+        ),
+    )
+    audit.record(
+        conn,
+        _decision(
+            "txn_d",
+            stage=Stage.L4,
+            outcome=DecisionOutcome.EXCEPTION,
+            matched_payment_ids=[],
+            reason="adjudication_failed",
+            llm_model="claude-sonnet-5",
+            llm_cost_paise=0,
+            llm_retried=True,
+        ),
+    )
+    return conn, data_dir
+
+
+def test_break_reason_accuracy_excludes_adjudication_failed(llm_scenario) -> None:
+    conn, data_dir = llm_scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    # txn_a and txn_c correct, txn_b wrong, txn_d excluded -> 2/3
+    assert report.break_reason_accuracy == pytest.approx(2 / 3)
+
+
+def test_break_reason_confusion_is_keyed_by_ground_truth_then_predicted(llm_scenario) -> None:
+    conn, data_dir = llm_scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    assert report.break_reason_confusion == {
+        "fee_tier_change": {"fee_tier_change": 1},
+        "duplicate_utr": {"other": 1},
+        "ambiguous_composition": {"ambiguous_composition": 1},
+    }
+
+
+def test_retry_count_comes_from_llm_retried_flag(llm_scenario) -> None:
+    conn, data_dir = llm_scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    assert report.retry_count == 2  # txn_b and txn_d both retried
+
+
+def test_malformed_json_count_counts_both_attempts_on_a_double_failure(llm_scenario) -> None:
+    conn, data_dir = llm_scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    # txn_b: one malformed response (retried, then succeeded)
+    # txn_d: two malformed responses (retried, then still failed)
+    assert report.malformed_json_count == 3
+
+
+def test_adjudication_failed_count_from_llm_scenario(llm_scenario) -> None:
+    conn, data_dir = llm_scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    assert report.adjudication_failed_count == 1
+
+
+def test_break_reason_accuracy_is_zero_with_no_llm_decisions(scenario) -> None:
+    conn, data_dir = scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    assert report.break_reason_accuracy == 0.0
+    assert report.break_reason_confusion == {}
+
+
 def test_a_missing_decision_counts_as_exception_not_a_crash(tmp_path: Path) -> None:
     """Every credit should have exactly one decision after a full run, but
     scoring a partial/interrupted run must not crash — treat a credit with

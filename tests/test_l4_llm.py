@@ -54,7 +54,7 @@ def _ctx(*, cached: bool = False) -> RunContext:
     return RunContext(run_id=RUN_ID, seed=SEED, cached=cached)
 
 
-def _stub_adjudicate(monkeypatch, result_and_cost=None, error=None):
+def _stub_adjudicate(monkeypatch, result_and_cost=None, error=None, retried=False):
     calls = []
 
     def _fake(credit, expected_batch, delta_paise, candidates, *, cached, cache_dir=None):
@@ -69,7 +69,8 @@ def _stub_adjudicate(monkeypatch, result_and_cost=None, error=None):
         )
         if error is not None:
             raise error
-        return result_and_cost
+        result, cost = result_and_cost
+        return result, cost, retried
 
     monkeypatch.setattr(l4_llm.adjudicator, "adjudicate", _fake)
     return calls
@@ -263,6 +264,56 @@ def test_adjudication_failed_becomes_an_exception_decision(monkeypatch) -> None:
     assert decisions[0].outcome == DecisionOutcome.EXCEPTION
     assert decisions[0].reason == "adjudication_failed"
     assert decisions[0].matched_payment_ids == []
+    # degrading to adjudication_failed only ever happens after one retry
+    assert decisions[0].llm_retried is True
+
+
+def test_llm_retried_is_false_when_adjudicate_did_not_need_a_retry(monkeypatch) -> None:
+    credit = _credit()
+    batch = _batch()
+    unresolved = UnresolvedCredit(credit=credit, expected_batches=[batch], candidates=[])
+    _stub_adjudicate(
+        monkeypatch,
+        result_and_cost=(
+            AdjudicationResult(
+                break_reason=BreakReason.OTHER,
+                proposed_resolution="x",
+                confidence=0.9,
+                evidence_refs=[],
+                human_review_required=False,
+            ),
+            5,
+        ),
+        retried=False,
+    )
+
+    decisions = l4_llm.run([unresolved], _ctx())
+
+    assert decisions[0].llm_retried is False
+
+
+def test_llm_retried_is_true_when_adjudicate_succeeded_after_a_retry(monkeypatch) -> None:
+    credit = _credit()
+    batch = _batch()
+    unresolved = UnresolvedCredit(credit=credit, expected_batches=[batch], candidates=[])
+    _stub_adjudicate(
+        monkeypatch,
+        result_and_cost=(
+            AdjudicationResult(
+                break_reason=BreakReason.OTHER,
+                proposed_resolution="x",
+                confidence=0.9,
+                evidence_refs=[],
+                human_review_required=False,
+            ),
+            5,
+        ),
+        retried=True,
+    )
+
+    decisions = l4_llm.run([unresolved], _ctx())
+
+    assert decisions[0].llm_retried is True
 
 
 def test_every_credit_gets_exactly_one_decision(monkeypatch) -> None:

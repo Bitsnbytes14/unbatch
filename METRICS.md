@@ -17,7 +17,20 @@ Let `C` = bank credit lines requiring reconciliation.
 | **stage funnel** | resolved count per stage L0–L4 | shows the cascade earning its structure |
 | **LLM call count** | calls / total credits | proves the model sees only the residue, not the batch |
 | **LLM cost** | paise, from the audit log | honesty about unit economics |
+| **break-reason accuracy** | correct `break_reason` / classified credits | see below — this is the model's real metric |
 | **p50 / p95 latency** | per credit, per stage | |
+
+## Break-reason accuracy — the model's real metric
+
+Count and value-weighted match rate score **whether** a credit resolved and to what `payment_ids` — never **why**. By the time a credit reaches L4, `l4_llm.py` has already picked *some* expected batch to compare it against (the closest one, always — see ARCHITECTURE.md § L4), so match rate cannot see the adjudicator's actual job at all. That job is naming the right `break_reason`, and it is scored separately:
+
+`decision.reason` (the model's `BreakReason`) against `GroundTruthCredit.break_type`, for every credit whose Decision carries an `llm_model` (it actually reached the adjudicator) and did not degrade to `adjudication_failed` (no classification was produced at all in that case — excluded from the denominator, counted only in `adjudication_failed_count`). `BreakReason` and `BreakType` deliberately share string values for every category that can reach L4, so this is a direct comparison, not a mapping to maintain.
+
+Reported as:
+- **break-reason accuracy**: correct / classified (a single number)
+- **break-reason confusion**: `{ground_truth_break_type: {predicted_break_reason: count}}` — the full confusion table, not just the diagonal
+
+This is the number the ablation's B−A delta (below) cannot capture on its own: a small match-rate delta can still hide a real, useful capability if the model is naming the right reason for the credits it does touch. Report both — a high break-reason accuracy alongside a small match-rate delta is a legitimate, specific claim ("the model correctly explains breaks even where it doesn't change the resolution"), not a consolation prize.
 
 `unrelated_credit` and `orphan_settlement` are **correctly unresolved**. Counting them against recall would punish correct behaviour, so they are excluded from the recall denominator and reported separately as `correctly_rejected`.
 
