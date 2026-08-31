@@ -119,3 +119,31 @@ def test_reopen_after_close_preserves_rows(tmp_path: Path) -> None:
     reopened = audit.connect(db_path)
     decisions = audit.fetch_decisions(reopened, "run_42_abc123")
     assert {d.credit_id for d in decisions} == {"txn_1", "txn_2"}
+
+
+def test_clear_run_removes_only_that_runs_rows(tmp_path: Path) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(conn, _decision(run_id="run_a", credit_id="txn_a"))
+    audit.record(conn, _decision(run_id="run_b", credit_id="txn_b"))
+
+    audit.clear_run(conn, "run_a")
+
+    assert audit.fetch_decisions(conn, "run_a") == []
+    assert [d.credit_id for d in audit.fetch_decisions(conn, "run_b")] == ["txn_b"]
+
+
+def test_rerunning_the_same_run_id_does_not_duplicate_rows(tmp_path: Path) -> None:
+    """Regression: re-running the same seed against the same data derives
+    the same run_id (audit.derive_run_id), so without clearing first, a
+    second run would insert a second full set of Decisions alongside the
+    first — silently doubling every count metrics.py or `unbatch
+    exceptions` would later report."""
+    conn = audit.connect(tmp_path / "audit.db")
+    run_id = "run_42_abc123"
+
+    for _ in range(2):
+        audit.clear_run(conn, run_id)
+        audit.record(conn, _decision(run_id=run_id, credit_id="txn_1"))
+        audit.record(conn, _decision(run_id=run_id, credit_id="txn_2"))
+
+    assert len(audit.fetch_decisions(conn, run_id)) == 2

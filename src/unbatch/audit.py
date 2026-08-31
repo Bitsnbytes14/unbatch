@@ -68,6 +68,18 @@ def connect(db_path: Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
     return conn
 
 
+def clear_run(conn: sqlite3.Connection, run_id: str) -> None:
+    """Delete every Decision previously recorded for `run_id`. `run_id` is
+    derived deterministically from seed + input hash (see `derive_run_id`),
+    so re-running the same seed against the same data always produces the
+    same run_id — without this, a second run would insert a second full set
+    of Decisions alongside the first rather than replacing them, silently
+    doubling every count anything downstream (metrics.py, `unbatch
+    exceptions`) queries. Call before a cascade run starts writing."""
+    conn.execute("DELETE FROM decisions WHERE run_id = ?", (run_id,))
+    conn.commit()
+
+
 def record(conn: sqlite3.Connection, decision: Decision) -> None:
     """Write one Decision row."""
     conn.execute(

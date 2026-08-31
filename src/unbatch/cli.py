@@ -123,7 +123,7 @@ def build_unresolved_credits(
     ]
 
 
-_CANDIDATE_LINE_STAGES = frozenset({Stage.L2, Stage.L3})
+_CANDIDATE_LINE_STAGES = frozenset({Stage.L2})
 
 
 def run_cascade(
@@ -139,13 +139,14 @@ def run_cascade(
     removing resolved credits before the next stage runs. A stage never
     sees a credit an earlier stage already claimed.
 
-    Before L2 and L3, `candidate_lines` on every remaining credit is rebuilt
-    from `settlements` minus whatever payment_ids any earlier decision this
-    run already matched — L0/L1 match whole batches and never touch it, but
-    composition needs the individual lines that are actually still up for
-    grabs. Pass `settlements=None` (the default) to skip this entirely,
-    which is what the runner-behaviour tests do with fake stages that don't
-    look at candidate_lines anyway.
+    Before L2, `candidate_lines` on every remaining credit is rebuilt from
+    `settlements` minus whatever payment_ids any earlier decision this run
+    already matched — L0/L1 match whole batches and never touch it, and L3
+    checks already-computed batch totals directly rather than composing
+    from lines, so only L2's composition search needs this. Pass
+    `settlements=None` (the default) to skip this entirely, which is what
+    the runner-behaviour tests do with fake stages that don't look at
+    candidate_lines anyway.
 
     Under `ctx.no_llm`, anything still unresolved after the last stage gets
     a terminal exception Decision (stage=L4, reason="no_llm_unresolved") —
@@ -213,14 +214,38 @@ def run(
     cached: bool = False,
     no_llm: bool = False,
     llm_only: bool = False,
+    data_dir: Path = generate_module.DEFAULT_OUT_DIR,
+    db: Path = audit.DEFAULT_DB_PATH,
 ) -> None:
     """Run the full cascade, writing Decisions to out/audit.db.
 
     --cached replays L4 responses from cache/ with no API key. --no-llm runs
     the deterministic baseline arm (L0-L3 only). --llm-only runs the ablation
     arm that skips straight to L4 (METRICS.md § the ablation).
+
+    Only --no-llm is wired this session — L4/the adjudicator is a stub,
+    landing in a later milestone; the other arms need it to mean anything.
     """
-    raise NotImplementedError
+    if not no_llm:
+        raise NotImplementedError(
+            "only --no-llm is wired this session; L4/the adjudicator lands later"
+        )
+
+    _orders, settlements, bank_records = load_input_data(data_dir)
+    expected_batches = compute_expected_batches(settlements)
+    unresolved = build_unresolved_credits(bank_records, expected_batches)
+
+    run_id = audit.derive_run_id(seed, data_dir)
+    ctx = RunContext(run_id=run_id, seed=seed, cached=cached, no_llm=no_llm, llm_only=llm_only)
+    conn = audit.connect(db)
+    audit.clear_run(conn, run_id)
+
+    counts = run_cascade(ctx, unresolved, conn, settlements=settlements)
+
+    typer.echo(f"run_id: {run_id}")
+    typer.echo(f"credits: {len(unresolved)}")
+    for stage_name, count in counts.items():
+        typer.echo(f"{stage_name}\t{count}")
 
 
 @app.command()
