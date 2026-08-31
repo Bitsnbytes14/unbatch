@@ -235,9 +235,17 @@ def run_cascade(
 
 
 @app.command()
-def generate(seed: int = 42) -> None:
-    """Write data/ fixtures + ground truth for `seed`."""
-    generate_module.generate(seed)
+def generate(seed: int = 42, noise: float = 0.0) -> None:
+    """Write data/ fixtures + ground truth for `seed`.
+
+    --noise (0.0-1.0, default 0.0) degrades bank_statement narrations only
+    — amounts, dates, and settlement data are always exact. 0.0 reproduces
+    the committed seed-42 fixtures byte for byte.
+    """
+    if not 0.0 <= noise <= 1.0:
+        typer.echo(f"--noise must be between 0.0 and 1.0, got {noise}", err=True)
+        raise typer.Exit(code=1)
+    generate_module.generate(seed, noise=noise)
 
 
 def _arm_name(*, no_llm: bool, llm_only: bool) -> str:
@@ -663,6 +671,64 @@ def _bench_seeds(seeds: str, out: Path) -> None:
     typer.echo(f"wrote {out}")
 
 
+_BENCH_NOISE_SEED = 42
+
+
+def _score_rules_only_for_noise(
+    noise: float, data_dir: Path, db_path: Path
+) -> metrics_module.MetricsReport:
+    """Same one-unit-of-work shape as `_score_rules_only_for_seed`, but
+    holds the seed fixed at `_BENCH_NOISE_SEED` and varies narration noise
+    instead — measures how the rules-only cascade degrades as bank
+    narrations get messier, not across independent random datasets."""
+    seed = _BENCH_NOISE_SEED
+    generate_module.generate(seed, out_dir=data_dir, noise=noise)
+    _orders, settlements, bank_records = load_input_data(data_dir)
+    expected_batches = compute_expected_batches(settlements)
+    unresolved = build_unresolved_credits(bank_records, expected_batches)
+
+    run_id = audit.derive_run_id(seed, data_dir, arm="no_llm")
+    ctx = RunContext(run_id=run_id, seed=seed, no_llm=True)
+    conn = audit.connect(db_path)
+    try:
+        audit.clear_run(conn, run_id)
+        run_cascade(ctx, unresolved, conn, settlements=settlements, stage_sequence=STAGE_SEQUENCE)
+        return metrics_module.score(conn, run_id, data_dir=data_dir)
+    finally:
+        conn.close()
+
+
+def _bench_noise(noise_levels: str, out: Path) -> None:
+    levels = [float(s.strip()) for s in noise_levels.split(",") if s.strip()]
+
+    per_level: dict[str, dict] = {}
+    with tempfile.TemporaryDirectory(prefix="unbatch-bench-noise-") as tmp:
+        tmp_root = Path(tmp)
+        for level in levels:
+            level_dir = tmp_root / f"noise_{level}"
+            data_dir = level_dir / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            report = _score_rules_only_for_noise(level, data_dir, level_dir / "audit.db")
+            per_level[str(level)] = json.loads(report.model_dump_json())
+
+    payload = {
+        "seed": _BENCH_NOISE_SEED,
+        "arm": "no_llm",
+        "noise_levels": levels,
+        "per_level": per_level,
+    }
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="")
+
+    typer.echo(f"noise levels: {levels}")
+    for level in levels:
+        m = per_level[str(level)]
+        typer.echo(
+            f"noise={level}\tcount_match_rate={m['count_match_rate']:.4f}"
+            f"\tfalse_match_rate={m['false_match_rate']:.4f}\tfunnel={m['stage_funnel']}"
+        )
+    typer.echo(f"wrote {out}")
+
+
 def _bench_scale(scale: int, out: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="unbatch-bench-scale-") as tmp:
         tmp_root = Path(tmp)
@@ -721,10 +787,13 @@ def _bench_scale(scale: int, out: Path) -> None:
 def bench(
     seeds: str | None = None,
     scale: int | None = None,
+    noise: str | None = None,
     out: Path = Path("bench_multiseed.json"),
     scale_out: Path = Path("bench_scale.json"),
+    noise_out: Path = Path("bench_noise.json"),
 ) -> None:
-    """Measure metric stability across seeds, or cascade throughput at scale.
+    """Measure metric stability across seeds, cascade throughput at scale,
+    or degradation under narration noise.
 
     `--seeds 42,43,44,45,46,47` (comma-separated) generates each seed's own
     fixtures into a fresh temp directory, runs the rules-only (--no-llm) arm
@@ -744,18 +813,30 @@ def bench(
     bench_scale.json). Caps (MAX_POOL/MAX_SUBSET) are never raised to hit a
     target number; if they start firing at this scale, the output says so.
 
-    Exactly one of --seeds/--scale must be given.
+    `--noise 0.0,0.1,0.25,0.5,0.75,1.0` (comma-separated) holds seed 42
+    fixed and generates it at each narration-noise level (see `unbatch
+    generate --noise`) into a fresh temp directory, runs the rules-only arm
+    against each, and reports count match rate, false-match rate, and the
+    stage funnel per level — written to `--noise-out` (default
+    bench_noise.json).
+
+    Exactly one of --seeds/--scale/--noise must be given.
     """
-    if bool(seeds) == bool(scale):
+    modes = [bool(seeds), bool(scale), bool(noise)]
+    if sum(modes) != 1:
         typer.echo(
-            "Pass exactly one of --seeds (e.g. 42,43,44) or --scale (e.g. 5000)", err=True
+            "Pass exactly one of --seeds (e.g. 42,43,44), --scale (e.g. 5000), "
+            "or --noise (e.g. 0.0,0.25,0.5,1.0)",
+            err=True,
         )
         raise typer.Exit(code=1)
     if seeds:
         _bench_seeds(seeds, out)
-    else:
-        assert scale is not None
+    elif scale:
         _bench_scale(scale, scale_out)
+    else:
+        assert noise is not None
+        _bench_noise(noise, noise_out)
 
 
 if __name__ == "__main__":

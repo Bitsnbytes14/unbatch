@@ -40,6 +40,7 @@ uv run unbatch exceptions          # print unresolved items + reasons
 uv run unbatch exceptions --export out/exceptions.csv  # same, as an analyst work item
 uv run unbatch bench --seeds 42,43,44,45,46,47  # rules-only metric stability across seeds
 uv run unbatch bench --scale 5000  # rules-only cascade throughput at scale
+uv run unbatch bench --noise 0.0,0.1,0.25,0.5,0.75,1.0  # degradation curve under narration noise
 uv run pytest -q
 ```
 

@@ -1,0 +1,212 @@
+{
+  "seed": 42,
+  "arm": "no_llm",
+  "noise_levels": [
+    0.0,
+    0.1,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "per_level": {
+    "0.0": {
+      "run_id": "run_42_no_llm_fc542f9efbd4",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9189560046629376,
+      "false_match_rate": 0.0,
+      "exception_rate": 0.11428571428571428,
+      "precision": 1.0,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 79,
+        "l1": 3,
+        "l2": 9,
+        "l3": 2,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "cost_paise_per_adjudicated_credit": 0.0,
+      "cost_paise_per_exception": 0.0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "tolerance_ambiguous": 4,
+        "ambiguous_composition": 7,
+        "unrelated_credit": 1
+      }
+    },
+    "0.1": {
+      "run_id": "run_42_no_llm_dcc29c2485e1",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9189560046629376,
+      "false_match_rate": 0.0,
+      "exception_rate": 0.11428571428571428,
+      "precision": 1.0,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 68,
+        "l1": 14,
+        "l2": 9,
+        "l3": 2,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "cost_paise_per_adjudicated_credit": 0.0,
+      "cost_paise_per_exception": 0.0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "tolerance_ambiguous": 4,
+        "ambiguous_composition": 7,
+        "unrelated_credit": 1
+      }
+    },
+    "0.25": {
+      "run_id": "run_42_no_llm_e51503017ec2",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9189560046629376,
+      "false_match_rate": 0.0,
+      "exception_rate": 0.11428571428571428,
+      "precision": 1.0,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 66,
+        "l1": 16,
+        "l2": 9,
+        "l3": 2,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "cost_paise_per_adjudicated_credit": 0.0,
+      "cost_paise_per_exception": 0.0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "tolerance_ambiguous": 4,
+        "ambiguous_composition": 7,
+        "unrelated_credit": 1
+      }
+    },
+    "0.5": {
+      "run_id": "run_42_no_llm_2e89cd3fb850",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9189560046629376,
+      "false_match_rate": 0.0,
+      "exception_rate": 0.11428571428571428,
+      "precision": 1.0,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 55,
+        "l1": 27,
+        "l2": 9,
+        "l3": 2,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "cost_paise_per_adjudicated_credit": 0.0,
+      "cost_paise_per_exception": 0.0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "tolerance_ambiguous": 4,
+        "ambiguous_composition": 7,
+        "unrelated_credit": 1
+      }
+    },
+    "0.75": {
+      "run_id": "run_42_no_llm_4f786ebc9bba",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9189560046629376,
+      "false_match_rate": 0.0,
+      "exception_rate": 0.11428571428571428,
+      "precision": 1.0,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 40,
+        "l1": 42,
+        "l2": 9,
+        "l3": 2,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "cost_paise_per_adjudicated_credit": 0.0,
+      "cost_paise_per_exception": 0.0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "tolerance_ambiguous": 4,
+        "ambiguous_composition": 7,
+        "unrelated_credit": 1
+      }
+    },
+    "1.0": {
+      "run_id": "run_42_no_llm_a4f2de8a26d2",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9189560046629376,
+      "false_match_rate": 0.0,
+      "exception_rate": 0.11428571428571428,
+      "precision": 1.0,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 21,
+        "l1": 61,
+        "l2": 9,
+        "l3": 2,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "cost_paise_per_adjudicated_credit": 0.0,
+      "cost_paise_per_exception": 0.0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "tolerance_ambiguous": 4,
+        "ambiguous_composition": 7,
+        "unrelated_credit": 1
+      }
+    }
+  }
+}
