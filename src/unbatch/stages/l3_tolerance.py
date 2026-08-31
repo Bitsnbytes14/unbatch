@@ -41,6 +41,23 @@ wrong batch — a false match. Narrower starts rejecting a legitimate
 half-point fee change — a real settlement pushed to exception for no
 reason. See ARCHITECTURE.md's § Confidence bands for the full reasoning;
 this module only encodes the number.
+
+**2026-09-03 false-accept fix (see FAILURES.md):** `bench --seeds` found
+this stage confidently matching `ambiguous_composition` credits on some
+seeds — the deliberately-unclaimed line (see l4_llm.py's module docstring
+and DATA_SPEC.md) sometimes happens to be small enough that the credit
+lands within tolerance of its own whole batch, and this stage had no way to
+tell that gap apart from a genuine fee-tier drift. The distinction, derived
+from what a tolerance band is *for* rather than tuned to this dataset: a
+band absorbs fee and rounding noise, never a whole missing settlement line.
+So before accepting the one within-tolerance batch, this stage now checks
+whether the delta exactly equals the net of any settlement line still
+sitting in the credit's own date-windowed pool — if it does, that gap has a
+real, named explanation sitting right there, which is a composition
+question L2 already looked at and declined, not tolerance noise. Refusing
+here is strictly narrower than before (a batch that used to match no longer
+does when a line exactly explains the gap); it never widens or narrows
+`TOLERANCE_RATE`/`TOLERANCE_FLOOR_PAISE` themselves.
 """
 
 from __future__ import annotations
@@ -52,6 +69,7 @@ from unbatch.models import (
     DecisionOutcome,
     ExpectedBatch,
     RunContext,
+    SettlementLine,
     Stage,
     UnresolvedCredit,
 )
@@ -77,6 +95,26 @@ def _batches_in_window(unresolved_credit: UnresolvedCredit) -> list[ExpectedBatc
         for batch in unresolved_credit.expected_batches
         if batch.window_start <= window_end and window_start <= batch.window_end
     ]
+
+
+def _candidate_lines_in_window(unresolved_credit: UnresolvedCredit) -> list[SettlementLine]:
+    window_start = unresolved_credit.credit.value_date - timedelta(days=DATE_WINDOW_DAYS)
+    window_end = unresolved_credit.credit.value_date
+    return [
+        line
+        for line in unresolved_credit.candidate_lines
+        if window_start <= line.settled_at.date() <= window_end
+    ]
+
+
+def _delta_is_a_missing_line(delta_paise: int, pool: list[SettlementLine]) -> bool:
+    """True when some real settlement line in the credit's own date-windowed
+    pool exactly explains the gap — a composition fact, not tolerance
+    noise. `abs()` on both sides: a missing PAYMENT line leaves the credit
+    short (delta negative, line net positive), and net_paise is itself
+    negative for a REFUND/CHARGEBACK line (fees.py), so comparing magnitudes
+    is what actually generalizes across both."""
+    return any(abs(delta_paise) == abs(line.net_paise) for line in pool)
 
 
 def _decision(
@@ -107,8 +145,10 @@ def _decision(
 def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
     """Check each credit's date-windowed expected batches for exactly one
     within tolerance of the credit's amount. Returns one Decision per credit
-    this stage resolves; zero or multiple within-tolerance batches leave a
-    credit unresolved."""
+    this stage resolves; zero or multiple within-tolerance batches, or a
+    delta a real settlement line already exactly explains (a composition
+    fact, not tolerance noise — see this module's 2026-09-03 docstring
+    entry), leave a credit unresolved."""
     now = datetime.now(UTC)
     decisions: list[Decision] = []
 
@@ -126,6 +166,9 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
             continue  # zero or multiple: not certain enough, stays unresolved
 
         batch, delta = within_tolerance[0]
+        if _delta_is_a_missing_line(delta, _candidate_lines_in_window(unresolved_credit)):
+            continue  # a whole line explains the gap — L2's call, not tolerance
+
         decisions.append(
             _decision(
                 ctx,
