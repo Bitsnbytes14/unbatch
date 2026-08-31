@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1007,
+  "output_tokens": 151,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag the case for manual review to determine which exact payment lines map to this credit, considering both the two-line settlement and the alternative three-line composition; select the most plausible mapping and adjust downstream records accordingly.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"tx_c3ZlMm1zdNf35M\", \"ICICR261327654542\", \"setl_Vn5VdJNaRI6LUn\", \"setl_dyIKAiYbEPvFXX\"],\n  \"human_review_required\": true\n}"
+}

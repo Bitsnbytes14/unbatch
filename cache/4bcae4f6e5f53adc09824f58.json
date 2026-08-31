@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1133,
+  "output_tokens": 113,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of payment lines that produced the batch net for AXISP352709577630; reconcile by selecting the confirmed composition or flag for human validation.\",\n  \"confidence\": 0.56,\n  \"evidence_refs\": [\"AXISP352709577630\", \"txn_RCI4hiCGItUBY3\"],\n  \"human_review_required\": true\n}"
+}

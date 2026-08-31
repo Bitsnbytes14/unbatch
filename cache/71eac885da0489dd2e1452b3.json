@@ -1,0 +1,5 @@
+{
+  "input_tokens": 968,
+  "output_tokens": 144,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Investigate mapping between this bank credit and the settlement batch; if no clear one-to-one linkage is found, mark as unrelated_credit and flag for manual reconciliation with the bank statement and batch records.\",\"confidence\":0.58,\"evidence_refs\":[\"txn_gfaGehAQmOI5Y9\",\"setl_sPiR8CAu9jozDR\",\"setl_sGidq6lg4FTYR5\",\"setl_cr1dQYFzC3MBNX\",\"KKBK0938324070604\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1006,
+  "output_tokens": 145,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate exact line-level composition for the credit and confirm which settlement batch/lines it maps to; if multiple valid compositions exist, flag for manual review and reconcile toward a single canonical mapping.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"txn_aaTNhXWNJAQy5K\", \"ICICR017621083825\", \"setl_n9zpdyWy7Y9Juy\", \"setl_GamACoHosJVFkl\"],\n  \"human_review_required\": true\n}"
+}

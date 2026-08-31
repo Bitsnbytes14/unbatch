@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1067,
+  "output_tokens": 187,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous composition since multiple exact-sum line groupings fit the same batch net; trigger targeted human review to identify the precise line-item mapping.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_wNdlZCEZOkC1v7\",\"setl_AroNe8ndQuxK7x\",\"setl_3q6rh4lS8J1CAo\",\"pay_CDNv9Esc2z65Ja\",\"pay_J2qGke20a8ffpw\",\"pay_xI3Q4AQvbgbM52\",\"pay_oYAAItrU0fp118\",\"pay_qabeGke6XIZKoT\"],\n  \"human_review_required\": true\n}"
+}

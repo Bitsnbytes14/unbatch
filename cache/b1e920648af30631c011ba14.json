@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1008,
+  "output_tokens": 129,
+  "response_text": "{\"break_reason\":\"ambiguous_composition\",\"proposed_resolution\":\"Investigate and confirm exact payment-line composition; if multiple valid line sets exist, pick the one historically associated with the settlement batch or request batch revalidation to lock a single composition.\",\"confidence\":0.54,\"evidence_refs\":[\"txn_gWz3gM4EBZyFA4\",\"AXISP792680312919\",\"setl_fxMYFkkfFYvqeN\",\"setl_yyWvQjK4ONkGXN\"],\"human_review_required\":true}"
+}

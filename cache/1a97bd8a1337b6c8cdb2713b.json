@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1075,
+  "output_tokens": 177,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate payment line compositions for the batch: determine exact lines that contributed to the 3623578 paise net and whether multiple valid line sets exist; select the canonical set used for reporting and adjust reconciliation notes accordingly.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_Wcgse2PYOnrLXM\", \"SBIN0780602786154\", \"setl_pllWz9gisNGx3i\", \"setl_X1P36VoK20l6mE\", \"pay_q8MZwW7EQBOEnt\", \"pay_srOg8bMGNn3TDP\"],\n  \"human_review_required\": true\n}"
+}

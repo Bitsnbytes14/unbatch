@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1002,
+  "output_tokens": 134,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous composition; require manual reconciliation to map which specific payment lines constitute the batch, then confirm final settlement mapping.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"ICICR788959982854\", \"setl_sqSycg6lD0dDdJ\", \"setl_O7FZG1EtVK4rCG\", \"txn_GlR2T7j91vHZUF\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1075,
+  "output_tokens": 124,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact source batch composition; select the most probable settlement line grouping and lock the mapping for reconciliation.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_fn1xOBoAnAliXt\",\"AXISP547285808721\",\"setl_sbfNHm0Q572NC8\",\"setl_kKPlpqZVUEfg51\"],\n  \"human_review_required\": true\n}"
+}

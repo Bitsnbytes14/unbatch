@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1074,
+  "output_tokens": 141,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Review the two exact-sum candidate line sets and confirm which set corresponds to the actual posted settlement batch; select the composition that aligns with internal batch mapping and lock in that reconciliation.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_2trAbSfLdAp6sw\", \"AXISP714223646957\", \"setl_umaQnjJXBLbQZr\", \"setl_jWCwrBxk383pKh\"],\n  \"human_review_required\": true\n}"
+}

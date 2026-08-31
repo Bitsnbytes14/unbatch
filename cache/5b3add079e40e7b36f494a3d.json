@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1015,
+  "output_tokens": 195,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Lock in the already-selected net batch and request reconciliation of the conflicting alternative composition with a manual audit to determine if the extra candidate lines should be ignored or investigated.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_0iSEOgE8wbMfnN\",\"setl_924v4a5tOZusjQ\",\"setl_1RrlCqD0KLJt5f\",\"pay_929q6kAVs4443Q\",\"pay_NYYpaQMjlD7FlV\",\"pay_Ew7xw27XZBLFjl\",\"pay_kqgFtMEqT9PpvO\",\"pay_9TuJdiq68FH7fS\"],\n  \"human_review_required\": true\n}"
+}

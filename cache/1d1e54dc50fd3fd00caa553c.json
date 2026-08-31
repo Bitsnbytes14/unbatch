@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1069,
+  "output_tokens": 188,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous composition and request human reconciliation to determine the exact line-item mix for the batch.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_2E4Ji4s5IyGxec\",\"setl_4zMZDer93MrBK3\",\"setl_ELgO46iDxOEszq\",\"pay_D8qIla4lEROMYV\",\"pay_p5e5rsxtCXBIXM\",\"pay_17Y52ijlmta95M\",\"pay_NeRY1aMytTaFCy\",\"pay_hUxDEFCvd4ACqu\",\"pay_KmKZK3E71DDXCI\"],\n  \"human_review_required\": true\n}"
+}

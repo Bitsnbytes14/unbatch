@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1006,
+  "output_tokens": 160,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate alternative line composition for the batch; confirm which exact payment_ids map to the cited settlement lines and reconcile to a single source of truth.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"tx_ylrnOU2i9QqPMv\",\"setl_1zqYrz0un28Zij\",\"setl_GHeU18oIhWtiv0\",\"pay_GKqNGIm5YsL9RE\",\"pay_kQzYGQTbJzrCWK\",\"ICICR927639923612\"],\n  \"human_review_required\": true\n}"
+}

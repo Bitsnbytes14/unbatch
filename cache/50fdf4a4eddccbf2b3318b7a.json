@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1008,
+  "output_tokens": 170,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous composition; require human confirmation to map the exact payment lines to the settlement batch, and check if multiple line sets can explain the same net.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_XzM0PCKmBZEbYj\", \"SBIN0526537098071\", \"setl_8GbJtq2jQoC4pG\", \"setl_jcbp4hG2SWMevH\", \"pay_Xw4YYJTQARTcTW\", \"pay_4XldGRiAlPwPBm\"],\n  \"human_review_required\": true\n}"
+}

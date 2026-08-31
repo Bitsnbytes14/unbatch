@@ -1,0 +1,5 @@
+{
+  "input_tokens": 997,
+  "output_tokens": 167,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact line-level composition that matches the credit, as multiple valid payment line sets could yield the same net; reconcile by selecting the explicit line-item set that aligns with the posted settlement and adjust records accordingly.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"settlement_utr: ICICR091944523737\", \"txn_id: txn_58HgG4mproYHfF\", \"payment_ids: ['pay_NAlQyA8jvLJDJ7', 'pay_1fKoISGK0NYacJ']\"],\n  \"human_review_required\": true\n}"
+}

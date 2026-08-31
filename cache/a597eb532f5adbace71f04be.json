@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1010,
+  "output_tokens": 156,
+  "response_text": "{\"break_reason\":\"ambiguous_composition\",\"proposed_resolution\":\"Select the exact batch composition that matches the observed credit by validating the payment_id set; if multiple compositions fit, defer to a reconciliation note clarifying the intended mapping or request a match confirmation from operations.\",\"confidence\":0.52,\"evidence_refs\":[\"txn_bHNrbcQaoBz55F\",\"SBIN0497498999449\",\"setl_sbfNHm0Q572NC8\",\"setl_xptQeZb1D5GLYo\",\"pay_BeQQCoiRIcOSJ9\",\"pay_tqKBzblA9xTi1H\"],\"human_review_required\":true}"
+}
