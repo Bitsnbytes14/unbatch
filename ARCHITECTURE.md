@@ -45,6 +45,8 @@ Naive subset-sum over all payments is exponential and will blow up. Bounded as f
 - **Deterministic tie-break.** If more than one subset composes `X`, do not pick one. Emit all candidates to L4 as competing explanations. Multiple valid compositions is exactly the ambiguity the model exists to adjudicate.
 - **Timeout guard.** Wall-clock budget per credit; on breach, exception with reason `compose_timeout`.
 
+**Measured at scale** (`unbatch bench --scale 5000`, see bench_scale.json and FAILURES.md's 2026-08-31 entry): at production scale (105 credits) this is all invisible. At synthetic scale, two bottlenecks showed up — neither the one this section originally predicted. First, `pool_too_large` genuinely fires once date-windowed pools exceed 48 (all 448 of scale 5000's split-batch credits hit it), which is the cap doing exactly its documented job. Second, and unpredicted: pools that land *just under* 48 rather than over it are legal but expensive — the meet-in-the-middle's ~2^24-per-half worst case is real, and a run with several such credits back to back can take minutes even though every individual call stays within its own timeout (at scale 1000, six credits landed at exactly 48). The per-credit timeout bounds one call; nothing currently bounds a run that queues up many expensive-but-legal calls. Left unfixed deliberately — closing it is a cascade-behaviour decision, not a bug fix.
+
 ### L3 — tolerance
 
 L3 checks; it does not search. For each credit L2 left unresolved, take the expected batches (already grouped by settlement UTR, one net per batch — that grouping is computed once, upstream of every stage) whose settlement window overlaps `[D - 3d, D]`, and compare each one's already-computed net directly against the credit: `|credit − batch.net|`. Exactly one batch within tolerance resolves at 0.75 with the delta recorded on the Decision. Zero or more than one leaves the credit unresolved.
@@ -107,6 +109,8 @@ evidence_refs · human_review_required · created_at
 ```
 
 `run_id` is derived from the seed, so runs are reproducible and two runs are diffable. The exception report and the HTML report are **queries over this table**, never separately maintained lists — which is what makes the audit trail load-bearing rather than decorative. `evidence_refs`/`human_review_required` are the two `AdjudicationResult` fields the original schema left unpersisted — set only when a Decision actually reached the adjudicator, `None` for every rules-stage (L0-L3) decision and for `adjudication_failed`, since no classification exists to record in either case. `unbatch exceptions --export` is what reads them back out.
+
+`audit.record` commits after every row — durability per decision, invisible at 105 credits. `bench --scale` found this is actually the dominant wall-clock cost once decision *counts* run into the hundreds-plus, ahead of anything in the matching logic itself (see FAILURES.md's 2026-08-31 entry). Left as-is: batching commits is a real behaviour change to a stage every other command depends on, not something to decide unilaterally mid-benchmark.
 
 ## Reporting
 
