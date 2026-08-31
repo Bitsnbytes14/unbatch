@@ -41,19 +41,21 @@ from unbatch.models import (
     Stage,
     UnresolvedCredit,
 )
-from unbatch.stages import l0_utr, l1_exact, l2_compose, l3_tolerance
+from unbatch.stages import l0_utr, l1_exact, l2_compose, l3_tolerance, l4_llm
 
 app = typer.Typer(help="unbatch — settlement reconciliation agent.")
 
 # Cheapest-and-most-certain first, per ARCHITECTURE.md's cascade table.
-# L4 is intentionally absent this session — it stays a stub, and --no-llm's
-# terminal exception step in run_cascade takes its place in the sequence.
+# --no-llm runs only this sequence, with run_cascade's terminal exception
+# step standing in for L4; the default (with-LLM) arm runs FULL_STAGE_SEQUENCE
+# below instead, which appends L4 as the real terminal stage.
 STAGE_SEQUENCE: tuple[tuple[Stage, object], ...] = (
     (Stage.L0, l0_utr.run),
     (Stage.L1, l1_exact.run),
     (Stage.L2, l2_compose.run),
     (Stage.L3, l3_tolerance.run),
 )
+FULL_STAGE_SEQUENCE: tuple[tuple[Stage, object], ...] = (*STAGE_SEQUENCE, (Stage.L4, l4_llm.run))
 
 
 def load_input_data(
@@ -151,9 +153,12 @@ def run_cascade(
 
     Under `ctx.no_llm`, anything still unresolved after the last stage gets
     a terminal exception Decision (stage=L4, reason="no_llm_unresolved") —
-    L4 is a stub this session, and --no-llm's whole point is to stop at L3
-    rather than call it, so every credit still ends with exactly one
-    Decision by the time this returns.
+    `stage_sequence` for that arm is STAGE_SEQUENCE (L0-L3 only, no real
+    L4), and --no-llm's whole point is to stop there rather than call the
+    model, so every credit still ends with exactly one Decision by the time
+    this returns. The default arm passes FULL_STAGE_SEQUENCE instead, whose
+    real L4 (`l4_llm.run`) is itself the terminal stage and resolves
+    everything still remaining, so this fallback never fires for it.
 
     Returns per-stage resolution counts keyed by Stage.value, plus
     "terminal_exception" for the --no-llm cleanup step.
@@ -232,16 +237,14 @@ def run(
     """Run the full cascade, writing Decisions to out/audit.db.
 
     --cached replays L4 responses from cache/ with no API key. --no-llm runs
-    the deterministic baseline arm (L0-L3 only). --llm-only runs the ablation
-    arm that skips straight to L4 (METRICS.md § the ablation).
-
-    Only --no-llm is wired this session — L4/the adjudicator is a stub,
-    landing in a later milestone; the other arms need it to mean anything.
+    the deterministic baseline arm (L0-L3 only, per ARCHITECTURE.md's
+    STAGE_SEQUENCE). The default runs the full with-LLM arm
+    (FULL_STAGE_SEQUENCE, L0-L4). --llm-only runs the ablation arm that skips
+    straight to L4 (METRICS.md § the ablation) — not wired this session; it
+    lands with the rest of the ablation report in a later milestone.
     """
-    if not no_llm:
-        raise NotImplementedError(
-            "only --no-llm is wired this session; L4/the adjudicator lands later"
-        )
+    if llm_only:
+        raise NotImplementedError("--llm-only lands with the rest of the ablation report")
 
     _orders, settlements, bank_records = load_input_data(data_dir)
     expected_batches = compute_expected_batches(settlements)
@@ -253,7 +256,10 @@ def run(
     conn = audit.connect(db)
     audit.clear_run(conn, run_id)
 
-    counts = run_cascade(ctx, unresolved, conn, settlements=settlements)
+    stage_sequence = STAGE_SEQUENCE if no_llm else FULL_STAGE_SEQUENCE
+    counts = run_cascade(
+        ctx, unresolved, conn, settlements=settlements, stage_sequence=stage_sequence
+    )
 
     typer.echo(f"run_id: {run_id}")
     typer.echo(f"credits: {len(unresolved)}")

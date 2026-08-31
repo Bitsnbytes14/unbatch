@@ -64,7 +64,7 @@ Wider admits deltas only explainable by a genuinely wrong batch — a false matc
 
 This is the only place a model is called, and its job is narrow.
 
-**Input:** one unresolved bank credit, the expected batch the rules computed, the numeric delta, and the top-k candidate explanations the earlier stages surfaced — e.g. a refund that landed inside the window, a chargeback deduction, a fee-tier change, a settlement split across two days, an unrelated inbound transfer.
+**Input:** one unresolved bank credit, the expected batch the rules computed, the numeric delta, and up to four competing candidate batches as alternate explanations. No earlier stage records anything into `UnresolvedCredit.candidates` — L2/L3 either resolve a credit outright or drop it unresolved with nothing kept — so L4 builds its own top-k the same way L2/L3 build their date windows: every batch whose settlement window overlaps `[D - 3d, D]` is scored by `|credit − batch.net|`; the closest becomes the "expected batch," the next few become candidates. A credit with nothing in its window at all (the `unrelated_credit` shape) falls back to the single globally-nearest batch, so the model always reasons against something concrete instead of an empty prompt.
 
 **Output:** pydantic-validated JSON —
 
@@ -91,6 +91,8 @@ human_review_required  bool
 | < 0.60 | exception, unresolved |
 
 Deliberately conservative. In finance a false match is far more expensive than an unresolved item: the wrong match silently corrupts the books and is discovered weeks later, while an exception costs an analyst ten minutes today. We report false-match rate separately and drive it to zero even at the cost of headline match rate.
+
+The bands are the default outcome from `confidence` alone. The model's own `human_review_required` flag can only push a call *down* — a confident call the model itself flags for review still lands in the middle band — never up: a low-confidence call is never auto-accepted just because the model didn't ask for review. Bias to caution applies to the model's self-assessment the same way it applies to the rules layers.
 
 ## Audit trail
 
