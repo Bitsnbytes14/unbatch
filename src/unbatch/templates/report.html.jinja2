@@ -247,6 +247,14 @@
           {% for arm in arm_order %}<td>{% if arms[arm].ran %}{{ arms[arm].llm_cost_rupees }}{% else %}<span class="pending">not yet run</span>{% endif %}</td>{% endfor %}
         </tr>
         <tr>
+          <td class="metric-name">Cost per adjudicated credit</td>
+          {% for arm in arm_order %}<td>{% if arms[arm].ran and arms[arm].has_llm_calls %}{{ arms[arm].cost_per_adjudicated_credit_paise }} paise{% elif arms[arm].ran %}<span class="pending">N/A — no LLM calls</span>{% else %}<span class="pending">not yet run</span>{% endif %}</td>{% endfor %}
+        </tr>
+        <tr>
+          <td class="metric-name">Cost per exception surfaced</td>
+          {% for arm in arm_order %}<td>{% if arms[arm].ran and arms[arm].metrics.exception_rate > 0 %}{{ arms[arm].cost_per_exception_paise }} paise{% elif arms[arm].ran %}<span class="pending">N/A — no exceptions</span>{% else %}<span class="pending">not yet run</span>{% endif %}</td>{% endfor %}
+        </tr>
+        <tr>
           <td class="metric-name">Malformed JSON responses</td>
           {% for arm in arm_order %}<td>{% if arms[arm].ran %}{{ arms[arm].metrics.malformed_json_count }}{% else %}<span class="pending">not yet run</span>{% endif %}</td>{% endfor %}
         </tr>
