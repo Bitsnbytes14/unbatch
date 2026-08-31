@@ -52,6 +52,8 @@ from unbatch.models import (
     SettlementLineType,
 )
 from unbatch.money import format_paise_to_rupees, parse_rupees_to_paise
+from unbatch.stages.l3_tolerance import TOLERANCE_FLOOR_PAISE as _ADV_TOLERANCE_FLOOR_PAISE
+from unbatch.stages.l3_tolerance import TOLERANCE_RATE as _ADV_TOLERANCE_RATE
 
 DEFAULT_OUT_DIR = Path("data")
 
@@ -1268,6 +1270,465 @@ def generate(seed: int, out_dir: Path = DEFAULT_OUT_DIR, *, noise: float = 0.0) 
     write_order_ledger_csv(orders, out_dir / "order_ledger.csv")
     write_settlement_report_csv(settlements, out_dir / "settlement_report.csv")
     write_bank_statement_csv(bank_statement, out_dir / "bank_statement.csv")
+    write_ground_truth_json(ground_truth, out_dir / "ground_truth.json")
+
+    print_break_distribution(ground_truth)
+
+
+# --- Adversarial dataset (E11) -------------------------------------------
+#
+# A second, independent generator — deliberately NOT built on top of
+# generate_orders_and_settlements/inject_breaks's index-based machinery.
+# That machinery is tuned for one specific 105-batch layout, and FAILURES.md
+# has multiple entries (2026-08-30/31) about how easily changing its batch
+# count or sizing reopens old bugs. This builds its own hostile batches
+# directly instead, engineered to hit the collision shapes E5/E9 found
+# occurring by chance, deterministically instead of by luck. Same ~105-credit
+# scale as the default dataset for a fair side-by-side comparison.
+# `unbatch generate --adversarial` never touches the default `generate()`
+# path above — the two share only small, stable utilities (_random_id,
+# _random_utr, fees.py, the CSV writers), never any break-injection state.
+
+ADVERSARIAL_EPOCH = date(2024, 6, 1)
+ADVERSARIAL_CLEAN_FILLER_COUNT = 82
+# The hostile scenarios below are deliberately spaced 6+ days apart (wider
+# than L2's own 3-day lookback) so no scenario's date-windowed candidate
+# pool accidentally pulls in another scenario's lines — the first
+# empirical run of this generator found exactly that cross-contamination
+# (a settlement-split credit hitting pool_too_large only because an
+# unrelated scenario's filler lines happened to share its window). Clean
+# filler is spread across this whole span; it always resolves at L0 and
+# never lingers in any pool, so it doesn't need the same isolation.
+ADVERSARIAL_WINDOW_DAYS = 90
+
+def _adv_tolerance_for(credit_paise: int) -> int:
+    """The tolerance-collision scenario needs to know exactly where L3's
+    own accept/decline boundary sits, so it can place a decoy just inside
+    it — the whole point of an adversarial fixture is to hit the real
+    threshold on purpose rather than approximate it. Reuses l3_tolerance's
+    own constants (imported at module level below — not the function; this
+    is data construction, not a cascade call) so the two can't drift
+    apart if the band is ever re-derived."""
+    return max(_ADV_TOLERANCE_FLOOR_PAISE, round(credit_paise * _ADV_TOLERANCE_RATE))
+
+
+def _adv_line(
+    payment_id: str,
+    utr: str,
+    net_paise: int,
+    settled_on: date,
+    *,
+    line_type: SettlementLineType = SettlementLineType.PAYMENT,
+) -> SettlementLine:
+    """An engineered settlement line with an exact net_paise, bypassing fee
+    derivation (fee=tax=0, gross=net) — the same shortcut
+    `_apply_ambiguous_decoy` already uses to hit a target exactly instead of
+    fighting rounding."""
+    return SettlementLine(
+        settlement_id=f"setl_{payment_id}",
+        settlement_utr=utr,
+        payment_id=payment_id,
+        type=line_type,
+        gross_paise=net_paise,
+        fee_paise=0,
+        tax_paise=0,
+        net_paise=net_paise,
+        settled_at=datetime.combine(settled_on, datetime.min.time()),
+    )
+
+
+def _adv_credit(
+    txn_id: str, value_date: date, narration: str, amount_paise: int
+) -> BankStatementRecord:
+    """balance_paise is a placeholder — every adversarial credit is
+    finalized in one pass at the end, same as inject_breaks's own
+    final_records.sort() + running-balance recompute."""
+    return BankStatementRecord(
+        txn_id=txn_id,
+        value_date=value_date,
+        narration=narration,
+        credit_paise=amount_paise,
+        debit_paise=None,
+        balance_paise=0,
+    )
+
+
+_ADV_NO_UTR_NARRATION = "NEFT-UNKNOWN00000000-RAZORPAY SOFTWARE PVT"
+
+
+def _adv_duplicate_utr_groups(
+    rng: random.Random,
+) -> tuple[list[SettlementLine], list[BankStatementRecord], list[GroundTruthCredit]]:
+    """Two groups of three batches each sharing one UTR — three-way reuse,
+    beyond the normal dataset's single 2-way pair. compute_expected_batches
+    groups by UTR, so each group becomes one merged aggregate batch whose
+    net is the sum of all three original batches' lines; none of the three
+    original credits' own amounts equal that merged total, so all three
+    correctly fall past L0/L1.
+
+    Two of the three members in each group share an identical net (a
+    genuine tie, not a coincidence) — the first empirical run of this
+    scenario found L2's own line-level search cleanly disentangling three
+    *distinct*-valued single-line members every time, correctly matching
+    each one rather than reaching L4 at all (an honest, worthwhile finding
+    on its own, but not what this scenario exists to stress). The forced
+    tie is what actually reproduces DATA_SPEC.md's stated `duplicate_utr`
+    outcome — resolves at L4 — for at least two of the three."""
+    lines: list[SettlementLine] = []
+    credits: list[BankStatementRecord] = []
+    gt_credits: list[GroundTruthCredit] = []
+
+    for group in range(2):
+        shared_utr = _random_utr(rng)
+        day = ADVERSARIAL_EPOCH + timedelta(days=1 + group * 8)
+        tied_net = rng.randint(50_000, 300_000)
+        member_nets = [tied_net, tied_net, rng.randint(50_000, 300_000)]
+        for net in member_nets:
+            payment_id = _random_id(rng, "pay_")
+            line = _adv_line(payment_id, shared_utr, net, day)
+            lines.append(line)
+            txn_id = _random_id(rng, "txn_")
+            narration = f"NEFT-{shared_utr}-RAZORPAY SOFTWARE PVT"
+            credits.append(_adv_credit(txn_id, day, narration, net))
+            gt_credits.append(_ground_truth_credit(txn_id, [line], BreakType.DUPLICATE_UTR))
+
+    return lines, credits, gt_credits
+
+
+def _adv_tolerance_collisions(
+    rng: random.Random,
+) -> tuple[
+    list[SettlementLine],
+    list[BankStatementRecord],
+    list[GroundTruthCredit],
+    list[GroundTruthOrphanSettlement],
+]:
+    """Five engineered tolerance-band collisions: a credit whose own true
+    batch is deliberately *outside* its own tolerance band (so L0/L1/L2 all
+    correctly decline it, and L3 correctly declines it too, on the merits),
+    paired with an unrelated orphan batch on the same day whose net is
+    deliberately placed *inside* the credit's tolerance band. This is E9's
+    coincidental cross-batch collision, built on purpose instead of waiting
+    for it to happen by chance — every instance here is a guaranteed false
+    accept, not a probabilistic one."""
+    lines: list[SettlementLine] = []
+    credits: list[BankStatementRecord] = []
+    gt_credits: list[GroundTruthCredit] = []
+    orphans: list[GroundTruthOrphanSettlement] = []
+
+    for i in range(5):
+        day = ADVERSARIAL_EPOCH + timedelta(days=20 + i)
+        true_utr = _random_utr(rng)
+        v1, v2 = rng.randint(200_000, 500_000), rng.randint(200_000, 500_000)
+        true_net = v1 + v2
+        line1 = _adv_line(_random_id(rng, "pay_"), true_utr, v1, day)
+        line2 = _adv_line(_random_id(rng, "pay_"), true_utr, v2, day)
+        lines.extend([line1, line2])
+
+        # push the credit well outside its own batch's tolerance band
+        credit_amount = true_net - _adv_tolerance_for(true_net) * 5
+
+        # an unrelated orphan batch, same day, net placed just inside the
+        # credit's own tolerance band
+        decoy_utr = _random_utr(rng)
+        decoy_net = credit_amount + _adv_tolerance_for(credit_amount) // 2
+        decoy_line = _adv_line(_random_id(rng, "pay_"), decoy_utr, decoy_net, day)
+        lines.append(decoy_line)
+        orphans.append(
+            GroundTruthOrphanSettlement(
+                settlement_ids=[decoy_line.settlement_id], payment_ids=[decoy_line.payment_id]
+            )
+        )
+
+        txn_id = _random_id(rng, "txn_")
+        credits.append(_adv_credit(txn_id, day, _ADV_NO_UTR_NARRATION, credit_amount))
+        gt_credits.append(
+            _ground_truth_credit(txn_id, [line1, line2], BreakType.TOLERANCE_AMBIGUOUS)
+        )
+
+    return lines, credits, gt_credits, orphans
+
+
+def _adv_multi_tie_compositions(
+    rng: random.Random,
+) -> tuple[list[SettlementLine], list[BankStatementRecord], list[GroundTruthCredit]]:
+    """Three credits each with *four* distinct valid exact compositions, not
+    just two — three equal-valued "unit" lines plus one "double" line under
+    one shared UTR (so the whole-batch net, 5x the unit, never equals the
+    3x-unit target and L0/L1 correctly decline). L2 must find that {all
+    three units} and each of {one unit, the double} tie the target exactly,
+    and correctly refuse to pick one — the same shape as ambiguous_composition,
+    pushed harder."""
+    lines: list[SettlementLine] = []
+    credits: list[BankStatementRecord] = []
+    gt_credits: list[GroundTruthCredit] = []
+
+    for i in range(3):
+        day = ADVERSARIAL_EPOCH + timedelta(days=35 + i)
+        shared_utr = _random_utr(rng)
+        unit = rng.randint(80_000, 150_000)
+        target = unit * 3
+
+        unit_lines = [_adv_line(_random_id(rng, "pay_"), shared_utr, unit, day) for _ in range(3)]
+        double_line = _adv_line(_random_id(rng, "pay_"), shared_utr, unit * 2, day)
+        lines.extend([*unit_lines, double_line])
+
+        txn_id = _random_id(rng, "txn_")
+        credits.append(_adv_credit(txn_id, day, _ADV_NO_UTR_NARRATION, target))
+        gt_credits.append(_ground_truth_credit(txn_id, unit_lines, BreakType.AMBIGUOUS_COMPOSITION))
+
+    return lines, credits, gt_credits
+
+
+def _adv_three_day_splits(
+    rng: random.Random,
+) -> tuple[list[SettlementLine], list[BankStatementRecord], list[GroundTruthCredit]]:
+    """Two settlement UTRs each split across three credits landing 0, 2, and
+    3 days after the settlement date — not the normal dataset's two
+    consecutive days. The third credit's value_date puts the settlement
+    date at exactly D-3, L2's inclusive window edge; all six lines share one
+    UTR, so none of the three credits' own 2-line sums equal the merged
+    whole-batch net and all three correctly need L2, not L0/L1."""
+    lines: list[SettlementLine] = []
+    credits: list[BankStatementRecord] = []
+    gt_credits: list[GroundTruthCredit] = []
+
+    for group in range(2):
+        shared_utr = _random_utr(rng)
+        settle_day = ADVERSARIAL_EPOCH + timedelta(days=45 + group * 10)
+        for offset in (0, 2, 3):
+            l1 = _adv_line(
+                _random_id(rng, "pay_"), shared_utr, rng.randint(100_000, 300_000), settle_day
+            )
+            l2 = _adv_line(
+                _random_id(rng, "pay_"), shared_utr, rng.randint(100_000, 300_000), settle_day
+            )
+            lines.extend([l1, l2])
+            amount = l1.net_paise + l2.net_paise
+            value_date = settle_day + timedelta(days=offset)
+            txn_id = _random_id(rng, "txn_")
+            credits.append(_adv_credit(txn_id, value_date, _ADV_NO_UTR_NARRATION, amount))
+            gt_credits.append(_ground_truth_credit(txn_id, [l1, l2], BreakType.SETTLEMENT_SPLIT))
+
+    return lines, credits, gt_credits
+
+
+def _adv_near_cap_pool(
+    rng: random.Random,
+) -> tuple[
+    list[SettlementLine],
+    list[BankStatementRecord],
+    list[GroundTruthCredit],
+    list[GroundTruthOrphanSettlement],
+]:
+    """One credit with a genuine, unique 2-line composition, buried in a
+    date-windowed pool of 46 lines total — just under L2's MAX_POOL=48, the
+    zone E7 found expensive (meet-in-the-middle's ~2^24-per-half worst case)
+    rather than cheaply refused. Measured outcome: this doesn't just run
+    slow, it genuinely trips `compose_timeout` — the true, unique answer is
+    never found at all, which is a stronger version of E7's finding than
+    "expensive," not a milder one. The other 44 lines are unrelated orphan
+    settlements that never get paid out; they exist purely to fill the
+    pool.
+
+    The two true lines get *different* UTRs — sharing one would make
+    compute_expected_batches aggregate them into a single whole batch whose
+    net equals the credit exactly, letting L1 resolve it before L2 ever
+    runs (the first empirical run of this scenario did exactly that). Only
+    when the true composition spans more than one UTR does finding it
+    actually require L2's line-level search rather than a whole-batch
+    lookup.
+
+    The true pair is also drawn from a magnitude band (2,000,000-2,999,999
+    per line) with no overlap anywhere else in this dataset — clean filler
+    tops out under 2,500,000 gross and every other scenario stays under
+    1M — so the 4-6M target can't coincidentally equal some unrelated
+    single line's net either."""
+    day = ADVERSARIAL_EPOCH + timedelta(days=65)
+    l1 = _adv_line(
+        _random_id(rng, "pay_"), _random_utr(rng), rng.randint(2_000_000, 2_999_999), day
+    )
+    l2 = _adv_line(
+        _random_id(rng, "pay_"), _random_utr(rng), rng.randint(2_000_000, 2_999_999), day
+    )
+    amount = l1.net_paise + l2.net_paise
+    txn_id = _random_id(rng, "txn_")
+    credit = _adv_credit(txn_id, day, _ADV_NO_UTR_NARRATION, amount)
+    gt_credit = _ground_truth_credit(txn_id, [l1, l2], BreakType.AMBIGUOUS_COMPOSITION)
+
+    filler_lines = [
+        _adv_line(_random_id(rng, "pay_"), _random_utr(rng), rng.randint(50_000, 500_000), day)
+        for _ in range(44)
+    ]
+    orphan = GroundTruthOrphanSettlement(
+        settlement_ids=[line.settlement_id for line in filler_lines],
+        payment_ids=[line.payment_id for line in filler_lines],
+    )
+
+    return [l1, l2, *filler_lines], [credit], [gt_credit], [orphan]
+
+
+def _adv_boundary_refund_chargeback(
+    rng: random.Random,
+) -> tuple[list[SettlementLine], list[BankStatementRecord], list[GroundTruthCredit]]:
+    """A refund line dated exactly `D-3` (L2's inclusive window edge — must
+    still be found) and a chargeback line dated `D-4` (one day past it —
+    must correctly NOT be found, leaving the credit for L3/L4 rather than a
+    wrong or lucky L2 match). Both share their payment line's UTR, so the
+    whole-batch net (PAYMENT lines only) never equals either credit and
+    L0/L1 correctly decline both."""
+    lines: list[SettlementLine] = []
+    credits: list[BankStatementRecord] = []
+    gt_credits: list[GroundTruthCredit] = []
+
+    scenarios = (
+        (SettlementLineType.REFUND, BreakType.REFUND_IN_WINDOW, 3),
+        (SettlementLineType.CHARGEBACK, BreakType.CHARGEBACK_DEDUCTION, 4),
+    )
+    for i, (line_type, break_type, days_before) in enumerate(scenarios):
+        credit_day = ADVERSARIAL_EPOCH + timedelta(days=75 + i * 8)
+        shared_utr = _random_utr(rng)
+        payment_net = rng.randint(300_000, 600_000)
+        payment_line = _adv_line(_random_id(rng, "pay_"), shared_utr, payment_net, credit_day)
+        adjustment_net = -rng.randint(20_000, 80_000)
+        adjustment_line = _adv_line(
+            _random_id(rng, "pay_"),
+            shared_utr,
+            adjustment_net,
+            credit_day - timedelta(days=days_before),
+            line_type=line_type,
+        )
+        lines.extend([payment_line, adjustment_line])
+
+        amount = payment_net + adjustment_net
+        txn_id = _random_id(rng, "txn_")
+        credits.append(_adv_credit(txn_id, credit_day, _ADV_NO_UTR_NARRATION, amount))
+        gt_credits.append(_ground_truth_credit(txn_id, [payment_line, adjustment_line], break_type))
+
+    return lines, credits, gt_credits
+
+
+def _adv_clean_filler(
+    rng: random.Random, count: int
+) -> tuple[list[SettlementLine], list[BankStatementRecord], list[GroundTruthCredit]]:
+    """Ordinary, realistic clean batches — the same shape as the default
+    dataset's clean majority — spread across the same window as the hostile
+    scenarios above, so the adversarial dataset is background-noise-realistic
+    rather than 100% traps."""
+    lines: list[SettlementLine] = []
+    credits: list[BankStatementRecord] = []
+    gt_credits: list[GroundTruthCredit] = []
+
+    for i in range(count):
+        day = ADVERSARIAL_EPOCH + timedelta(days=rng.randrange(ADVERSARIAL_WINDOW_DAYS))
+        utr = _random_utr(rng)
+        method = _random_method(rng)
+        gross = _random_gross_paise(rng)
+        fee = compute_fee_paise(gross, method)
+        tax = compute_tax_paise(fee)
+        net = compute_net_paise(gross, fee, tax)
+        line = SettlementLine(
+            settlement_id=_random_id(rng, "setl_"),
+            settlement_utr=utr,
+            payment_id=_random_id(rng, "pay_"),
+            type=SettlementLineType.PAYMENT,
+            gross_paise=gross,
+            fee_paise=fee,
+            tax_paise=tax,
+            net_paise=net,
+            settled_at=datetime.combine(day, datetime.min.time()),
+        )
+        lines.append(line)
+        txn_id = _random_id(rng, "txn_")
+        narration = _narration_neft_full(utr) if i % 2 == 0 else _narration_imps_full(utr)
+        credits.append(_adv_credit(txn_id, day, narration, net))
+        gt_credits.append(_ground_truth_credit(txn_id, [line], BreakType.CLEAN))
+
+    return lines, credits, gt_credits
+
+
+def _adv_orders_for(
+    settlements: list[SettlementLine], rng: random.Random
+) -> list[OrderLedgerRecord]:
+    """One OrderLedgerRecord per PAYMENT-type settlement line — order_ledger
+    isn't read by the cascade or metrics.py, but `load_input_data` parses it
+    unconditionally, so it has to exist and be valid, not just be a stub."""
+    orders: list[OrderLedgerRecord] = []
+    for line in settlements:
+        if line.type != SettlementLineType.PAYMENT:
+            continue
+        captured_at = line.settled_at - timedelta(days=1)
+        orders.append(
+            OrderLedgerRecord(
+                order_id=_random_id(rng, "order_"),
+                payment_id=line.payment_id,
+                amount_paise=line.gross_paise,
+                currency="INR",
+                status=OrderStatus.CAPTURED,
+                captured_at=captured_at,
+                customer_ref=_random_customer_ref(rng),
+                method=_random_method(rng),
+            )
+        )
+    return orders
+
+
+def generate_adversarial(seed: int, out_dir: Path = DEFAULT_OUT_DIR) -> None:
+    """Write a same-scale (~105 credit), deliberately hostile dataset —
+    engineered to maximize the false-match collision shapes E5 and E9 found
+    occurring by chance in the default dataset, rather than waiting for a
+    reviewer to construct one. See this section's module-level comment for
+    why it doesn't share any code path with the default `generate()` beyond
+    small, stable utilities.
+
+    Fully seeded and deterministic; never touches the default generator's
+    output, and `unbatch generate` (no `--adversarial`) is completely
+    unaffected — verified by test_end_to_end.py's byte-identical check.
+    """
+    rng = random.Random(seed)
+
+    all_lines: list[SettlementLine] = []
+    all_credits: list[BankStatementRecord] = []
+    all_gt_credits: list[GroundTruthCredit] = []
+    all_orphans: list[GroundTruthOrphanSettlement] = []
+
+    for builder in (
+        _adv_duplicate_utr_groups,
+        _adv_multi_tie_compositions,
+        _adv_three_day_splits,
+        _adv_boundary_refund_chargeback,
+    ):
+        lines, credits, gt_credits = builder(rng)
+        all_lines.extend(lines)
+        all_credits.extend(credits)
+        all_gt_credits.extend(gt_credits)
+
+    for builder_with_orphans in (_adv_tolerance_collisions, _adv_near_cap_pool):
+        lines, credits, gt_credits, orphans = builder_with_orphans(rng)
+        all_lines.extend(lines)
+        all_credits.extend(credits)
+        all_gt_credits.extend(gt_credits)
+        all_orphans.extend(orphans)
+
+    filler_lines, filler_credits, filler_gt = _adv_clean_filler(rng, ADVERSARIAL_CLEAN_FILLER_COUNT)
+    all_lines.extend(filler_lines)
+    all_credits.extend(filler_credits)
+    all_gt_credits.extend(filler_gt)
+
+    orders = _adv_orders_for(all_lines, rng)
+
+    all_credits.sort(key=lambda r: r.value_date)
+    balance = OPENING_BALANCE_PAISE
+    finalized_credits: list[BankStatementRecord] = []
+    for record in all_credits:
+        balance += record.credit_paise
+        finalized_credits.append(record.model_copy(update={"balance_paise": balance}))
+
+    ground_truth = GroundTruth(credits=all_gt_credits, orphan_settlements=all_orphans)
+
+    write_order_ledger_csv(orders, out_dir / "order_ledger.csv")
+    write_settlement_report_csv(all_lines, out_dir / "settlement_report.csv")
+    write_bank_statement_csv(finalized_credits, out_dir / "bank_statement.csv")
     write_ground_truth_json(ground_truth, out_dir / "ground_truth.json")
 
     print_break_distribution(ground_truth)
