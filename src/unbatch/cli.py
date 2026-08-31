@@ -235,13 +235,25 @@ def run_cascade(
 
 
 @app.command()
-def generate(seed: int = 42, noise: float = 0.0) -> None:
+def generate(seed: int = 42, noise: float = 0.0, adversarial: bool = False) -> None:
     """Write data/ fixtures + ground truth for `seed`.
 
     --noise (0.0-1.0, default 0.0) degrades bank_statement narrations only
     — amounts, dates, and settlement data are always exact. 0.0 reproduces
     the committed seed-42 fixtures byte for byte.
+
+    --adversarial writes a same-scale, deliberately hostile dataset instead
+    (see generate.py's `generate_adversarial`) — engineered to maximize the
+    false-match collision shapes E5/E9 found by chance, not the default
+    generator. Incompatible with --noise; the default generator path this
+    dataset does not touch is unaffected either way.
     """
+    if adversarial:
+        if noise:
+            typer.echo("--adversarial and --noise are mutually exclusive", err=True)
+            raise typer.Exit(code=1)
+        generate_module.generate_adversarial(seed, out_dir=generate_module.DEFAULT_OUT_DIR)
+        return
     if not 0.0 <= noise <= 1.0:
         typer.echo(f"--noise must be between 0.0 and 1.0, got {noise}", err=True)
         raise typer.Exit(code=1)
