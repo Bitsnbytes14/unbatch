@@ -1,0 +1,354 @@
+{
+  "seeds": [
+    44,
+    46
+  ],
+  "noise_levels": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "arm": "no_llm",
+  "per_seed": {
+    "44": {
+      "per_level": {
+        "0.0": {
+          "run_id": "run_44_no_llm_142f9ced0a9c",
+          "total_credits": 105,
+          "count_match_rate": 0.8952380952380953,
+          "value_weighted_match_rate": 0.940747440613192,
+          "false_match_rate": 0.010638297872340425,
+          "exception_rate": 0.10476190476190476,
+          "precision": 0.9893617021276596,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 79,
+            "l1": 3,
+            "l2": 9,
+            "l3": 3,
+            "l4": 11
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "tolerance_ambiguous": 4,
+            "ambiguous_composition": 6,
+            "unrelated_credit": 1
+          }
+        },
+        "0.25": {
+          "run_id": "run_44_no_llm_2718f493fd12",
+          "total_credits": 105,
+          "count_match_rate": 0.8952380952380953,
+          "value_weighted_match_rate": 0.940747440613192,
+          "false_match_rate": 0.010638297872340425,
+          "exception_rate": 0.10476190476190476,
+          "precision": 0.9893617021276596,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 62,
+            "l1": 20,
+            "l2": 9,
+            "l3": 3,
+            "l4": 11
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "tolerance_ambiguous": 4,
+            "ambiguous_composition": 6,
+            "unrelated_credit": 1
+          }
+        },
+        "0.5": {
+          "run_id": "run_44_no_llm_1f0bac88e8f3",
+          "total_credits": 105,
+          "count_match_rate": 0.8952380952380953,
+          "value_weighted_match_rate": 0.940747440613192,
+          "false_match_rate": 0.010638297872340425,
+          "exception_rate": 0.10476190476190476,
+          "precision": 0.9893617021276596,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 47,
+            "l1": 35,
+            "l2": 9,
+            "l3": 3,
+            "l4": 11
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "tolerance_ambiguous": 4,
+            "ambiguous_composition": 6,
+            "unrelated_credit": 1
+          }
+        },
+        "0.75": {
+          "run_id": "run_44_no_llm_bdd460f526f7",
+          "total_credits": 105,
+          "count_match_rate": 0.8952380952380953,
+          "value_weighted_match_rate": 0.940747440613192,
+          "false_match_rate": 0.010638297872340425,
+          "exception_rate": 0.10476190476190476,
+          "precision": 0.9893617021276596,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 41,
+            "l1": 41,
+            "l2": 9,
+            "l3": 3,
+            "l4": 11
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "tolerance_ambiguous": 4,
+            "ambiguous_composition": 6,
+            "unrelated_credit": 1
+          }
+        },
+        "1.0": {
+          "run_id": "run_44_no_llm_e6292629c703",
+          "total_credits": 105,
+          "count_match_rate": 0.8952380952380953,
+          "value_weighted_match_rate": 0.940747440613192,
+          "false_match_rate": 0.010638297872340425,
+          "exception_rate": 0.10476190476190476,
+          "precision": 0.9893617021276596,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 30,
+            "l1": 52,
+            "l2": 9,
+            "l3": 3,
+            "l4": 11
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "tolerance_ambiguous": 4,
+            "ambiguous_composition": 6,
+            "unrelated_credit": 1
+          }
+        }
+      }
+    },
+    "46": {
+      "per_level": {
+        "0.0": {
+          "run_id": "run_46_no_llm_ac9dceacc349",
+          "total_credits": 105,
+          "count_match_rate": 0.9047619047619048,
+          "value_weighted_match_rate": 0.9514724042397852,
+          "false_match_rate": 0.021052631578947368,
+          "exception_rate": 0.09523809523809523,
+          "precision": 0.9789473684210527,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 79,
+            "l1": 3,
+            "l2": 9,
+            "l3": 4,
+            "l4": 10
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "ambiguous_composition": 5,
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 4
+          }
+        },
+        "0.25": {
+          "run_id": "run_46_no_llm_f98800a41a6c",
+          "total_credits": 105,
+          "count_match_rate": 0.9047619047619048,
+          "value_weighted_match_rate": 0.9514724042397852,
+          "false_match_rate": 0.021052631578947368,
+          "exception_rate": 0.09523809523809523,
+          "precision": 0.9789473684210527,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 69,
+            "l1": 13,
+            "l2": 9,
+            "l3": 4,
+            "l4": 10
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "ambiguous_composition": 5,
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 4
+          }
+        },
+        "0.5": {
+          "run_id": "run_46_no_llm_c5f89e492847",
+          "total_credits": 105,
+          "count_match_rate": 0.9047619047619048,
+          "value_weighted_match_rate": 0.9514724042397852,
+          "false_match_rate": 0.021052631578947368,
+          "exception_rate": 0.09523809523809523,
+          "precision": 0.9789473684210527,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 49,
+            "l1": 33,
+            "l2": 9,
+            "l3": 4,
+            "l4": 10
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "ambiguous_composition": 5,
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 4
+          }
+        },
+        "0.75": {
+          "run_id": "run_46_no_llm_13de7d9b2028",
+          "total_credits": 105,
+          "count_match_rate": 0.9047619047619048,
+          "value_weighted_match_rate": 0.9514724042397852,
+          "false_match_rate": 0.021052631578947368,
+          "exception_rate": 0.09523809523809523,
+          "precision": 0.9789473684210527,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 43,
+            "l1": 39,
+            "l2": 9,
+            "l3": 4,
+            "l4": 10
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "ambiguous_composition": 5,
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 4
+          }
+        },
+        "1.0": {
+          "run_id": "run_46_no_llm_afc9f6341e12",
+          "total_credits": 105,
+          "count_match_rate": 0.9047619047619048,
+          "value_weighted_match_rate": 0.9514724042397852,
+          "false_match_rate": 0.021052631578947368,
+          "exception_rate": 0.09523809523809523,
+          "precision": 0.9789473684210527,
+          "recall": 0.8942307692307693,
+          "correctly_rejected": 8,
+          "stage_funnel": {
+            "l0": 20,
+            "l1": 62,
+            "l2": 9,
+            "l3": 4,
+            "l4": 10
+          },
+          "llm_call_count": 0,
+          "llm_call_rate": 0.0,
+          "llm_cost_paise": 0,
+          "cost_paise_per_adjudicated_credit": 0.0,
+          "cost_paise_per_exception": 0.0,
+          "malformed_json_count": 0,
+          "retry_count": 0,
+          "adjudication_failed_count": 0,
+          "break_reason_accuracy": 0.0,
+          "break_reason_confusion": {},
+          "exception_break_type_counts": {
+            "ambiguous_composition": 5,
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 4
+          }
+        }
+      }
+    }
+  }
+}
