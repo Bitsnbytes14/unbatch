@@ -19,7 +19,10 @@ one place rather than trusted to every stage individually.
 
 from __future__ import annotations
 
+import json
 import sqlite3
+import statistics
+import tempfile
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -357,6 +360,97 @@ def exceptions(
         return
     for decision in rows:
         typer.echo(f"{decision.credit_id}\t{decision.stage.value}\t{decision.reason}")
+
+
+_BENCH_MULTISEED_METRIC_FIELDS = (
+    "count_match_rate",
+    "value_weighted_match_rate",
+    "false_match_rate",
+    "exception_rate",
+    "precision",
+    "recall",
+)
+
+
+def _score_rules_only_for_seed(
+    seed: int, data_dir: Path, db_path: Path
+) -> metrics_module.MetricsReport:
+    """Generate `seed`'s own fixtures into `data_dir`, run the rules-only
+    (--no-llm) arm against them, and score the result — the one-seed unit of
+    work `bench --seeds` repeats per seed. No LLM call is possible on this
+    path (STAGE_SEQUENCE stops at L3; run_cascade's ctx.no_llm branch closes
+    out whatever's left as a terminal exception), so this needs no API key
+    and no cache entry for any seed but 42.
+    """
+    generate_module.generate(seed, out_dir=data_dir)
+    _orders, settlements, bank_records = load_input_data(data_dir)
+    expected_batches = compute_expected_batches(settlements)
+    unresolved = build_unresolved_credits(bank_records, expected_batches)
+
+    run_id = audit.derive_run_id(seed, data_dir, arm="no_llm")
+    ctx = RunContext(run_id=run_id, seed=seed, no_llm=True)
+    conn = audit.connect(db_path)
+    try:
+        audit.clear_run(conn, run_id)
+        run_cascade(ctx, unresolved, conn, settlements=settlements, stage_sequence=STAGE_SEQUENCE)
+        return metrics_module.score(conn, run_id, data_dir=data_dir)
+    finally:
+        conn.close()
+
+
+@app.command()
+def bench(
+    seeds: str | None = None,
+    out: Path = Path("bench_multiseed.json"),
+) -> None:
+    """Measure metric stability across independent seeds.
+
+    `--seeds 42,43,44,45,46,47` (comma-separated) generates each seed's own
+    fixtures into a fresh temp directory, runs the rules-only (--no-llm) arm
+    against them, and reports per-metric mean/min/max/stdev across seeds —
+    written to `--out` (default bench_multiseed.json) as well as printed.
+    `data/` and the committed seed-42 fixtures are never touched; every temp
+    directory is cleaned up before this command returns.
+
+    Rules-only ONLY. The with-LLM arm would need a live API call per credit
+    for every seed but 42, and the committed cache/ only covers seed 42 — so
+    this deliberately cannot and does not touch L4.
+    """
+    if not seeds:
+        typer.echo("Pass --seeds, e.g. --seeds 42,43,44,45,46,47", err=True)
+        raise typer.Exit(code=1)
+    seed_list = [int(s.strip()) for s in seeds.split(",") if s.strip()]
+
+    per_seed: dict[str, dict] = {}
+    with tempfile.TemporaryDirectory(prefix="unbatch-bench-") as tmp:
+        tmp_root = Path(tmp)
+        for seed in seed_list:
+            seed_dir = tmp_root / f"seed_{seed}"
+            data_dir = seed_dir / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            report = _score_rules_only_for_seed(seed, data_dir, seed_dir / "audit.db")
+            per_seed[str(seed)] = json.loads(report.model_dump_json())
+
+    summary: dict[str, dict[str, float]] = {}
+    for field in _BENCH_MULTISEED_METRIC_FIELDS:
+        values = [per_seed[str(seed)][field] for seed in seed_list]
+        summary[field] = {
+            "mean": statistics.mean(values),
+            "min": min(values),
+            "max": max(values),
+            "stdev": statistics.stdev(values) if len(values) > 1 else 0.0,
+        }
+
+    payload = {"seeds": seed_list, "arm": "no_llm", "per_seed": per_seed, "summary": summary}
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="")
+
+    typer.echo(f"seeds: {seed_list}")
+    for field, stats in summary.items():
+        typer.echo(
+            f"{field}\tmean={stats['mean']:.4f}\tmin={stats['min']:.4f}"
+            f"\tmax={stats['max']:.4f}\tstdev={stats['stdev']:.4f}"
+        )
+    typer.echo(f"wrote {out}")
 
 
 if __name__ == "__main__":

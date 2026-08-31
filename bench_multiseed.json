@@ -1,0 +1,238 @@
+{
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47
+  ],
+  "arm": "no_llm",
+  "per_seed": {
+    "42": {
+      "run_id": "run_42_no_llm_fc542f9efbd4",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9189560046629376,
+      "false_match_rate": 0.0,
+      "exception_rate": 0.11428571428571428,
+      "precision": 1.0,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 79,
+        "l1": 3,
+        "l2": 9,
+        "l3": 2,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "tolerance_ambiguous": 4,
+        "ambiguous_composition": 7,
+        "unrelated_credit": 1
+      }
+    },
+    "43": {
+      "run_id": "run_43_no_llm_05579d6a3293",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9229167259678008,
+      "false_match_rate": 0.010752688172043012,
+      "exception_rate": 0.11428571428571428,
+      "precision": 0.989247311827957,
+      "recall": 0.8846153846153846,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 79,
+        "l1": 3,
+        "l2": 10,
+        "l3": 1,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "ambiguous_composition": 7,
+        "tolerance_ambiguous": 4,
+        "unrelated_credit": 1
+      }
+    },
+    "44": {
+      "run_id": "run_44_no_llm_142f9ced0a9c",
+      "total_credits": 105,
+      "count_match_rate": 0.8952380952380953,
+      "value_weighted_match_rate": 0.940747440613192,
+      "false_match_rate": 0.010638297872340425,
+      "exception_rate": 0.10476190476190476,
+      "precision": 0.9893617021276596,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 79,
+        "l1": 3,
+        "l2": 9,
+        "l3": 3,
+        "l4": 11
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "tolerance_ambiguous": 4,
+        "ambiguous_composition": 6,
+        "unrelated_credit": 1
+      }
+    },
+    "45": {
+      "run_id": "run_45_no_llm_a0f70fba7b03",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9265852746665842,
+      "false_match_rate": 0.010752688172043012,
+      "exception_rate": 0.11428571428571428,
+      "precision": 0.989247311827957,
+      "recall": 0.8846153846153846,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 79,
+        "l1": 3,
+        "l2": 8,
+        "l3": 3,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "ambiguous_composition": 6,
+        "unrelated_credit": 1,
+        "duplicate_utr": 1,
+        "tolerance_ambiguous": 4
+      }
+    },
+    "46": {
+      "run_id": "run_46_no_llm_ac9dceacc349",
+      "total_credits": 105,
+      "count_match_rate": 0.9047619047619048,
+      "value_weighted_match_rate": 0.9514724042397852,
+      "false_match_rate": 0.021052631578947368,
+      "exception_rate": 0.09523809523809523,
+      "precision": 0.9789473684210527,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 79,
+        "l1": 3,
+        "l2": 9,
+        "l3": 4,
+        "l4": 10
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "ambiguous_composition": 5,
+        "unrelated_credit": 1,
+        "tolerance_ambiguous": 4
+      }
+    },
+    "47": {
+      "run_id": "run_47_no_llm_40989720944d",
+      "total_credits": 105,
+      "count_match_rate": 0.8857142857142857,
+      "value_weighted_match_rate": 0.9233222352177916,
+      "false_match_rate": 0.0,
+      "exception_rate": 0.11428571428571428,
+      "precision": 1.0,
+      "recall": 0.8942307692307693,
+      "correctly_rejected": 8,
+      "stage_funnel": {
+        "l0": 79,
+        "l1": 3,
+        "l2": 9,
+        "l3": 2,
+        "l4": 12
+      },
+      "llm_call_count": 0,
+      "llm_call_rate": 0.0,
+      "llm_cost_paise": 0,
+      "malformed_json_count": 0,
+      "retry_count": 0,
+      "adjudication_failed_count": 0,
+      "break_reason_accuracy": 0.0,
+      "break_reason_confusion": {},
+      "exception_break_type_counts": {
+        "ambiguous_composition": 7,
+        "tolerance_ambiguous": 4,
+        "unrelated_credit": 1
+      }
+    }
+  },
+  "summary": {
+    "count_match_rate": {
+      "mean": 0.8904761904761904,
+      "min": 0.8857142857142857,
+      "max": 0.9047619047619048,
+      "stdev": 0.007968190728895982
+    },
+    "value_weighted_match_rate": {
+      "mean": 0.930666680894682,
+      "min": 0.9189560046629376,
+      "max": 0.9514724042397852,
+      "stdev": 0.01266728336059701
+    },
+    "false_match_rate": {
+      "mean": 0.008866050965895636,
+      "min": 0.0,
+      "max": 0.021052631578947368,
+      "stdev": 0.007949668238244518
+    },
+    "exception_rate": {
+      "mean": 0.10952380952380952,
+      "min": 0.09523809523809523,
+      "max": 0.11428571428571428,
+      "stdev": 0.007968190728895957
+    },
+    "precision": {
+      "mean": 0.9911339490341043,
+      "min": 0.9789473684210527,
+      "max": 1.0,
+      "stdev": 0.0079496682382445
+    },
+    "recall": {
+      "mean": 0.8910256410256411,
+      "min": 0.8846153846153846,
+      "max": 0.8942307692307693,
+      "stdev": 0.004965363264368523
+    }
+  }
+}
