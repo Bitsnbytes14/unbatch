@@ -24,6 +24,7 @@ from __future__ import annotations
 import csv
 import json
 import random
+import re
 import string
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
@@ -1099,7 +1100,149 @@ def read_bank_statement_csv(path: Path) -> list[BankStatementRecord]:
     return [_bank_statement_from_row(row) for row in _read_csv(path)]
 
 
-def generate(seed: int, out_dir: Path = DEFAULT_OUT_DIR) -> None:
+# --- Narration noise (E10) ---------------------------------------------
+#
+# Real bank narrations are noisier than the clean templates above. This is
+# a post-processing pass over the *already-generated* bank_statement, not a
+# new break type: it only ever rewrites `narration`, never touches
+# amount/date/balance/txn_id or any settlement data, so it measures L0/L1
+# robustness to messy text, not the cascade's arithmetic. `--noise 0.0`
+# (the default) must reproduce the committed seed-42 fixtures byte for
+# byte — see `apply_narration_noise`'s own early-return below.
+#
+# UTRs are always exactly one of `_BANK_CODES` (5 chars) followed by 12
+# digits (`_random_utr`), so this pattern finds one reliably wherever a
+# clean UTR is still present in a narration; where it isn't (already
+# truncated/absent by an earlier break-injection step), the UTR-targeted
+# techniques below degrade gracefully to a no-op or a generic fallback.
+_UTR_PATTERN = re.compile("(?:" + "|".join(_BANK_CODES) + r")\d{12}")
+
+_NOISE_PREFIXES = ("TRF/", "REF ", "TXN/", "P2A-", "UPI-")
+_NOISE_SUFFIXES = (" -SETL", "/CR", " REF", "-CREDIT", " TXN")
+_LOOKALIKE_SUBS = {"O": "0", "0": "O", "I": "1", "1": "I", "l": "1"}
+_COUNTERPARTY_ONLY_NARRATIONS = (
+    "RAZORPAY SOFTWARE PVT LTD",
+    "RAZORPAY SOFTWARE PRIVATE LIMITED",
+    "SETTLEMENT CREDIT RAZORPAY",
+)
+
+
+def _noise_truncate_mid_utr(narration: str, rng: random.Random) -> str:
+    """Truncation at an arbitrary length — landing inside the UTR span when
+    one is present, since a cut that stops just short of the UTR (or lands
+    past it) wouldn't actually be mid-UTR."""
+    match = _UTR_PATTERN.search(narration)
+    if match is None or match.end() - match.start() < 2:
+        cut = rng.randint(max(1, len(narration) // 3), max(1, len(narration) - 1))
+        return narration[:cut]
+    start, end = match.span()
+    cut = rng.randint(start + 1, end - 1)
+    return narration[:cut]
+
+
+def _noise_transpose_utr_digits(narration: str, rng: random.Random) -> str:
+    """Transposed adjacent digits within the UTR — a real UTR string is no
+    longer equal to the one on record, so L0's exact substring check must
+    correctly decline it."""
+    match = _UTR_PATTERN.search(narration)
+    if match is None:
+        return narration
+    utr = match.group()
+    swappable = [i for i in range(len(utr) - 1) if utr[i].isdigit() and utr[i + 1].isdigit()]
+    if not swappable:
+        return narration
+    i = rng.choice(swappable)
+    swapped = utr[:i] + utr[i + 1] + utr[i] + utr[i + 2 :]
+    return narration[: match.start()] + swapped + narration[match.end() :]
+
+
+def _noise_lookalike_substitution(narration: str, rng: random.Random) -> str:
+    """O/0 and I/1/l confusions, applied within the UTR itself — the kind
+    of manual re-keying error a bank's own systems introduce."""
+    match = _UTR_PATTERN.search(narration)
+    if match is None:
+        return narration
+    utr = match.group()
+    positions = [i for i, ch in enumerate(utr) if ch in _LOOKALIKE_SUBS]
+    if not positions:
+        return narration
+    i = rng.choice(positions)
+    mutated = utr[:i] + _LOOKALIKE_SUBS[utr[i]] + utr[i + 1 :]
+    return narration[: match.start()] + mutated + narration[match.end() :]
+
+
+def _noise_separators(narration: str, rng: random.Random) -> str:
+    """Inconsistent separators and collapsed/doubled whitespace — leaves
+    the UTR itself untouched (separators sit between segments, not inside
+    an alphanumeric code), so this alone need not defeat L0's match."""
+    variants = (
+        lambda s: s.replace("-", "_"),
+        lambda s: s.replace("-", " "),
+        lambda s: s.replace("/", "-"),
+        lambda s: s.replace(" ", "  ", 1),
+        lambda s: re.sub(r"\s+", "", s),
+    )
+    return rng.choice(variants)(narration)
+
+
+def _noise_wrap(narration: str, rng: random.Random) -> str:
+    """Bank-specific prefixes/suffixes wrapping the UTR — also leaves the
+    UTR substring itself intact, same reasoning as separator noise."""
+    prefix = rng.choice(_NOISE_PREFIXES) if rng.random() < 0.5 else ""
+    suffix = rng.choice(_NOISE_SUFFIXES) if rng.random() < 0.5 else ""
+    if not prefix and not suffix:
+        suffix = rng.choice(_NOISE_SUFFIXES)
+    return f"{prefix}{narration}{suffix}"
+
+
+def _noise_case(narration: str, rng: random.Random) -> str:
+    """Case inconsistency — lowercasing (or randomly mixing case) changes
+    the UTR substring itself, since L0's match is case-sensitive."""
+    if rng.random() < 0.5:
+        return narration.lower()
+    return "".join(
+        ch.lower() if ch.isupper() and rng.random() < 0.5 else ch.upper() if ch.islower() else ch
+        for ch in narration
+    )
+
+
+def _noise_drop_utr(narration: str, rng: random.Random) -> str:
+    """The UTR absent entirely, with only a counterparty name — the
+    clearest case: nothing here can satisfy L0's substring check."""
+    return rng.choice(_COUNTERPARTY_ONLY_NARRATIONS)
+
+
+_NOISE_TECHNIQUES = (
+    _noise_truncate_mid_utr,
+    _noise_transpose_utr_digits,
+    _noise_lookalike_substitution,
+    _noise_separators,
+    _noise_wrap,
+    _noise_case,
+    _noise_drop_utr,
+)
+
+
+def apply_narration_noise(
+    rng: random.Random, bank_statement: list[BankStatementRecord], noise: float
+) -> list[BankStatementRecord]:
+    """Degrade `noise` (0.0-1.0) of `bank_statement`'s narrations with one
+    randomly chosen technique each, seeded and deterministic. `noise <= 0.0`
+    returns the input list unchanged (not a copy) — the exact no-op
+    `generate(seed, noise=0.0)`'s byte-identical guarantee depends on.
+    Every field but `narration` is always left exactly as it was."""
+    if noise <= 0.0:
+        return bank_statement
+    noised: list[BankStatementRecord] = []
+    for record in bank_statement:
+        if rng.random() < noise:
+            technique = rng.choice(_NOISE_TECHNIQUES)
+            record = record.model_copy(update={"narration": technique(record.narration, rng)})
+        noised.append(record)
+    return noised
+
+
+def generate(seed: int, out_dir: Path = DEFAULT_OUT_DIR, *, noise: float = 0.0) -> None:
     """Generate order_ledger.csv, settlement_report.csv, bank_statement.csv,
     and ground_truth.json under `out_dir` for `seed`, then print the
     break-type distribution to stdout.
@@ -1108,12 +1251,19 @@ def generate(seed: int, out_dir: Path = DEFAULT_OUT_DIR) -> None:
     phase boundary rather than threading one rng through everything — so
     every phase's random draws are reproducible on their own, and a change
     to one phase's random usage can't shift what a later phase draws.
+
+    `noise` (0.0-1.0, default 0.0) degrades bank_statement narrations only
+    (see `apply_narration_noise`) — amounts, dates, and settlement data are
+    never touched, and every ground-truth answer stays exactly what it was
+    without noise. At the default 0.0 this is a strict no-op: output is
+    byte-identical to a call with `noise` omitted entirely.
     """
     orders, _baseline_settlements, batches = generate_orders_and_settlements(seed)
     baseline_records = generate_bank_statement_baseline(random.Random(seed), batches)
     settlements, bank_statement, ground_truth = inject_breaks(
         random.Random(seed), orders, batches, baseline_records
     )
+    bank_statement = apply_narration_noise(random.Random(seed), bank_statement, noise)
 
     write_order_ledger_csv(orders, out_dir / "order_ledger.csv")
     write_settlement_report_csv(settlements, out_dir / "settlement_report.csv")
