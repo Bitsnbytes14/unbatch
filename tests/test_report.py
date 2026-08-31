@@ -245,3 +245,114 @@ def test_render_end_to_end_with_one_arm_populated(tmp_path: Path) -> None:
     assert "of the 2 credits reaching L4 in arm A" in html
     assert "1 <code>ambiguous_composition</code>" in html
     assert "plus 1 <code>unrelated_credit</code>" in html
+
+
+def test_render_with_arm_b_populated_shows_delta_and_break_reason_accuracy(
+    tmp_path: Path,
+) -> None:
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _write_ground_truth(data_dir / "ground_truth.json")
+    _write_bank_statement(data_dir / "bank_statement.csv")
+    (data_dir / "order_ledger.csv").write_text(
+        "order_id,payment_id,amount,currency,status,captured_at,customer_ref,method\n",
+        encoding="utf-8",
+        newline="",
+    )
+    (data_dir / "settlement_report.csv").write_text(
+        "settlement_id,settlement_utr,payment_id,type,gross,fee,tax,net,settled_at\n",
+        encoding="utf-8",
+        newline="",
+    )
+
+    db_path = tmp_path / "audit.db"
+    conn = audit.connect(db_path)
+    seed = 7
+
+    def _matched(run_id: str, txn_id: str, payment_ids: list[str]) -> Decision:
+        return Decision(
+            run_id=run_id,
+            seed=seed,
+            stage=Stage.L0,
+            credit_id=txn_id,
+            matched_payment_ids=payment_ids,
+            outcome=DecisionOutcome.MATCHED,
+            confidence=1.0,
+            delta_paise=0,
+            reason="utr_exact_match",
+            rationale=None,
+            llm_model=None,
+            llm_cost_paise=None,
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
+        )
+
+    no_llm_run_id = audit.derive_run_id(seed, data_dir, arm="no_llm")
+    audit.record(conn, _matched(no_llm_run_id, "txn_ok", ["pay_a"]))
+    for txn_id in ("txn_ambiguous", "txn_unrelated"):
+        audit.record(
+            conn,
+            Decision(
+                run_id=no_llm_run_id,
+                seed=seed,
+                stage=Stage.L4,
+                credit_id=txn_id,
+                matched_payment_ids=[],
+                outcome=DecisionOutcome.EXCEPTION,
+                confidence=0.0,
+                delta_paise=0,
+                reason="no_llm_unresolved",
+                rationale=None,
+                llm_model=None,
+                llm_cost_paise=None,
+                created_at=datetime(2024, 1, 1, tzinfo=UTC),
+            ),
+        )
+
+    with_llm_run_id = audit.derive_run_id(seed, data_dir, arm="with_llm")
+    audit.record(conn, _matched(with_llm_run_id, "txn_ok", ["pay_a"]))
+    audit.record(
+        conn,
+        Decision(
+            run_id=with_llm_run_id,
+            seed=seed,
+            stage=Stage.L4,
+            credit_id="txn_ambiguous",
+            matched_payment_ids=["pay_b"],
+            outcome=DecisionOutcome.MATCHED,
+            confidence=0.9,
+            delta_paise=0,
+            reason="ambiguous_composition",  # correct classification
+            rationale="picked the closer batch",
+            llm_model="claude-sonnet-5",
+            llm_cost_paise=10,
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
+        ),
+    )
+    audit.record(
+        conn,
+        Decision(
+            run_id=with_llm_run_id,
+            seed=seed,
+            stage=Stage.L4,
+            credit_id="txn_unrelated",
+            matched_payment_ids=[],
+            outcome=DecisionOutcome.EXCEPTION,
+            confidence=0.3,
+            delta_paise=0,
+            reason="unrelated_credit",
+            rationale="nothing to tie to",
+            llm_model="claude-sonnet-5",
+            llm_cost_paise=8,
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
+        ),
+    )
+
+    out_path = report.render(seed, data_dir=data_dir, db=db_path, out_path=tmp_path / "report.html")
+    html = out_path.read_text(encoding="utf-8")
+
+    # both credits now resolve in arm B: count_match_rate = 3/3 = 100%
+    assert "Value the AI added to match rate (B − A)" in html
+    assert "100.0%" in html
+    # break-reason accuracy called out separately from the delta
+    assert "What the delta doesn&#39;t show" in html or "What the delta doesn't show" in html
+    assert "break-reason accuracy on arm B is 100.0%" in html

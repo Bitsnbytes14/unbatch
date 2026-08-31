@@ -162,6 +162,13 @@
       <strong>Value the AI added to match rate (B − A): {{ (delta_b_minus_a * 100) | round(1) }} points</strong>
       ({{ arms.no_llm.metrics.count_match_rate | percent }} → {{ arms.with_llm.metrics.count_match_rate | percent }}).
       {% if delta_b_minus_a * 100 < 3 %}This is small, and reported as such — see the framing below for why that is the expected result here, not a disappointment.{% endif %}
+      {% if arms.with_llm.has_llm_calls %}
+      <strong>What the delta doesn't show:</strong> break-reason accuracy on arm B is {{ arms.with_llm.metrics.break_reason_accuracy | percent }} —
+      a separate signal, additional to the match-rate delta above. Match rate only scores whether a credit resolved and to what payment_ids;
+      it cannot see whether the model correctly explained <em>why</em> a break happened for the credits it touches, which is the actual job
+      L4 exists to do. A high break-reason accuracy alongside a small match-rate delta is a real, specific capability, not a consolation prize
+      for a small delta — see METRICS.md's own section on this.
+      {% endif %}
     </div>
     {% else %}
     <div class="callout callout-warn">
