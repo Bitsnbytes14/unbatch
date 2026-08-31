@@ -72,13 +72,23 @@ Rules for keeping this useful:
 **Fix:** added `audit.clear_run(conn, run_id)`, called at the start of `unbatch run` before the cascade writes anything. Deletes any existing rows for that run_id first, so a re-run replaces rather than accumulates.
 **Kept:** "the run_id is deterministic" and "the audit log is append-only" are individually correct design choices that combine into a bug if nothing bridges them — reproducibility at the id level doesn't imply reproducibility at the table level unless something enforces it. Added a regression test (`test_rerunning_the_same_run_id_does_not_duplicate_rows`) that runs the same insert-decisions sequence twice and asserts the count stays flat, so this can't silently come back.
 
+### 2026-08-31 — CLAUDE.md's own spec named an API parameter the model rejects
+**Broke:** nothing at runtime — caught before the first live call. Building the adjudicator, the up-to-date Claude API reference flagged that `claude-sonnet-5` (and the whole 4.6+/5 model family) rejects `temperature`/`top_p`/`top_k` outright with a 400. CLAUDE.md's own stack line says "Anthropic SDK, `claude-sonnet-5`, temperature 0, JSON out validated by pydantic" — a literal instruction that, followed as written, would have made every L4 call fail on the very first real request.
+**Cause:** CLAUDE.md was written against an older assumption about this model family's API surface — sampling controls were a normal way to ask for deterministic output when the file's stack section was drafted, and that surface changed under it. The file describes an API shape, not just an intent, so it can go stale exactly the way code does, and this project's own instruction says its contents "OVERRIDE any default behaviour" — the kind of line that's easy to follow literally into a wall.
+**Fix:** `adjudicator._call_model` sends no sampling parameters at all. Determinism for the metrics that matter comes from the prompt-hash cache instead — `--cached` always replays the exact committed bytes, regardless of what a live call would produce on any given day — not from `temperature=0`, which is no longer an available knob on this model.
+**Kept:** a spec file naming a specific API parameter is a claim that can expire, same as a memory naming a specific function or flag. Worth a written note when it's caught, not a silent deviation — this entry is that note.
+
+### 2026-08-31 — a response with no text block would have skipped the retry path entirely
+**Broke:** the first test for the no-text-block edge case (the model hitting `max_tokens` before emitting any text, so `response.content` has no `text`-type block) failed with an uncaught `_MalformedResponseError` propagating straight out of `adjudicate()`, instead of triggering the documented retry-then-degrade.
+**Cause:** I'd put the "no text block" check inside `_call_model`, one layer below where `adjudicate()`'s retry `try/except` actually wraps — that `except` only sat around `_parse_response`, so an exception raised earlier, while fetching the response, had nowhere to land. First guess was that the retry logic itself was wrong; it wasn't — the failure mode was simply being raised outside the block that was supposed to catch it.
+**Fix:** moved the check into a small `_require_text()` helper, called from inside the same `try/except` as `_parse_response`, so a missing text block and a malformed JSON body now go through the identical retry-then-degrade path, with token cost from the failed attempt still counted before either failure mode is evaluated.
+**Kept:** "never crashes on model output" has to cover every way a response can fail to yield usable text, not only the ways that parse as invalid JSON — the retry/degrade boundary belongs around the whole "get usable text back" step, not just the JSON-parsing half of it.
+
 <!--
 Likely candidates, based on where the design is thin. Delete as they either happen or don't:
   - subset-sum blowup in L2 before pooling caps were added
   - float creeping into a money path and passing tests anyway
   - date window off-by-one dropping T+2 settlements
-  - model returning prose around the JSON block
-  - cache key not including model/prompt version, so stale responses replayed after a prompt change
   - GST rounding applied per-line vs per-batch giving different paise totals
   - ground_truth accidentally imported into a stage, inflating the score
 -->
