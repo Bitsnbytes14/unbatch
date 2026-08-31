@@ -4,6 +4,8 @@ A live log of what broke and how it got fixed. Written at the moment of breakage
 
 The Buildathon form asks *"what broke, and how you got out"* and says it is the first thing they read. This file is the raw material for that answer.
 
+Entries below are in strict chronological order (2026-08-30 through 2026-08-31) and unedited after the fact — including the wrong first guesses, the reverted fixes, and the one entry (gpt-5-nano vs. gpt-5-mini) left open with no fix applied at the time it was written, resolved only in the entry that follows it. If it reads rough, that's the log doing its job.
+
 ## Format
 
 ```
