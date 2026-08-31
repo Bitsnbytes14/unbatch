@@ -41,30 +41,50 @@ CREATE TABLE IF NOT EXISTS decisions (
     llm_model TEXT,
     llm_cost_paise INTEGER,
     llm_retried INTEGER NOT NULL DEFAULT 0,
+    evidence_refs TEXT,
+    human_review_required INTEGER,
     created_at TEXT NOT NULL
 )
 """
 
 _CREATE_RUN_ID_INDEX_SQL = "CREATE INDEX IF NOT EXISTS idx_decisions_run_id ON decisions(run_id)"
 
+# Columns added after the table's first release — CREATE TABLE IF NOT EXISTS
+# only creates a fresh table, so a pre-existing local out/audit.db (gitignored,
+# never shipped) needs these added explicitly or every insert against it would
+# fail with "table decisions has no column named ...".
+_ADDED_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("evidence_refs", "TEXT"),
+    ("human_review_required", "INTEGER"),
+)
+
 _INSERT_SQL = """
 INSERT INTO decisions (
     run_id, seed, stage, credit_id, matched_payment_ids, outcome,
     confidence, delta_paise, reason, rationale, llm_model, llm_cost_paise,
-    llm_retried, created_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    llm_retried, evidence_refs, human_review_required, created_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """
+
+
+def _ensure_columns(conn: sqlite3.Connection) -> None:
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(decisions)")}
+    for name, sql_type in _ADDED_COLUMNS:
+        if name not in existing:
+            conn.execute(f"ALTER TABLE decisions ADD COLUMN {name} {sql_type}")
 
 
 def connect(db_path: Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
     """Open (creating if needed) the audit database and ensure the decisions
     table exists. Idempotent: safe to call on every run, including against
     an existing database — CREATE TABLE/INDEX IF NOT EXISTS never wipes
-    prior rows."""
+    prior rows, and `_ensure_columns` adds any column introduced after that
+    database was first created rather than erroring on the next insert."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(db_path)
     conn.execute(_CREATE_TABLE_SQL)
     conn.execute(_CREATE_RUN_ID_INDEX_SQL)
+    _ensure_columns(conn)
     conn.commit()
     return conn
 
@@ -99,6 +119,8 @@ def record(conn: sqlite3.Connection, decision: Decision) -> None:
             decision.llm_model,
             decision.llm_cost_paise,
             int(decision.llm_retried),
+            None if decision.evidence_refs is None else json.dumps(decision.evidence_refs),
+            None if decision.human_review_required is None else int(decision.human_review_required),
             decision.created_at.isoformat(),
         ),
     )
@@ -106,6 +128,8 @@ def record(conn: sqlite3.Connection, decision: Decision) -> None:
 
 
 def _row_to_decision(row: sqlite3.Row) -> Decision:
+    evidence_refs_json = row["evidence_refs"]
+    human_review_value = row["human_review_required"]
     return Decision(
         run_id=row["run_id"],
         seed=row["seed"],
@@ -120,6 +144,8 @@ def _row_to_decision(row: sqlite3.Row) -> Decision:
         llm_model=row["llm_model"],
         llm_cost_paise=row["llm_cost_paise"],
         llm_retried=bool(row["llm_retried"]),
+        evidence_refs=None if evidence_refs_json is None else json.loads(evidence_refs_json),
+        human_review_required=None if human_review_value is None else bool(human_review_value),
         created_at=datetime.fromisoformat(row["created_at"]),
     )
 

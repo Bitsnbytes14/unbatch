@@ -3,6 +3,7 @@ existing database without losing prior rows."""
 
 from __future__ import annotations
 
+import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -70,6 +71,69 @@ def test_insert_and_query_round_trips_every_field(tmp_path: Path) -> None:
 
     [fetched] = audit.fetch_decisions(conn, decision.run_id)
     assert fetched == decision
+
+
+def test_insert_and_query_round_trips_evidence_refs_and_human_review(tmp_path: Path) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    decision = _decision(
+        stage=Stage.L4,
+        reason="ambiguous_composition",
+        evidence_refs=["pay_1", "settle_9"],
+        human_review_required=True,
+    )
+    audit.record(conn, decision)
+
+    [fetched] = audit.fetch_decisions(conn, decision.run_id)
+    assert fetched == decision
+
+
+def test_evidence_refs_and_human_review_default_to_none(tmp_path: Path) -> None:
+    """A rules-stage decision (L0-L3) never sets these — round-tripping one
+    must come back None, not an empty list or False."""
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(conn, _decision())
+
+    [fetched] = audit.fetch_decisions(conn, "run_42_abc123")
+    assert fetched.evidence_refs is None
+    assert fetched.human_review_required is None
+
+
+def test_connect_adds_missing_columns_to_a_pre_existing_database(tmp_path: Path) -> None:
+    """A local out/audit.db created before evidence_refs/human_review_required
+    existed must not break on the next insert — connect() has to migrate it
+    in place rather than assume every existing database already has them."""
+    db_path = tmp_path / "audit.db"
+    old_conn = sqlite3.connect(db_path)
+    old_conn.execute(
+        """
+        CREATE TABLE decisions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            run_id TEXT NOT NULL,
+            seed INTEGER NOT NULL,
+            stage TEXT NOT NULL,
+            credit_id TEXT NOT NULL,
+            matched_payment_ids TEXT NOT NULL,
+            outcome TEXT NOT NULL,
+            confidence REAL NOT NULL,
+            delta_paise INTEGER NOT NULL,
+            reason TEXT NOT NULL,
+            rationale TEXT,
+            llm_model TEXT,
+            llm_cost_paise INTEGER,
+            llm_retried INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL
+        )
+        """
+    )
+    old_conn.commit()
+    old_conn.close()
+
+    conn = audit.connect(db_path)
+    audit.record(conn, _decision(evidence_refs=["pay_1"], human_review_required=False))
+
+    [fetched] = audit.fetch_decisions(conn, "run_42_abc123")
+    assert fetched.evidence_refs == ["pay_1"]
+    assert fetched.human_review_required is False
 
 
 def test_fetch_decisions_filters_by_run_id(tmp_path: Path) -> None:

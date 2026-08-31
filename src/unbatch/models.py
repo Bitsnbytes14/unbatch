@@ -219,6 +219,8 @@ class Decision(BaseModel):
     llm_model: str | None
     llm_cost_paise: Paise | None
     llm_retried: bool = False
+    evidence_refs: list[str] | None = None
+    human_review_required: bool | None = None
     created_at: datetime
 
 

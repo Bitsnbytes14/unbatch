@@ -19,6 +19,7 @@ one place rather than trusted to every stage individually.
 
 from __future__ import annotations
 
+import csv
 import json
 import sqlite3
 import statistics
@@ -29,7 +30,7 @@ from pathlib import Path
 
 import typer
 
-from unbatch import adjudicator, audit
+from unbatch import adjudicator, audit, money
 from unbatch import generate as generate_module
 from unbatch import metrics as metrics_module
 from unbatch import report as report_module
@@ -340,21 +341,97 @@ def report(
     typer.echo(f"wrote {out_path}")
 
 
+_EXCEPTION_EXPORT_HEADER = (
+    "txn_id",
+    "value_date",
+    "credit_amount_rupees",
+    "narration",
+    "delta_rupees",
+    "stage",
+    "reason",
+    "break_reason",
+    "evidence_refs",
+    "proposed_resolution",
+    "human_review_required",
+    "analyst_resolution",
+)
+
+
+def _exception_export_row(
+    decision: Decision, bank_record: BankStatementRecord | None
+) -> list[str]:
+    """One CSV row an analyst can act on directly: credit details looked up
+    from the bank statement (blank if this run's data_dir doesn't have that
+    credit_id — a stale cross-seed audit log degrades gracefully rather than
+    crashing), plus the model's own classification when this exception
+    actually reached the adjudicator (`decision.llm_model` is None for
+    rules-stage exceptions like `pool_too_large` or `no_llm_unresolved`,
+    which were never classified at all). `analyst_resolution` is always
+    blank — it's the column this export exists to hand someone."""
+    reached_llm = decision.llm_model is not None
+    return [
+        decision.credit_id,
+        bank_record.value_date.isoformat() if bank_record else "",
+        (
+            money.format_paise_to_rupees(bank_record.credit_paise)
+            if bank_record and bank_record.credit_paise is not None
+            else ""
+        ),
+        bank_record.narration if bank_record else "",
+        money.format_paise_to_rupees(decision.delta_paise),
+        decision.stage.value,
+        decision.reason,
+        decision.reason if reached_llm else "",
+        ";".join(decision.evidence_refs) if decision.evidence_refs else "",
+        decision.rationale or "",
+        "" if decision.human_review_required is None else str(decision.human_review_required),
+        "",
+    ]
+
+
 @app.command()
 def exceptions(
     run_id: str | None = None,
     db: Path = audit.DEFAULT_DB_PATH,
+    data_dir: Path = generate_module.DEFAULT_OUT_DIR,
+    export: Path | None = None,
 ) -> None:
-    """Print unresolved items and their reasons.
+    """Print unresolved items and their reasons, or export them as a CSV
+    work item.
 
     A query over out/audit.db (audit.fetch_exceptions), never a separately
     maintained list — ARCHITECTURE.md § Audit trail. Empty output before any
     stage has ever run is correct: there is nothing in the table yet, not a
     bug to work around. Omit --run-id to see exceptions across every run
     recorded so far.
+
+    --export PATH writes the same rows as a CSV instead of printing them:
+    credit details cross-referenced from `data_dir`'s bank_statement.csv,
+    the model's break_reason/evidence_refs/proposed_resolution for whichever
+    exceptions actually reached the adjudicator, and a blank
+    analyst_resolution column for someone to fill in.
     """
     conn = audit.connect(db)
     rows = audit.fetch_exceptions(conn, run_id)
+
+    if export is not None:
+        bank_statement_path = data_dir / "bank_statement.csv"
+        bank_by_txn = (
+            {r.txn_id: r for r in generate_module.read_bank_statement_csv(bank_statement_path)}
+            if bank_statement_path.exists()
+            else {}
+        )
+        export.parent.mkdir(parents=True, exist_ok=True)
+        with open(export, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f, lineterminator="\n")
+            writer.writerow(_EXCEPTION_EXPORT_HEADER)
+            for decision in rows:
+                writer.writerow(
+                    _exception_export_row(decision, bank_by_txn.get(decision.credit_id))
+                )
+        typer.echo(f"wrote {len(rows)} rows to {export}")
+        return
+
     if not rows:
         typer.echo("No exceptions.")
         return

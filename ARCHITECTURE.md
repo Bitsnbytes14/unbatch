@@ -102,10 +102,11 @@ Every stage writes a `Decision` row before returning. No exceptions.
 
 ```
 run_id · seed · stage · credit_id · matched_payment_ids · outcome
-confidence · delta_paise · reason · rationale · llm_model · llm_cost_paise · created_at
+confidence · delta_paise · reason · rationale · llm_model · llm_cost_paise · llm_retried
+evidence_refs · human_review_required · created_at
 ```
 
-`run_id` is derived from the seed, so runs are reproducible and two runs are diffable. The exception report and the HTML report are **queries over this table**, never separately maintained lists — which is what makes the audit trail load-bearing rather than decorative.
+`run_id` is derived from the seed, so runs are reproducible and two runs are diffable. The exception report and the HTML report are **queries over this table**, never separately maintained lists — which is what makes the audit trail load-bearing rather than decorative. `evidence_refs`/`human_review_required` are the two `AdjudicationResult` fields the original schema left unpersisted — set only when a Decision actually reached the adjudicator, `None` for every rules-stage (L0-L3) decision and for `adjudication_failed`, since no classification exists to record in either case. `unbatch exceptions --export` is what reads them back out.
 
 ## Reporting
 
