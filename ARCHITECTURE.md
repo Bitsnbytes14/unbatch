@@ -107,7 +107,9 @@ confidence · delta_paise · reason · rationale · llm_model · llm_cost_paise 
 
 ## Reporting
 
-`report.py` renders `out/report.html` from the audit DB via jinja2. Static file, no server. Contents: stage funnel, count and value-weighted match rates, false-match rate, confidence distribution, full exception table with reasons, and the rules-only vs rules+LLM comparison.
+`report.py` renders `out/report.html` from the audit DB via jinja2 (template in `src/unbatch/templates/report.html.jinja2`). Static file, no server, no CDN — every byte (CSS included) is inlined into the one HTML file. Contents: the three-arm ablation table (every METRICS.md rate, per arm — including false-match rate and LLM cost per arm, not just overall), the B−A delta with the D3 framing prose explaining why a small delta is the correct outcome, break-reason confusion tables, a confidence-value histogram, and the full per-arm exception table (reasons and rationales, no truncation).
+
+An arm with no decisions yet in the audit log for the current seed renders as "not yet run", never faked as all-exceptions — `unbatch report` works correctly against a partial ablation (e.g. only `--no-llm` has been run) and against an empty database. Money fields are formatted to rupees only inside `report.py` (CLAUDE.md invariant 1); everywhere upstream, including the audit log itself, stays in paise.
 
 Static HTML over a dashboard framework on purpose: zero runtime risk during the pitch video, and nothing to break on a judge's machine.
 

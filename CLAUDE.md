@@ -54,6 +54,7 @@ src/unbatch/
   audit.py         SQLite decision log
   metrics.py       scoring vs ground truth — ONLY file that reads it
   report.py        jinja2 -> out/report.html
+  templates/       report.html.jinja2
   cli.py           typer entrypoints
 tests/
 data/              generated fixtures, committed

@@ -50,6 +50,15 @@ visible only in `adjudication_failed_count`. `BreakReason` and `BreakType`
 intentionally share their string values for the categories that can reach
 L4 (see models.py), so `decision.reason == ground_truth.break_type.value`
 is a direct, correct comparison — not a mapping to maintain.
+
+**`exception_break_type_counts`** exists so report.py can state D3's
+ablation framing ("of the N credits reaching L4, M are cases the rules
+correctly declined") without importing ground truth itself — that would be
+exactly the scoring leak this module's docstring warns about, just one
+layer up. It is a ground-truth `break_type` -> count breakdown, computed
+here where ground truth is already loaded, over every credit this run left
+as an exception (regardless of arm), so report.py only ever reads already
+computed MetricsReport fields.
 """
 
 from __future__ import annotations
@@ -94,6 +103,8 @@ class MetricsReport(BaseModel):
     break_reason_accuracy: float
     break_reason_confusion: dict[str, dict[str, int]]
 
+    exception_break_type_counts: dict[str, int]
+
 
 def _load_ground_truth(path: Path) -> GroundTruth:
     return GroundTruth.model_validate_json(path.read_text(encoding="utf-8"))
@@ -126,6 +137,7 @@ def score(
 
     decisions = audit.fetch_decisions(conn, run_id)
     decision_by_credit = {decision.credit_id: decision for decision in decisions}
+    gt_by_txn = {credit.txn_id: credit for credit in ground_truth.credits}
 
     total_credits = len(ground_truth.credits)
     resolvable_ids = {credit.txn_id for credit in ground_truth.credits if credit.resolvable}
@@ -180,7 +192,14 @@ def score(
         1 for d in llm_decisions if d.llm_retried and d.reason == "adjudication_failed"
     )
 
-    gt_by_txn = {credit.txn_id: credit for credit in ground_truth.credits}
+    exception_break_type_counts: dict[str, int] = {}
+    for txn_id in exception_ids:
+        gt_credit = gt_by_txn.get(txn_id)
+        if gt_credit is None:
+            continue
+        bt = gt_credit.break_type.value
+        exception_break_type_counts[bt] = exception_break_type_counts.get(bt, 0) + 1
+
     break_reason_confusion: dict[str, dict[str, int]] = {}
     break_reason_correct = 0
     break_reason_total = 0
@@ -220,4 +239,5 @@ def score(
         adjudication_failed_count=adjudication_failed_count,
         break_reason_accuracy=break_reason_accuracy,
         break_reason_confusion=break_reason_confusion,
+        exception_break_type_counts=exception_break_type_counts,
     )

@@ -22,5 +22,10 @@
   "retry_count": 0,
   "adjudication_failed_count": 0,
   "break_reason_accuracy": 0.0,
-  "break_reason_confusion": {}
+  "break_reason_confusion": {},
+  "exception_break_type_counts": {
+    "ambiguous_composition": 7,
+    "tolerance_ambiguous": 4,
+    "unrelated_credit": 1
+  }
 }

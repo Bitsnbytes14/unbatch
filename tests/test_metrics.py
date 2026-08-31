@@ -394,6 +394,17 @@ def test_break_reason_accuracy_is_zero_with_no_llm_decisions(scenario) -> None:
     assert report.break_reason_confusion == {}
 
 
+def test_exception_break_type_counts_breaks_down_by_ground_truth_type(scenario) -> None:
+    conn, data_dir = scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    # txn_missed(fee_tier_change) and txn_unrelated(unrelated_credit) are the
+    # two exceptions in this scenario
+    assert report.exception_break_type_counts == {
+        "fee_tier_change": 1,
+        "unrelated_credit": 1,
+    }
+
+
 def test_a_missing_decision_counts_as_exception_not_a_crash(tmp_path: Path) -> None:
     """Every credit should have exactly one decision after a full run, but
     scoring a partial/interrupted run must not crash — treat a credit with

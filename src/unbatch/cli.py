@@ -29,6 +29,7 @@ import typer
 from unbatch import audit
 from unbatch import generate as generate_module
 from unbatch import metrics as metrics_module
+from unbatch import report as report_module
 from unbatch.models import (
     BankStatementRecord,
     Decision,
@@ -312,9 +313,20 @@ def metrics(
 
 
 @app.command()
-def report() -> None:
-    """Regenerate out/report.html from out/audit.db."""
-    raise NotImplementedError
+def report(
+    seed: int = 42,
+    data_dir: Path = generate_module.DEFAULT_OUT_DIR,
+    db: Path = audit.DEFAULT_DB_PATH,
+    out: Path = report_module.DEFAULT_OUT_PATH,
+) -> None:
+    """Regenerate out/report.html from out/audit.db.
+
+    Renders every arm ("no_llm", "with_llm", "llm_only") that has decisions
+    for this seed in the audit log; an arm that hasn't been run yet shows as
+    pending rather than being silently omitted or faked as all-exceptions.
+    """
+    out_path = report_module.render(seed, data_dir=data_dir, db=db, out_path=out)
+    typer.echo(f"wrote {out_path}")
 
 
 @app.command()
