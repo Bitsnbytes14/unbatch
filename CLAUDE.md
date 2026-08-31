@@ -39,6 +39,7 @@ uv run unbatch report              # regenerate out/report.html from audit.db
 uv run unbatch exceptions          # print unresolved items + reasons
 uv run unbatch exceptions --export out/exceptions.csv  # same, as an analyst work item
 uv run unbatch bench --seeds 42,43,44,45,46,47  # rules-only metric stability across seeds
+uv run unbatch bench --scale 5000  # rules-only cascade throughput at scale
 uv run pytest -q
 ```
 
