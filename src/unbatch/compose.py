@@ -1,10 +1,20 @@
 """Batch composition — bounded subset-sum over candidate settlement lines.
 
 Given a bank credit's amount and date, finds the settlement-line subset(s)
-whose net composes the credit. Standalone: this module imports nothing from
-the rest of the pipeline (only `unbatch.models` for the `SettlementLine`
-type), so it can be tested and reasoned about in complete isolation from the
-cascade that calls it.
+whose net composes the credit EXACTLY. Standalone: this module imports
+nothing from the rest of the pipeline (only `unbatch.models` for the
+`SettlementLine` type), so it can be tested and reasoned about in complete
+isolation from the cascade that calls it.
+
+Exact-only, deliberately: an earlier version also offered
+`compose_within_tolerance`, searching for subsets within a band rather than
+hitting the target exactly. It was removed — see FAILURES.md's 2026-08-30
+entry — because a tolerance band widens the space of coincidental matches
+combinatorially (a dozen candidate lines already has thousands of subsets),
+and no band narrow enough to avoid that is also wide enough to admit a real
+fee-tier drift. L3's tolerance check compares a credit directly against
+already-computed batch totals instead of searching subsets at all; this
+module has nothing to do with that comparison.
 
 Bounded per ARCHITECTURE.md § L2:
 
@@ -14,8 +24,7 @@ Bounded per ARCHITECTURE.md § L2:
 - **MAX_SUBSET** (25): no returned subset may use more than this many lines.
 - **Meet-in-the-middle**: the pool is split in half, every achievable subset
   sum is enumerated for each half (bounded by MAX_SUBSET), and the two
-  halves are merged — an exact hashmap lookup for `compose()`, a sorted
-  range scan for `compose_within_tolerance()`. Never a plain recursive
+  halves are merged via an exact hashmap lookup. Never a plain recursive
   solver; that is exponential in a way this deliberately is not (each half
   is at most 2^24 enumerated sums, not 2^48).
 - **Wall-clock timeout**: checked periodically during enumeration and before
@@ -30,7 +39,6 @@ rather than picking one.
 
 from __future__ import annotations
 
-import bisect
 import time
 from collections import defaultdict
 
@@ -128,47 +136,4 @@ def compose(
                 continue
             subset_indices = left_idxs + tuple(m + midpoint for m in right_idxs)
             results.append([candidates[i] for i in subset_indices])
-    return results
-
-
-def compose_within_tolerance(
-    target_paise: int,
-    candidates: list[SettlementLine],
-    tolerance_paise: int,
-    *,
-    max_pool: int = MAX_POOL,
-    max_subset: int = MAX_SUBSET,
-    timeout_s: float = DEFAULT_TIMEOUT_S,
-) -> list[tuple[list[SettlementLine], int]]:
-    """Return every subset of `candidates` whose net sum falls within
-    `tolerance_paise` of `target_paise`, each paired with its signed delta
-    (subset_sum - target_paise). Same caps and refusals as `compose()`; used
-    by L3 once L2's exact search has already failed.
-    """
-    _check_pool_size(candidates, max_pool)
-    deadline = time.monotonic() + timeout_s
-
-    midpoint = len(candidates) // 2
-    left, right = candidates[:midpoint], candidates[midpoint:]
-
-    left_sums = _enumerate_subset_sums(left, max_subset, deadline)
-    right_sums = sorted(_enumerate_subset_sums(right, max_subset, deadline), key=lambda x: x[0])
-    right_values = [total for total, _ in right_sums]
-
-    results: list[tuple[list[SettlementLine], int]] = []
-    for total, left_idxs in left_sums:
-        if time.monotonic() > deadline:
-            raise ComposeTimeoutError(
-                f"composition timed out merging halves ({len(candidates)} candidates)"
-            )
-        lo = bisect.bisect_left(right_values, target_paise - tolerance_paise - total)
-        hi = bisect.bisect_right(right_values, target_paise + tolerance_paise - total)
-        for right_total, right_idxs in right_sums[lo:hi]:
-            if len(left_idxs) + len(right_idxs) == 0:
-                continue
-            if len(left_idxs) + len(right_idxs) > max_subset:
-                continue
-            subset_indices = left_idxs + tuple(m + midpoint for m in right_idxs)
-            delta = (total + right_total) - target_paise
-            results.append(([candidates[i] for i in subset_indices], delta))
     return results

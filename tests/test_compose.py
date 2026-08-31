@@ -15,7 +15,6 @@ from unbatch.compose import (
     ComposeTimeoutError,
     PoolTooLargeError,
     compose,
-    compose_within_tolerance,
 )
 from unbatch.models import SettlementLine, SettlementLineType
 
@@ -108,32 +107,3 @@ def test_timeout_raises_rather_than_hangs() -> None:
     candidates = [_line(i + 1, str(i)) for i in range(10)]
     with pytest.raises(ComposeTimeoutError):
         compose(sum(c.net_paise for c in candidates), candidates, timeout_s=-1.0)
-
-
-def test_within_tolerance_finds_a_near_match_and_reports_the_delta() -> None:
-    candidates = [_line(100, "a"), _line(200, "b")]
-    result = compose_within_tolerance(305, candidates, tolerance_paise=10)
-
-    assert len(result) == 1
-    subset, delta = result[0]
-    assert {line.payment_id for line in subset} == {"pay_a", "pay_b"}
-    assert delta == -5  # 300 - 305
-
-
-def test_within_tolerance_excludes_matches_outside_the_band() -> None:
-    candidates = [_line(100, "a"), _line(200, "b")]
-    assert compose_within_tolerance(400, candidates, tolerance_paise=10) == []
-
-
-def test_within_tolerance_still_refuses_an_oversized_pool() -> None:
-    candidates = [_line(1, str(i)) for i in range(MAX_POOL + 1)]
-    with pytest.raises(PoolTooLargeError):
-        compose_within_tolerance(1, candidates, tolerance_paise=1)
-
-
-def test_within_tolerance_respects_max_subset() -> None:
-    candidates = [_line(100, str(i)) for i in range(30)]
-    result = compose_within_tolerance(
-        3000, candidates, tolerance_paise=5, max_subset=MAX_SUBSET
-    )
-    assert result == []

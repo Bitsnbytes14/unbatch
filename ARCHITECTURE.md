@@ -27,7 +27,7 @@ Ordered cheapest-and-most-certain first. Each stage consumes only what the previ
 | **L0** | UTR exact — settlement UTR appears in bank narration | bulk of clean cases | 1.00 |
 | **L1** | Amount + date exact — credit ties exactly to a computed batch net | clean cases with mangled narration | 0.98 |
 | **L2** | Batch composition — find the payment subset that composes the credit | splits, partial settlements | 0.90 |
-| **L3** | Tolerance — L2 within a fee/rounding delta band, delta recorded | fee-tier drift, rounding | 0.75 |
+| **L3** | Tolerance — credit checked directly against date-windowed expected batches, delta recorded | fee-tier drift, rounding | 0.75 |
 | **L4** | LLM adjudication — classify the break, propose resolution | everything left | model-reported |
 
 Anything L4 cannot resolve with confidence lands in the exception list. That is a **success outcome**, not a failure.
@@ -44,6 +44,21 @@ Naive subset-sum over all payments is exponential and will blow up. Bounded as f
 - **Meet-in-the-middle** over the pooled candidates, or DP on paise buckets if the pool is small. Either is fine; do not write a plain recursive solver.
 - **Deterministic tie-break.** If more than one subset composes `X`, do not pick one. Emit all candidates to L4 as competing explanations. Multiple valid compositions is exactly the ambiguity the model exists to adjudicate.
 - **Timeout guard.** Wall-clock budget per credit; on breach, exception with reason `compose_timeout`.
+
+### L3 — tolerance
+
+L3 checks; it does not search. For each credit L2 left unresolved, take the expected batches (already grouped by settlement UTR, one net per batch — that grouping is computed once, upstream of every stage) whose settlement window overlaps `[D - 3d, D]`, and compare each one's already-computed net directly against the credit: `|credit − batch.net|`. Exactly one batch within tolerance resolves at 0.75 with the delta recorded on the Decision. Zero or more than one leaves the credit unresolved.
+
+**This was originally a composition search** — `compose_within_tolerance`, the same meet-in-the-middle machinery as L2 but accepting any subset within a band instead of an exact sum. It was wrong, not mistuned: composing exactly is a strong filter (almost no subset of a random pool sums to precisely a target), but composing within a band turns "sums to X" into "sums to approximately X", and an 11-line candidate pool has 2048 subsets to draw near-misses from. Run against the real fee_tier_change credit it returned roughly ninety within-tolerance subsets. No band width fixes this — wide enough to admit a real fee-tier drift is wide enough to admit dozens of coincidental line combinations; narrow enough to exclude the coincidences is narrow enough to reject the real drift too. See FAILURES.md's 2026-08-30 entry. Comparing against batches instead of composing from lines removes the assembly step that produced the coincidences in the first place — a batch net is a real, already-computed quantity, not something built out of whatever happens to be lying around.
+
+**The band, set from the fee structure, not tuned to fit this dataset:**
+
+`tolerance = max(50 paise, 0.6% × credit amount)`.
+
+- Pure rounding noise (per-line vs per-batch GST rounding — see `fees.py`) is bounded at a few paise per batch, swamped by the 50-paise floor.
+- A plausible fee-tier drift — a gateway moving a merchant's rate by up to half a percentage point, the largest shift `generate.py`'s own `FEE_TIER_BUMP` models — costs `0.5% × 1.18` (GST on the extra fee) ≈ 0.59% of the affected line's gross. Rounded up to 0.6% of the *credit* (diluted by whatever else shares the batch, so already generous relative to one line's 0.59%).
+
+Wider admits deltas only explainable by a genuinely wrong batch — a false match. Narrower rejects a legitimate half-point fee change — a real settlement pushed to exception for nothing. This number is derived once from the fee structure and left alone; it is not adjusted to make any run's numbers look better.
 
 ### L4 — the LLM boundary
 
