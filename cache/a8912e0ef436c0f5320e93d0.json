@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1149,
+  "output_tokens": 115,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Investigate and confirm which settlement batch actually matches the credit by rechecking the batch nets within the tolerance band and validating against the exact amount (1793628 vs 1793653).\",\"confidence\":0.52,\"evidence_refs\":[\"txn_o3u35Oqd95EdVs\",\"setl_MoEczLawch0CdW\",\"SBIN0104306751231\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1011,
+  "output_tokens": 213,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm which exact set of payment lines ('pay_G09PUheC5uJ9ZF', 'pay_8gdrFmDLYU28kr') or the alternate triple-line composition ('pay_IDD9pjSJaZcsmE', 'pay_1DIFC3wX3cymuR', 'pay_PuWgakTR2l5CSr') actually contributed to the settlement; re-aggregate to a single bill and align the batch to that composition.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_HUQvGABPTb8d63\", \"setl_OseM11YLWJyvDg\", \"setl_KKLgmTRL2VEr6C\", \"AXISP302856050840\"],\n  \"human_review_required\": true\n}"
+}

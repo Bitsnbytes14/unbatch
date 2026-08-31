@@ -1,0 +1,5 @@
+{
+  "input_tokens": 946,
+  "output_tokens": 120,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate multiple candidate line compositions for the same batch; confirm which payment lines actually contributed to this credit and align to a single settlement composition.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"AXISP022768040250\", \"pay_OHnKYaXRvj7uff\", \"txn_0LYTH8xIZM1JRc\"],\n  \"human_review_required\": true\n}"
+}

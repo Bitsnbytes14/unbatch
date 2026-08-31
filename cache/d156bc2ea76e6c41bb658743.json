@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1009,
+  "output_tokens": 179,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm exactly which payment lines composed the batch; if multiple compositions fit, select the one with the most plausible reconciliation trail and update the system to lock that composition, or flag for manual review if ambiguity persists.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_3vbyNN4v7ajEOz\", \"SBIN0377504311972\", \"setl_ZG6SvDCQcf2S7r\", \"setl_15BsaIibP0ICEc\", \"pay_fEczkQPf22kTh4\", \"pay_754OoYP4QRlQar\"],\n  \"human_review_required\": true\n}"
+}

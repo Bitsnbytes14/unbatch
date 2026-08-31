@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1124,
+  "output_tokens": 160,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for manual review to confirm the correct settlement batch among candidates within tolerance; verify batch associations and dates to select a single matching net.\",\n \"confidence\": 0.52,\n \"evidence_refs\": [\"setl_KqTQi4TlWG4yEm\",\"pay_jhQdzbPydtxuV9\",\"pay_qi0L6LD30cjFyg\",\"pay_vWCgmyk2d4zLeB\",\"pay_fYHcLd4NoMQ6td\",\"pay_IgHyiu3ek4VqZs\"],\n \"human_review_required\": true\n}"
+}

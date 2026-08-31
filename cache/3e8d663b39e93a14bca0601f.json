@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1002,
+  "output_tokens": 149,
+  "response_text": "{\"break_reason\":\"ambiguous_composition\",\"proposed_resolution\":\"Investigate which exact line-item composition within the settlement batch matches the credit; if possible, align to a single deterministic pay_id set for reconciliation or mark as ambiguous and request batch re-aggregation from operations.\",\"confidence\":0.55,\"evidence_refs\":[\"txn_HKjcVSO7tTrL4C\",\"setl_bZTnGOgWRWnHmv\",\"setl_qlPFJgjQJSsTq2\",\"pay_5aPTpyepEHqmxj\",\"pay_lPM62k4cCatyCQ\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1002,
+  "output_tokens": 138,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of payment lines that composed the batch; if multiple valid compositions exist, escalate for a human decision and document the final accepted composition.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_SVtL4dSEoLa2LM\",\"SBIN0248373079683\",\"setl_pwgd9PoLiWVFOh\",\"setl_Ei7iduBq6XvLgb\"],\n  \"human_review_required\": true\n}"
+}

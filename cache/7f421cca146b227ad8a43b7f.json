@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1013,
+  "output_tokens": 152,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and align on the exact set of payment lines that constitute the batch; request confirmation from settlement system for the precise composition matching the credited payments or re-run reconciliation with the definitive batch composition.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_KfuTd8U4PD4GQh\", \"ICICR998500636447\", \"setl_7YwC1Zqq8iR5Kx\", \"setl_eI7ji8xePo4xEM\"],\n  \"human_review_required\": true\n}"
+}

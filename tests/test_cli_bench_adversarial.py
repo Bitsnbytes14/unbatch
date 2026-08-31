@@ -1,6 +1,10 @@
 """`unbatch bench --adversarial` (E11b): runs every applicable arm against
-the hostile dataset and publishes the worst case — including refusing to
-make a live LLM call when the cached arm can't cover the new content.
+the hostile dataset and publishes the worst case. E11b's own with-LLM arm
+originally hit a cache miss and stopped there rather than making a live
+call; E13b ran it for real and committed the resulting cache entries, so
+the with-LLM arm now replays from cache/ like every other arm — checked
+below by confirming it succeeds AND that no new cache file appears, which
+is what would happen if a live call had quietly been made instead.
 
 The CLI invocation is shared across tests via a module-scoped fixture: it
 regenerates the adversarial dataset and runs the rules-only cascade, which
@@ -25,6 +29,7 @@ runner = CliRunner()
 # the command — the only reliable way to get a true "before" snapshot
 # when the command itself is invoked lazily by a module-scoped fixture.
 _DATA_DIR_BANK_STATEMENT_BEFORE = (Path("data") / "bank_statement.csv").read_bytes()
+_CACHE_FILES_BEFORE = set(Path("cache").glob("*.json"))
 
 
 @pytest.fixture(scope="module")
@@ -52,14 +57,20 @@ def test_bench_adversarial_false_match_rate_is_worse_than_normal(adversarial_ben
     assert comparison["false_match_rate_delta"] > 0.0
 
 
-def test_bench_adversarial_does_not_attempt_a_live_llm_call(adversarial_bench_result) -> None:
-    """The cached with-LLM arm has to fail with a cache-miss error — the
-    adversarial credits' prompts are new content, so the only way this
-    would come back clean is if a live call quietly happened instead."""
-    result, payload = adversarial_bench_result
-    assert payload["with_llm_cached"] is None
-    assert "no cached response" in payload["with_llm_cached_error"]
-    assert "no live calls were made" in result.output
+def test_bench_adversarial_with_llm_replays_from_cache_with_no_live_call(
+    adversarial_bench_result,
+) -> None:
+    """As of E13b the committed cache/ covers the adversarial dataset's
+    prompts too, so the with-LLM arm now succeeds — the check that matters
+    is that no *new* cache file appears, which is what a live call would
+    produce instead of a replay."""
+    _result, payload = adversarial_bench_result
+    assert payload["with_llm_cached"] is not None
+    assert payload["with_llm_cached_error"] is None
+    assert 0.0 <= payload["with_llm_cached"]["break_reason_accuracy"] <= 1.0
+
+    cache_files_after = set(Path("cache").glob("*.json"))
+    assert cache_files_after == _CACHE_FILES_BEFORE
 
 
 def test_bench_adversarial_does_not_touch_committed_data_dir(adversarial_bench_result) -> None:

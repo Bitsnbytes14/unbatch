@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1073,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and lock the exact settlement line composition that generated the 2847024 paise, confirming which payment lines belong to the batch to prevent future ambiguity.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"setl_xymtUsQFQv3kdM\", \"setl_wK5R9oM01b9jq4\", \"AXISP904012472150\", \"AXISP302856050840\"],\n  \"human_review_required\": true\n}"
+}

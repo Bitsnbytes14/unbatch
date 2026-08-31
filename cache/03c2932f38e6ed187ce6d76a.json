@@ -1,0 +1,5 @@
+{
+  "input_tokens": 955,
+  "output_tokens": 147,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate alternative line composition for the same net; verify if pay_VFgM0Fmxk754LE is a valid, possible contributor to the same batch, and reconcile by selecting the most justified payment line set or flag for manual verification.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_pdbIKaRdebuFrE\", \"setl_pay_6kGL75UQSyPx3B\", \"pay_VFgM0Fmxk754LE\"],\n  \"human_review_required\": true\n}"
+}

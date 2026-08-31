@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1136,
+  "output_tokens": 122,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as ambiguous: multiple settlement batches fall within the tolerance band; escalate for manual review to identify the correct batch or confirm a remittance offset.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_XLMmE79IB8HXfq\", \"setl_o5ldBN1F23y9yp\", \"AXISP284973209581\"],\n  \"human_review_required\": true\n}"
+}

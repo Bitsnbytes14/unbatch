@@ -1,0 +1,5 @@
+{
+  "input_tokens": 957,
+  "output_tokens": 133,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate which exact set of payment lines contributed to the batch and align the bank credit to that composition; if multiple valid line sets exist, flag for manual reconciliation to confirm the correct source lines.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_gw9YooJeTY8HhO\",\"KKBK0807652614498\",\"pay_6kGL75UQSyPx3B\"],\n  \"human_review_required\": true\n}"
+}

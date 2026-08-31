@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1011,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Treat as ambiguous composition since multiple equally valid line sets could explain the same net; escalate for human review to determine exact settlement line mapping.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_9k5lw0ymsBg7Eu\", \"setl_sOoo4zX8pKxo8r\", \"setl_N9CTza7DwLs8du\"],\n  \"human_review_required\": true\n}"
+}

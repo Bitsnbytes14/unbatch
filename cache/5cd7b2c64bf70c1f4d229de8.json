@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1035,
+  "output_tokens": 140,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as not corresponding to the selected batch and investigate alternative batches that could explain the credit; verify the payer and UTR against settlement logs and re-associate or quarantine the credit as needed.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_2BGCSzOjD8uQO0\", \"setl_pay_ZJO1BEuVx518ox\", \"setl_pay_WcURYxPY8EcFK1\"],\n  \"human_review_required\": true\n}"
+}

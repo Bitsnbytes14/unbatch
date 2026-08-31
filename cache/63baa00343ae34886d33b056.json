@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1012,
+  "output_tokens": 151,
+  "response_text": "{\"break_reason\":\"ambiguous_composition\",\"proposed_resolution\":\"Investigate all candidate line-item compositions that sum to the batch net and identify the exact matching set for this credit; if multiple equal options remain, flag for manual reconciliation and request supporting line-item details from the issuer.\",\"confidence\":0.42,\"evidence_refs\":[\"txn_NQvftcYiu8ZVP6\",\"setl_GCeLCtddW6mg3q\",\"setl_KVIwJJEnXK84JY\",\"pay_Apl9ddLC4QMhnL\",\"pay_xU6JciNlSLr2vH\"],\"human_review_required\":true}"
+}

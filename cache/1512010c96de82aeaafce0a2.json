@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1020,
+  "output_tokens": 185,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Review both candidate line-item compositions and confirm which settlement batch lines correspond to the credit; consolidate or split as appropriate, and align the payment_ids with the chosen batch set.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_iNAw7JxH6kQ7Pg\", \"setl_FZiOrCfpBvKiKL\", \"setl_lEnAmnzhwkSgsZ\", \"setl_gHXKtXjylHqeYv\", \"pay_kuNkSJMQx7jIAy\", \"pay_LuU6aGNYzeqmKu\", \"pay_KQNzaYWGPb6T47\"],\n  \"human_review_required\": true\n}"
+}

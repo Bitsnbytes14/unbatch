@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1161,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance-ambiguous: no single settlement batch net clearly matches; quarantine the credit for manual reconciliation and review all candidate batches within tolerance to identify exact match.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_YHWB4cqNGPDRXt\", \"setl_4LGkZlkPrFXyM5\", \"ICICR660585001769\"],\n  \"human_review_required\": true\n}"
+}

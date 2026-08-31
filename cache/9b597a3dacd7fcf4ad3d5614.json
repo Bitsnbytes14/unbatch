@@ -1,0 +1,5 @@
+{
+  "input_tokens": 945,
+  "output_tokens": 129,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag the reconciliation as ambiguous because multiple payment line compositions could yield the same batch net; investigate line-level mappings for the two candidate pay IDs and confirm which set should be attributed to this credit.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_kTkx9NIQ0Wobtq\", \"AXISP022768040250\", \"pay_OHnKYaXRvj7uff\"],\n  \"human_review_required\": true\n}"
+}

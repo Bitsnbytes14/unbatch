@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1002,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the exact composition of lines to confirm which settlement batch carries this credit; select the unique matching composition or flag for manual adjustment if multiple equal fits exist.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"txn_F52pdAL54IrWIf\", \"setl_bj35WpirqSGKDx\", \"setl_kRjFHcoOt5rA0s\"],\n  \"human_review_required\": true\n}"
+}

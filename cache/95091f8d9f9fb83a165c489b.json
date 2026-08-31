@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1180,
+  "output_tokens": 130,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Inspect candidate batches within tolerance and select the one with the closest net; if ambiguity persists, flag for manual reconciliation and document all candidate nets.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_Fmi5zBzkDLnA2h\",\"AXISP395245336340\",\"pay_DlY0tp5J2slbVv\",\"2024-01-27\"],\n  \"human_review_required\": true\n}"
+}

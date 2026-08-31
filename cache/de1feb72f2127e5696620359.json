@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1004,
+  "output_tokens": 156,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the exact payment-line composition for the two candidate batch sets to determine which set aligns with the actual posted lines, and select the single composition that matches the bank credit flow; if ambiguity persists, escalate for manual validation against line-item details.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_JVgBChNpQFGoVa\", \"AXISP472607214501\", \"setl_6tWujd9lHES8Pv\", \"setl_QedpqVGAGHEUdE\"],\n  \"human_review_required\": true\n}"
+}

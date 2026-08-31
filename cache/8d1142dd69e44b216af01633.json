@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1110,
+  "output_tokens": 131,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate line compositions that sum to the batch net to identify which exact payment lines belong to the batch; select the composition with the most corroborating row-level metadata and settle accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_pay_KMzKG5mSoyPstU\", \"setl_pay_eC99enq522wjZR\", \"AXISP098998142403\"],\n  \"human_review_required\": true\n}"
+}

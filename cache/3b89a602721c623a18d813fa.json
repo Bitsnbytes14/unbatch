@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1153,
+  "output_tokens": 117,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Select the settlement batch whose net lands closest within the tolerance band and request reconciliation for the remaining delta if any.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_W3eiyLfRUB0yZx\",\"setl_gPx0PpRSJ4TpkY\",\"HDFCR425950684616\"],\n  \"human_review_required\": true\n}"
+}

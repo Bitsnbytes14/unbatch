@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1023,
+  "output_tokens": 150,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact line-item composition for this credit; reconciliation should select the batch that matches the actual payment-line set, or mark as unresolved if multiple batches could fit.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"txn_hNsqtvXnhuJrgw\", \"setl_OjhrBXoE30XUTz\", \"setl_vB33fH4fG2yEEw\", \"setl_0UnnmolGyRnGyo\"],\n  \"human_review_required\": true\n}"
+}
