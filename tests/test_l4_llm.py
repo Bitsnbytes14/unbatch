@@ -272,6 +272,30 @@ def test_matched_outcome_uses_the_primary_batchs_payment_ids(monkeypatch) -> Non
     assert decisions[0].matched_payment_ids == ["pay_x", "pay_y"]
 
 
+def test_decision_carries_evidence_refs_and_human_review_required(monkeypatch) -> None:
+    credit = _credit()
+    batch = _batch(payment_ids=["pay_x", "pay_y"])
+    unresolved = UnresolvedCredit(credit=credit, expected_batches=[batch], candidates=[])
+    _stub_adjudicate(
+        monkeypatch,
+        result_and_cost=(
+            AdjudicationResult(
+                break_reason=BreakReason.FEE_TIER_CHANGE,
+                proposed_resolution="x",
+                confidence=0.95,
+                evidence_refs=["pay_x", "settle_9"],
+                human_review_required=False,
+            ),
+            10,
+        ),
+    )
+
+    decisions = l4_llm.run([unresolved], _ctx())
+
+    assert decisions[0].evidence_refs == ["pay_x", "settle_9"]
+    assert decisions[0].human_review_required is False
+
+
 def test_adjudication_failed_becomes_an_exception_decision(monkeypatch) -> None:
     from unbatch import adjudicator
 
@@ -288,6 +312,9 @@ def test_adjudication_failed_becomes_an_exception_decision(monkeypatch) -> None:
     assert decisions[0].matched_payment_ids == []
     # degrading to adjudication_failed only ever happens after one retry
     assert decisions[0].llm_retried is True
+    # no classification was ever produced, so there's nothing to report here
+    assert decisions[0].evidence_refs is None
+    assert decisions[0].human_review_required is None
 
 
 def test_llm_retried_is_false_when_adjudicate_did_not_need_a_retry(monkeypatch) -> None:

@@ -246,6 +246,8 @@ def _decision(
     rationale: str | None,
     llm_cost_paise: int,
     llm_retried: bool,
+    evidence_refs: list[str] | None = None,
+    human_review_required: bool | None = None,
 ) -> Decision:
     return Decision(
         run_id=ctx.run_id,
@@ -261,6 +263,8 @@ def _decision(
         llm_model=adjudicator.MODEL,
         llm_cost_paise=llm_cost_paise,
         llm_retried=llm_retried,
+        evidence_refs=evidence_refs,
+        human_review_required=human_review_required,
         created_at=now,
     )
 
@@ -332,6 +336,8 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
                 rationale=result.proposed_resolution,
                 llm_cost_paise=cost_paise,
                 llm_retried=retried,
+                evidence_refs=result.evidence_refs,
+                human_review_required=result.human_review_required,
             )
         )
 
