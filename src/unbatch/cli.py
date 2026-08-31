@@ -235,9 +235,17 @@ def run_cascade(
 
 
 @app.command()
-def generate(seed: int = 42) -> None:
-    """Write data/ fixtures + ground truth for `seed`."""
-    generate_module.generate(seed)
+def generate(seed: int = 42, noise: float = 0.0) -> None:
+    """Write data/ fixtures + ground truth for `seed`.
+
+    --noise (0.0-1.0, default 0.0) degrades bank_statement narrations only
+    — amounts, dates, and settlement data are always exact. 0.0 reproduces
+    the committed seed-42 fixtures byte for byte.
+    """
+    if not 0.0 <= noise <= 1.0:
+        typer.echo(f"--noise must be between 0.0 and 1.0, got {noise}", err=True)
+        raise typer.Exit(code=1)
+    generate_module.generate(seed, noise=noise)
 
 
 def _arm_name(*, no_llm: bool, llm_only: bool) -> str:
