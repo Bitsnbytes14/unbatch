@@ -1,0 +1,53 @@
+{
+  "seed": 42,
+  "rules_only": {
+    "run_id": "run_42_no_llm_8f7289f59f1d",
+    "total_credits": 105,
+    "count_match_rate": 0.9142857142857143,
+    "value_weighted_match_rate": 0.9323243253003036,
+    "false_match_rate": 0.052083333333333336,
+    "exception_rate": 0.08571428571428572,
+    "precision": 0.9479166666666666,
+    "recall": 0.8666666666666667,
+    "correctly_rejected": 6,
+    "stage_funnel": {
+      "l0": 82,
+      "l2": 10,
+      "l3": 5,
+      "l4": 8
+    },
+    "llm_call_count": 0,
+    "llm_call_rate": 0.0,
+    "llm_cost_paise": 0,
+    "cost_paise_per_adjudicated_credit": 0.0,
+    "cost_paise_per_exception": 0.0,
+    "malformed_json_count": 0,
+    "retry_count": 0,
+    "adjudication_failed_count": 0,
+    "break_reason_accuracy": 0.0,
+    "break_reason_confusion": {},
+    "exception_break_type_counts": {
+      "duplicate_utr": 4,
+      "chargeback_deduction": 1,
+      "ambiguous_composition": 4
+    }
+  },
+  "rules_only_exception_reason_counts": {
+    "compose_timeout": 1,
+    "no_llm_unresolved": 8
+  },
+  "with_llm_cached": null,
+  "with_llm_cached_error": "no cached response for prompt key '3d5e4daef7da012f93ee617a'; --cached was requested",
+  "comparison_vs_normal_dataset": {
+    "baseline_source": "baseline_rules_only.json",
+    "false_match_rate_delta": 0.052083333333333336,
+    "count_match_rate_delta": 0.02857142857142858,
+    "stage_funnel_delta": {
+      "l0": 3,
+      "l1": -3,
+      "l2": 1,
+      "l3": 3,
+      "l4": -4
+    }
+  }
+}
