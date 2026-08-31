@@ -5,13 +5,15 @@ why this replaced a composition search — FAILURES.md's 2026-08-30 entry."""
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from unbatch.models import (
     BankStatementRecord,
     DecisionOutcome,
     ExpectedBatch,
     RunContext,
+    SettlementLine,
+    SettlementLineType,
     Stage,
     UnresolvedCredit,
 )
@@ -48,10 +50,36 @@ def _credit(amount: int, value_date: date = date(2024, 1, 5)) -> BankStatementRe
     )
 
 
+def _line(
+    net: int,
+    payment_id: str = "pay_line",
+    settlement_utr: str = "AXISP999999999999",
+    day: date = date(2024, 1, 5),
+) -> SettlementLine:
+    return SettlementLine(
+        settlement_id=f"setl_{payment_id}",
+        settlement_utr=settlement_utr,
+        payment_id=payment_id,
+        type=SettlementLineType.PAYMENT,
+        gross_paise=net,
+        fee_paise=0,
+        tax_paise=0,
+        net_paise=net,
+        settled_at=datetime.combine(day, datetime.min.time()),
+    )
+
+
 def _unresolved(
-    credit: BankStatementRecord, batches: list[ExpectedBatch]
+    credit: BankStatementRecord,
+    batches: list[ExpectedBatch],
+    candidate_lines: list[SettlementLine] | None = None,
 ) -> UnresolvedCredit:
-    return UnresolvedCredit(credit=credit, expected_batches=batches, candidates=[])
+    return UnresolvedCredit(
+        credit=credit,
+        expected_batches=batches,
+        candidate_lines=candidate_lines or [],
+        candidates=[],
+    )
 
 
 def test_tolerance_for_uses_the_floor_for_small_credits() -> None:
@@ -121,3 +149,47 @@ def test_only_unmatched_credits_are_absent_from_the_result() -> None:
 
     decisions = l3_tolerance.run([matching, non_matching], CTX)
     assert [d.credit_id for d in decisions] == [matching.credit.txn_id]
+
+
+def test_delta_matching_an_available_line_falls_through_unresolved() -> None:
+    """The 2026-08-31 false-accept guard: a within-tolerance delta that exactly
+    equals a real settlement line's net is a composition fact (a whole line
+    left out), not fee/rounding noise — L3 must decline it, same as zero or
+    multiple within-tolerance batches."""
+    batch = _batch(net=1_030)
+    missing_line = _line(net=30)
+    u = _unresolved(_credit(1_000), [batch], candidate_lines=[missing_line])
+
+    assert l3_tolerance.run([u], CTX) == []
+
+
+def test_ordinary_drift_with_no_matching_line_still_resolves() -> None:
+    """The guard must not block a genuine fee-tier/rounding delta just
+    because *some* unrelated line exists in the pool — only an exact net
+    match disqualifies the batch."""
+    batch = _batch(net=1_030)
+    unrelated_line = _line(net=45)  # present, but doesn't equal the delta (30)
+    u = _unresolved(_credit(1_000), [batch], candidate_lines=[unrelated_line])
+
+    [decision] = l3_tolerance.run([u], CTX)
+    assert decision.outcome == DecisionOutcome.MATCHED
+    assert decision.delta_paise == -30
+
+
+def test_matching_line_outside_the_date_window_does_not_block_the_match() -> None:
+    batch = _batch(net=1_030)
+    out_of_window_line = _line(net=30, day=date(2024, 1, 1))  # 4 days before D
+    u = _unresolved(_credit(1_000), [batch], candidate_lines=[out_of_window_line])
+
+    [decision] = l3_tolerance.run([u], CTX)
+    assert decision.outcome == DecisionOutcome.MATCHED
+
+
+def test_delta_matches_a_negative_net_line_via_absolute_value() -> None:
+    """net_paise is negative for a REFUND/CHARGEBACK line (fees.py) — the
+    guard compares magnitudes so it still catches this shape."""
+    batch = _batch(net=1_030)
+    refund_line = _line(net=-30)
+    u = _unresolved(_credit(1_000), [batch], candidate_lines=[refund_line])
+
+    assert l3_tolerance.run([u], CTX) == []

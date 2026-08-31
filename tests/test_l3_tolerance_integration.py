@@ -34,7 +34,7 @@ def _run_full_cascade():
         (l0_utr.run, False),
         (l1_exact.run, False),
         (l2_compose.run, True),
-        (l3_tolerance.run, False),  # L3 checks expected_batches directly, not lines
+        (l3_tolerance.run, True),  # 2026-08-31: also needs the pool for the missing-line guard
     ):
         if needs_pool:
             available = [line for line in settlements if line.payment_id not in consumed]
