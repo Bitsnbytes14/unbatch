@@ -11,7 +11,11 @@ correctly-unresolvable break types from the denominator), and the stage
 funnel. LLM-related figures (call count/rate/cost, malformed-JSON/retry/
 adjudication-failed counts) are computed too — correctly zero for a
 `--no-llm` run, since no LLM call ever happened — and will start reporting
-real numbers once L4 exists.
+real numbers once L4 exists. `cost_paise_per_adjudicated_credit` and
+`cost_paise_per_exception` (E8) are the same `llm_cost_paise` total divided
+two different ways — per call made, and per exception a human actually has
+to look at — the unit-economics framing a payments company thinks in, not a
+new cost figure of its own.
 
 **Comparing `matched_payment_ids` to ground truth `payment_ids`**: both are
 built the same way, one payment_id per contributing settlement line — so a
@@ -96,6 +100,8 @@ class MetricsReport(BaseModel):
     llm_call_count: int
     llm_call_rate: float
     llm_cost_paise: int
+    cost_paise_per_adjudicated_credit: float
+    cost_paise_per_exception: float
     malformed_json_count: int
     retry_count: int
     adjudication_failed_count: int
@@ -184,6 +190,10 @@ def score(
     llm_call_count = len(llm_decisions)
     llm_call_rate = llm_call_count / total_credits if total_credits else 0.0
     llm_cost_paise = sum(d.llm_cost_paise or 0 for d in llm_decisions)
+    cost_paise_per_adjudicated_credit = (
+        llm_cost_paise / llm_call_count if llm_call_count else 0.0
+    )
+    cost_paise_per_exception = llm_cost_paise / len(exception_ids) if exception_ids else 0.0
     adjudication_failed_count = sum(1 for d in llm_decisions if d.reason == "adjudication_failed")
     retry_count = sum(1 for d in llm_decisions if d.llm_retried)
     # Every retried credit means one malformed first response; a credit that
@@ -234,6 +244,8 @@ def score(
         llm_call_count=llm_call_count,
         llm_call_rate=llm_call_rate,
         llm_cost_paise=llm_cost_paise,
+        cost_paise_per_adjudicated_credit=cost_paise_per_adjudicated_credit,
+        cost_paise_per_exception=cost_paise_per_exception,
         malformed_json_count=malformed_json_count,
         retry_count=retry_count,
         adjudication_failed_count=adjudication_failed_count,
