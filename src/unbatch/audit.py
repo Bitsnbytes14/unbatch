@@ -151,17 +151,25 @@ def fetch_exceptions(conn: sqlite3.Connection, run_id: str | None = None) -> lis
     )
 
 
-def derive_run_id(seed: int, data_dir: Path = DEFAULT_DATA_DIR) -> str:
-    """Derive a run_id deterministically from `seed` and a hash of the input
-    CSVs actually present in `data_dir`. Two calls with the same seed and
-    the same file bytes always produce the same run_id; a changed seed or
-    changed input data always produces a different one — this is what makes
-    runs reproducible and safely diffable rather than just labeled the same.
+def derive_run_id(seed: int, data_dir: Path = DEFAULT_DATA_DIR, *, arm: str = "no_llm") -> str:
+    """Derive a run_id deterministically from `seed`, `arm`, and a hash of
+    the input CSVs actually present in `data_dir`. Two calls with the same
+    seed, arm, and file bytes always produce the same run_id; a changed
+    seed, arm, or input data always produces a different one.
+
+    `arm` (e.g. "no_llm", "with_llm", "llm_only") is part of the hash
+    because METRICS.md's ablation runs the same seed through three
+    different arms and needs to compare all three afterward — without it,
+    `--no-llm` and the default (with-LLM) run against the same seed would
+    derive the identical run_id, and the second run's `audit.clear_run`
+    would silently delete the first arm's results before the ablation ever
+    got to compare them.
     """
     hasher = hashlib.sha256()
     hasher.update(str(seed).encode("utf-8"))
+    hasher.update(arm.encode("utf-8"))
     for filename in _INPUT_FILENAMES:
         hasher.update(filename.encode("utf-8"))
         hasher.update((data_dir / filename).read_bytes())
     digest = hasher.hexdigest()[:12]
-    return f"run_{seed}_{digest}"
+    return f"run_{seed}_{arm}_{digest}"

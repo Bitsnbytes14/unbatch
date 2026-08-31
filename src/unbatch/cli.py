@@ -208,6 +208,17 @@ def generate(seed: int = 42) -> None:
     generate_module.generate(seed)
 
 
+def _arm_name(*, no_llm: bool, llm_only: bool) -> str:
+    """The ablation arm a run belongs to (METRICS.md § the ablation) — part
+    of derive_run_id's hash so the three arms never collide on the same
+    seed."""
+    if llm_only:
+        return "llm_only"
+    if no_llm:
+        return "no_llm"
+    return "with_llm"
+
+
 @app.command()
 def run(
     seed: int = 42,
@@ -235,7 +246,8 @@ def run(
     expected_batches = compute_expected_batches(settlements)
     unresolved = build_unresolved_credits(bank_records, expected_batches)
 
-    run_id = audit.derive_run_id(seed, data_dir)
+    arm = _arm_name(no_llm=no_llm, llm_only=llm_only)
+    run_id = audit.derive_run_id(seed, data_dir, arm=arm)
     ctx = RunContext(run_id=run_id, seed=seed, cached=cached, no_llm=no_llm, llm_only=llm_only)
     conn = audit.connect(db)
     audit.clear_run(conn, run_id)

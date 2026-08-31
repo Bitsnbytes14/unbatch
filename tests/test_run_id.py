@@ -44,3 +44,22 @@ def test_different_input_data_does_not_collide_even_with_the_same_seed(tmp_path:
 def test_run_id_contains_the_seed_for_human_readability(tmp_path: Path) -> None:
     data_dir = _write_data_dir(tmp_path)
     assert derive_run_id(42, data_dir).startswith("run_42_")
+
+
+def test_different_arms_do_not_collide(tmp_path: Path) -> None:
+    """The whole reason `arm` is part of the hash: --no-llm and the default
+    with-LLM run against the same seed must never derive the same run_id,
+    or the second run's audit.clear_run would delete the first arm's
+    results before the ablation could compare them."""
+    data_dir = _write_data_dir(tmp_path)
+    no_llm_id = derive_run_id(42, data_dir, arm="no_llm")
+    with_llm_id = derive_run_id(42, data_dir, arm="with_llm")
+    llm_only_id = derive_run_id(42, data_dir, arm="llm_only")
+
+    assert len({no_llm_id, with_llm_id, llm_only_id}) == 3
+
+
+def test_arm_appears_in_the_run_id_for_human_readability(tmp_path: Path) -> None:
+    data_dir = _write_data_dir(tmp_path)
+    assert "no_llm" in derive_run_id(42, data_dir, arm="no_llm")
+    assert "llm_only" in derive_run_id(42, data_dir, arm="llm_only")
