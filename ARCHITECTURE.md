@@ -88,6 +88,14 @@ human_review_required  bool
 
 **Reproducibility comes from this committed cache, not from sampling configuration.** No `temperature` (or equivalent) is sent to the model at all — both providers used in this project's history reject or ignore sampling controls on their current model families, and it wouldn't help anyway: a `--cached` run always replays the exact bytes recorded here, regardless of what a live call would produce on any given day. Determinism is a property of the cache file, never of the request.
 
+## Narration robustness (E10)
+
+The synthetic data's bank narrations came from clean templates, which gave L0's UTR substring match an easy ride. `generate.py`'s `apply_narration_noise` (seeded, deterministic, `--noise 0.0` a strict no-op) degrades narrations only — truncation mid-UTR, transposed adjacent digits, O/0 and I/1/l lookalike substitution, inconsistent separators, bank-specific wrapping text, case inconsistency, or the UTR dropped entirely for a bare counterparty name. Amounts, dates, and settlement data are never touched, so this measures narration robustness in isolation, not arithmetic.
+
+`unbatch bench --noise 0.0,0.1,0.25,0.5,0.75,1.0` (see bench_noise.json) holds seed 42 fixed and sweeps noise from clean to maximum. The result: **count match rate is exactly 0.8857 and false-match rate is exactly 0.0 at every single level.** What moves is the stage funnel — L0 falls from 79 to 21 resolutions as noise rises to 1.0, and L1 (amount + date exact, which never looks at narration at all) picks up precisely the slack, 3 → 61. The two stages' combined total is identical at every noise level. This is the redundancy the cascade was designed to have, measured rather than assumed: a credit that a noisy narration knocks off L0 does not fall further than L1, because L1's own criterion never depended on narration being clean in the first place.
+
+**A partial-UTR fuzzy-match path (rapidfuzz similarity, confidence below L0's 1.00) was considered and explicitly not built.** The stated bar was to build it only if the curve showed L0 dropping credits that a fuzzy match would have caught more safely than falling through — it doesn't: every credit L0 loses to noise is caught by L1 at the same rate, with zero false matches, all the way to noise 1.0. Adding a fuzzy matcher here would be solving a problem this measurement shows the cascade doesn't have, at the cost of a new lower-confidence path and a new way to be wrong. Left out on the evidence, not by default.
+
 ## Confidence bands
 
 | Band | Action |
