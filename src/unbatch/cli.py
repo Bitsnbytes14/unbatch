@@ -56,6 +56,11 @@ STAGE_SEQUENCE: tuple[tuple[Stage, object], ...] = (
     (Stage.L3, l3_tolerance.run),
 )
 FULL_STAGE_SEQUENCE: tuple[tuple[Stage, object], ...] = (*STAGE_SEQUENCE, (Stage.L4, l4_llm.run))
+# --llm-only (METRICS.md's ablation arm C): skips L0-L3 entirely and sends
+# every credit straight to the adjudicator, deliberately including the ~93
+# credits the rules layer would otherwise resolve for free — that's the
+# whole point of the arm, not an oversight.
+LLM_ONLY_STAGE_SEQUENCE: tuple[tuple[Stage, object], ...] = ((Stage.L4, l4_llm.run),)
 
 
 def load_input_data(
@@ -231,6 +236,7 @@ def run(
     cached: bool = False,
     no_llm: bool = False,
     llm_only: bool = False,
+    confirm_spend: bool = False,
     data_dir: Path = generate_module.DEFAULT_OUT_DIR,
     db: Path = audit.DEFAULT_DB_PATH,
 ) -> None:
@@ -240,11 +246,21 @@ def run(
     the deterministic baseline arm (L0-L3 only, per ARCHITECTURE.md's
     STAGE_SEQUENCE). The default runs the full with-LLM arm
     (FULL_STAGE_SEQUENCE, L0-L4). --llm-only runs the ablation arm that skips
-    straight to L4 (METRICS.md § the ablation) — not wired this session; it
-    lands with the rest of the ablation report in a later milestone.
+    straight to L4 (LLM_ONLY_STAGE_SEQUENCE, METRICS.md § the ablation) —
+    every one of the ~105 credits becomes a live call without --cached, so
+    it refuses to run uncached unless --confirm-spend is also passed; that
+    guard does not apply to the default with-LLM arm, whose call count is
+    bounded by design to whatever the rules layer actually leaves unresolved.
     """
-    if llm_only:
-        raise NotImplementedError("--llm-only lands with the rest of the ablation report")
+    if llm_only and not cached and not confirm_spend:
+        typer.echo(
+            "--llm-only without --cached sends every credit to claude-sonnet-5 "
+            "live — that's ~105 calls, not the handful the cascade normally "
+            "leaves for L4. Pass --confirm-spend to proceed, or add --cached "
+            "to replay from the committed cache/ instead.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
 
     _orders, settlements, bank_records = load_input_data(data_dir)
     expected_batches = compute_expected_batches(settlements)
@@ -256,7 +272,12 @@ def run(
     conn = audit.connect(db)
     audit.clear_run(conn, run_id)
 
-    stage_sequence = STAGE_SEQUENCE if no_llm else FULL_STAGE_SEQUENCE
+    if llm_only:
+        stage_sequence = LLM_ONLY_STAGE_SEQUENCE
+    elif no_llm:
+        stage_sequence = STAGE_SEQUENCE
+    else:
+        stage_sequence = FULL_STAGE_SEQUENCE
     counts = run_cascade(
         ctx, unresolved, conn, settlements=settlements, stage_sequence=stage_sequence
     )
