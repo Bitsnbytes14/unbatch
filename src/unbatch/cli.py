@@ -795,17 +795,143 @@ def _bench_scale(scale: int, out: Path) -> None:
     typer.echo(f"wrote {out}")
 
 
+_BENCH_ADVERSARIAL_SEED = 42
+_BASELINE_RULES_ONLY_PATH = Path("baseline_rules_only.json")
+
+
+def _bench_adversarial(out: Path) -> None:
+    """Generate the adversarial dataset once, run every applicable arm
+    against it, and report the worst case honestly. The with-LLM arm is
+    only ever attempted `--cached` — the adversarial credits' prompts are
+    new content the committed cache/ was never built against, so a cache
+    miss there is expected and reported as "not measurable without live
+    calls", never silently patched over by making one."""
+    seed = _BENCH_ADVERSARIAL_SEED
+    with tempfile.TemporaryDirectory(prefix="unbatch-bench-adversarial-") as tmp:
+        tmp_root = Path(tmp)
+        data_dir = tmp_root / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        generate_module.generate_adversarial(seed, out_dir=data_dir)
+
+        _orders, settlements, bank_records = load_input_data(data_dir)
+        expected_batches = compute_expected_batches(settlements)
+
+        no_llm_run_id = audit.derive_run_id(seed, data_dir, arm="no_llm")
+        no_llm_ctx = RunContext(run_id=no_llm_run_id, seed=seed, no_llm=True)
+        no_llm_conn = audit.connect(tmp_root / "no_llm_audit.db")
+        try:
+            audit.clear_run(no_llm_conn, no_llm_run_id)
+            unresolved = build_unresolved_credits(bank_records, expected_batches)
+            run_cascade(
+                no_llm_ctx,
+                unresolved,
+                no_llm_conn,
+                settlements=settlements,
+                stage_sequence=STAGE_SEQUENCE,
+            )
+            no_llm_report = metrics_module.score(no_llm_conn, no_llm_run_id, data_dir=data_dir)
+            no_llm_exceptions = audit.fetch_exceptions(no_llm_conn, no_llm_run_id)
+        finally:
+            no_llm_conn.close()
+
+        with_llm_run_id = audit.derive_run_id(seed, data_dir, arm="with_llm")
+        with_llm_ctx = RunContext(run_id=with_llm_run_id, seed=seed, cached=True)
+        with_llm_conn = audit.connect(tmp_root / "with_llm_audit.db")
+        with_llm_report = None
+        with_llm_error: str | None = None
+        try:
+            audit.clear_run(with_llm_conn, with_llm_run_id)
+            unresolved = build_unresolved_credits(bank_records, expected_batches)
+            run_cascade(
+                with_llm_ctx,
+                unresolved,
+                with_llm_conn,
+                settlements=settlements,
+                stage_sequence=FULL_STAGE_SEQUENCE,
+            )
+            with_llm_report = metrics_module.score(
+                with_llm_conn, with_llm_run_id, data_dir=data_dir
+            )
+        except adjudicator.CacheMissError as exc:
+            with_llm_error = str(exc)
+        finally:
+            with_llm_conn.close()
+
+    exception_reason_counts: dict[str, int] = {}
+    for decision in no_llm_exceptions:
+        exception_reason_counts[decision.reason] = (
+            exception_reason_counts.get(decision.reason, 0) + 1
+        )
+
+    baseline = None
+    if _BASELINE_RULES_ONLY_PATH.exists():
+        baseline = json.loads(_BASELINE_RULES_ONLY_PATH.read_text(encoding="utf-8"))
+
+    stage_funnel_delta = None
+    if baseline is not None:
+        keys = set(baseline["stage_funnel"]) | set(no_llm_report.stage_funnel)
+        stage_funnel_delta = {
+            k: no_llm_report.stage_funnel.get(k, 0) - baseline["stage_funnel"].get(k, 0)
+            for k in sorted(keys)
+        }
+
+    payload = {
+        "seed": seed,
+        "rules_only": json.loads(no_llm_report.model_dump_json()),
+        "rules_only_exception_reason_counts": exception_reason_counts,
+        "with_llm_cached": (
+            json.loads(with_llm_report.model_dump_json()) if with_llm_report is not None else None
+        ),
+        "with_llm_cached_error": with_llm_error,
+        "comparison_vs_normal_dataset": {
+            "baseline_source": str(_BASELINE_RULES_ONLY_PATH) if baseline is not None else None,
+            "false_match_rate_delta": (
+                no_llm_report.false_match_rate - baseline["false_match_rate"]
+                if baseline is not None
+                else None
+            ),
+            "count_match_rate_delta": (
+                no_llm_report.count_match_rate - baseline["count_match_rate"]
+                if baseline is not None
+                else None
+            ),
+            "stage_funnel_delta": stage_funnel_delta,
+        },
+    }
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="")
+
+    typer.echo("=== rules-only arm ===")
+    typer.echo(f"count_match_rate: {no_llm_report.count_match_rate:.4f}")
+    typer.echo(f"value_weighted_match_rate: {no_llm_report.value_weighted_match_rate:.4f}")
+    typer.echo(f"false_match_rate: {no_llm_report.false_match_rate:.4f}")
+    typer.echo(f"exception_rate: {no_llm_report.exception_rate:.4f}")
+    typer.echo(f"stage_funnel: {no_llm_report.stage_funnel}")
+    typer.echo(f"exception_reason_counts: {exception_reason_counts}")
+    if with_llm_report is not None:
+        typer.echo("=== with-LLM (cached) arm ===")
+        typer.echo(f"count_match_rate: {with_llm_report.count_match_rate:.4f}")
+        typer.echo(f"false_match_rate: {with_llm_report.false_match_rate:.4f}")
+        typer.echo(f"break_reason_accuracy: {with_llm_report.break_reason_accuracy:.4f}")
+    else:
+        typer.echo("=== with-LLM (cached) arm: NOT MEASURABLE ===")
+        typer.echo(f"{with_llm_error}")
+        typer.echo("no live calls were made")
+    typer.echo(f"wrote {out}")
+
+
 @app.command()
 def bench(
     seeds: str | None = None,
     scale: int | None = None,
     noise: str | None = None,
+    adversarial: bool = False,
     out: Path = Path("bench_multiseed.json"),
     scale_out: Path = Path("bench_scale.json"),
     noise_out: Path = Path("bench_noise.json"),
+    adversarial_out: Path = Path("bench_adversarial.json"),
 ) -> None:
     """Measure metric stability across seeds, cascade throughput at scale,
-    or degradation under narration noise.
+    degradation under narration noise, or the worst case on hostile data.
 
     `--seeds 42,43,44,45,46,47` (comma-separated) generates each seed's own
     fixtures into a fresh temp directory, runs the rules-only (--no-llm) arm
@@ -832,13 +958,23 @@ def bench(
     stage funnel per level — written to `--noise-out` (default
     bench_noise.json).
 
-    Exactly one of --seeds/--scale/--noise must be given.
+    `--adversarial` generates the hostile dataset (see `unbatch generate
+    --adversarial`) into a temp directory and runs every applicable arm
+    against it: rules-only always, and with-LLM `--cached` attempted but
+    only ever attempted — the adversarial credits' prompts are new content
+    the committed cache/ was never built against, so a cache miss there is
+    reported as "not measurable without live calls" rather than triggering
+    one. Written to `--adversarial-out` (default bench_adversarial.json),
+    including a stage-funnel comparison against the committed
+    baseline_rules_only.json.
+
+    Exactly one of --seeds/--scale/--noise/--adversarial must be given.
     """
-    modes = [bool(seeds), bool(scale), bool(noise)]
+    modes = [bool(seeds), bool(scale), bool(noise), adversarial]
     if sum(modes) != 1:
         typer.echo(
             "Pass exactly one of --seeds (e.g. 42,43,44), --scale (e.g. 5000), "
-            "or --noise (e.g. 0.0,0.25,0.5,1.0)",
+            "--noise (e.g. 0.0,0.25,0.5,1.0), or --adversarial",
             err=True,
         )
         raise typer.Exit(code=1)
@@ -846,9 +982,10 @@ def bench(
         _bench_seeds(seeds, out)
     elif scale:
         _bench_scale(scale, scale_out)
-    else:
-        assert noise is not None
+    elif noise:
         _bench_noise(noise, noise_out)
+    else:
+        _bench_adversarial(adversarial_out)
 
 
 if __name__ == "__main__":
