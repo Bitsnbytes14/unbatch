@@ -147,7 +147,7 @@ cli run --seed 42
 
 `ground_truth.json` is never imported by any module under `stages/`. If it is, that is a scoring leak and the metrics are worthless.
 
-## Operating envelope (E11c, updated E12)
+## Operating envelope (E11c, updated E12, E13)
 
 The honest version of a limitations section: bounded by what was actually measured, not hedged with prose. Four independent measurements, each stressing a different axis, define where this system is reliable and where — and by how much — it degrades.
 
@@ -159,7 +159,9 @@ The honest version of a limitations section: bounded by what was actually measur
 
 **Scale:** `bench --scale 5000` (bench_scale.json, see also FAILURES.md) found the audit log's per-decision commit — not the matching logic — becomes the dominant wall-clock cost as decision counts grow past a few hundred, and that L2 candidate pools sitting just under `MAX_POOL` (48) can time out outright rather than merely run slow. Neither was fixed; both are documented costs of deliberate designs (durability-per-decision, a hard pool cap), not defects.
 
-**In one sentence:** this cascade is reliable against messy *text* at any measured scale and independently of how collision-prone the underlying data is, and unreliable, to a small but non-zero and now-quantified degree, against data where independently-generated amounts happen to collide — a risk that triples to quintuples under deliberately hostile construction and is the honest reason the exception list, not the match-rate headline, is this project's real deliverable.
+**The adjudication axis (E13):** break-reason accuracy was originally measured on twelve L4 credits from one seed — 91.7%, the number this whole "AI judgment" argument leans on. `bench_adjudication.json` pools the same measurement across all six organic seeds (42-47, 69 classified credits total, live calls made for 43-47 and committed to cache/ so every seed now replays keylessly): pooled accuracy is **89.9% (62/69)** — close to, not identical to, the seed-42 figure, but the more important number is the *range* the pooling reveals: individual seeds swing from 80.0% to 100.0% purely from a sample of 10-12 classifications each. Seed 42's 91.7% was never a stable estimate on its own; it happened to land in the upper half of that range. The pooled confusion table is the more durable finding: `ambiguous_composition` is classified reliably (36/38, 94.7%), `unrelated_credit` perfectly (6/6), `tolerance_ambiguous` less so (20/24, 83.3% — confused for `unrelated_credit` 3 times and `date_skew` once), and the single `duplicate_utr` instance that reached L4 across all six seeds was misclassified. On the adversarial dataset (also run for real, also cached), accuracy drops to **37.5% (3/8)** — worse, as expected, and *systematically* so: all four `duplicate_utr` credits were called `ambiguous_composition` (a consistent confusion, not scattered noise — the two shapes look alike to the model when a credit has several similarly-sized candidate batches nearby, whichever break actually caused it), while `ambiguous_composition` itself stayed reliable (3/3).
+
+**In one sentence:** this cascade is reliable against messy *text* at any measured scale and independently of how collision-prone the underlying data is; it is unreliable, to a small but non-zero and now-quantified degree, against data where independently-generated amounts happen to collide — a risk that triples to quintuples under deliberately hostile construction; and the model's break-reason classification, pooled across six seeds rather than trusted from one, holds up close to its original headline on organic data (89.9% vs. 91.7%, n=69) but degrades sharply and systematically (37.5%, mostly one consistent confusion) on hostile data — all three numbers, not the single cleanest one, are the honest reason the exception list, not the match-rate headline, is this project's real deliverable.
 
 ## Deliberately excluded
 
