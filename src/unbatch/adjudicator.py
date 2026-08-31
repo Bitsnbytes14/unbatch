@@ -15,7 +15,12 @@ prompt; if it is still invalid, adjudication degrades to an
 
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
+
+import anthropic
+from pydantic import ValidationError
 
 from unbatch.models import (
     AdjudicationResult,
@@ -27,6 +32,22 @@ from unbatch.models import (
 MODEL = "claude-sonnet-5"
 PROMPT_VERSION = "v1"
 DEFAULT_CACHE_DIR = Path("cache")
+MAX_TOKENS = 4096
+
+# claude-sonnet-5 rejects temperature/top_p/top_k outright (400) — sampling
+# controls were removed for this model family. Determinism instead comes
+# from the cache: a `--cached` run always replays the exact bytes recorded
+# here, regardless of what a live call would produce this time around.
+#
+# Anthropic bills this model in USD ($2.00 / $10.00 per 1M input/output
+# tokens); the audit log stores every money field in paise (CLAUDE.md
+# invariant 1), so a fixed USD->INR rate is needed just to report LLM spend
+# in the same unit as everything else. This is billing telemetry, not
+# reconciled settlement money — approximate on purpose, and never fed back
+# into any matching decision.
+USD_TO_INR_RATE = 88
+INPUT_COST_USD_PER_MTOK = 2.00
+OUTPUT_COST_USD_PER_MTOK = 10.00
 
 SYSTEM_PROMPT = """You are the settlement-reconciliation adjudicator for a payment
 gateway's finance-controller pipeline.
@@ -76,6 +97,20 @@ class AdjudicationFailedError(Exception):
     record an exception decision with reason `adjudication_failed`."""
 
 
+class CacheMissError(Exception):
+    """Raised when `cached=True` and no recorded response exists for this
+    exact prompt. Deliberately not caught anywhere — an incomplete cache
+    under `--cached` is a repo integrity problem (ARCHITECTURE.md's
+    reproducibility guarantee is broken), not a per-credit outcome to
+    degrade into an exception Decision."""
+
+
+class _MalformedResponseError(Exception):
+    """Internal: the model's text wasn't valid JSON, or didn't validate
+    against AdjudicationResult. Carries a message meant to be read back to
+    the model on retry."""
+
+
 def _format_candidates(candidates: list[CandidateExplanation]) -> str:
     if not candidates:
         return "  (none surfaced)"
@@ -121,6 +156,115 @@ Classify this break and propose a resolution."""
     return SYSTEM_PROMPT, user
 
 
+def _client() -> anthropic.Anthropic:
+    """A fresh client per call — this is a low-volume, per-credit boundary
+    (METRICS.md targets under 20% of credits ever reaching L4), not a hot
+    path worth pooling. Tests monkeypatch this function directly, so no
+    real client is ever constructed under pytest."""
+    return anthropic.Anthropic()
+
+
+def _call_model(system: str, user: str) -> tuple[str | None, int, int]:
+    """One live call to the Messages API. Returns (response_text,
+    input_tokens, output_tokens) — response_text is None if the model
+    returned no text block at all (e.g. it hit max_tokens mid-thought),
+    which `_require_text` below treats as malformed. No
+    temperature/top_p/top_k — claude-sonnet-5 rejects sampling controls
+    outright; thinking is left unset, which runs adaptive by default on
+    this model, so `response.content` may contain a thinking block ahead
+    of the text block."""
+    response = _client().messages.create(
+        model=MODEL,
+        max_tokens=MAX_TOKENS,
+        system=system,
+        messages=[{"role": "user", "content": user}],
+    )
+    text = next((block.text for block in response.content if block.type == "text"), None)
+    return text, response.usage.input_tokens, response.usage.output_tokens
+
+
+def _cache_key(system: str, user: str) -> str:
+    """Hash of the full prompt payload, including model and prompt version —
+    changing the prompt template, bumping PROMPT_VERSION, or switching MODEL
+    all produce a different key, so a stale cached response can never be
+    replayed against a prompt it wasn't generated for."""
+    payload = json.dumps(
+        {"model": MODEL, "prompt_version": PROMPT_VERSION, "system": system, "user": user},
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:24]
+
+
+def _get_response(
+    system: str, user: str, *, cached: bool, cache_dir: Path
+) -> tuple[str | None, int, int]:
+    """Cache-backed wrapper around `_call_model`. A hit replays committed
+    bytes with no API call at all; `cached=True` on a miss raises
+    CacheMissError rather than silently falling through to a live call,
+    which is what makes `--cached` runs an honest no-API-key guarantee
+    instead of an accidental one."""
+    key = _cache_key(system, user)
+    path = cache_dir / f"{key}.json"
+    if path.exists():
+        entry = json.loads(path.read_text(encoding="utf-8"))
+        return entry["response_text"], entry["input_tokens"], entry["output_tokens"]
+    if cached:
+        raise CacheMissError(f"no cached response for prompt key {key!r}; --cached was requested")
+
+    text, input_tokens, output_tokens = _call_model(system, user)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {"response_text": text, "input_tokens": input_tokens, "output_tokens": output_tokens},
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+        newline="",
+    )
+    return text, input_tokens, output_tokens
+
+
+def _require_text(text: str | None) -> str:
+    """A response with no text block at all (e.g. truncated at max_tokens
+    before producing any) is malformed in exactly the same sense a bad JSON
+    body is — both go through the same retry-then-degrade path."""
+    if text is None:
+        raise _MalformedResponseError("model response had no text block")
+    return text
+
+
+def _parse_response(text: str) -> AdjudicationResult:
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise _MalformedResponseError(f"response is not valid JSON: {exc}") from exc
+    try:
+        return AdjudicationResult.model_validate(payload)
+    except ValidationError as exc:
+        raise _MalformedResponseError(
+            f"response does not match the required shape: {exc}"
+        ) from exc
+
+
+def _append_validation_error(user: str, error_message: str) -> str:
+    return (
+        f"{user}\n\n"
+        "Your previous reply could not be read as valid JSON in the required "
+        f"shape. The reader reported: {error_message}\n"
+        "Return only the corrected JSON object, with no other text."
+    )
+
+
+def _cost_paise(input_tokens: int, output_tokens: int) -> int:
+    cost_usd = (
+        input_tokens / 1_000_000 * INPUT_COST_USD_PER_MTOK
+        + output_tokens / 1_000_000 * OUTPUT_COST_USD_PER_MTOK
+    )
+    return round(cost_usd * USD_TO_INR_RATE * 100)
+
+
 def adjudicate(
     credit: BankStatementRecord,
     expected_batch: ExpectedBatch,
@@ -129,12 +273,32 @@ def adjudicate(
     *,
     cached: bool = False,
     cache_dir: Path = DEFAULT_CACHE_DIR,
-) -> AdjudicationResult:
-    """Classify one unresolved break and propose a resolution.
+) -> tuple[AdjudicationResult, int]:
+    """Classify one unresolved break and propose a resolution. Returns
+    (result, llm_cost_paise) — the caller (l4_llm) logs both onto the
+    Decision it writes.
 
     Checks the cache first; if `cached` is True and no entry exists, raises
-    rather than calling the API. On a live call, validates the response
-    against AdjudicationResult, retrying once on ValidationError before
-    raising AdjudicationFailedError.
+    CacheMissError rather than calling the API. On a live call, validates
+    the response against AdjudicationResult; a malformed response is retried
+    once with the validation error appended to the prompt, and a second
+    failure raises AdjudicationFailedError rather than crashing the cascade.
     """
-    raise NotImplementedError
+    system, user = build_prompt(credit, expected_batch, delta_paise, candidates)
+    text, input_tokens, output_tokens = _get_response(
+        system, user, cached=cached, cache_dir=cache_dir
+    )
+    cost_paise = _cost_paise(input_tokens, output_tokens)
+
+    try:
+        return _parse_response(_require_text(text)), cost_paise
+    except _MalformedResponseError as first_error:
+        retry_user = _append_validation_error(user, str(first_error))
+        retry_text, retry_input, retry_output = _get_response(
+            system, retry_user, cached=cached, cache_dir=cache_dir
+        )
+        cost_paise += _cost_paise(retry_input, retry_output)
+        try:
+            return _parse_response(_require_text(retry_text)), cost_paise
+        except _MalformedResponseError as second_error:
+            raise AdjudicationFailedError(str(second_error)) from second_error
