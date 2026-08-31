@@ -132,7 +132,13 @@ def build_unresolved_credits(
     ]
 
 
-_CANDIDATE_LINE_STAGES = frozenset({Stage.L2})
+# L4 needs candidate_lines too (2026-08-31): it re-runs compose() itself to
+# find exact-sum candidates before falling back to a whole-batch guess (see
+# l4_llm.py's module docstring), so it needs the same up-to-date pool L2
+# gets, excluding whatever earlier stages already consumed. Matters most for
+# --llm-only, where L4 is the *only* stage and would otherwise never get a
+# populated pool at all.
+_CANDIDATE_LINE_STAGES = frozenset({Stage.L2, Stage.L4})
 
 
 def run_cascade(
@@ -148,14 +154,16 @@ def run_cascade(
     removing resolved credits before the next stage runs. A stage never
     sees a credit an earlier stage already claimed.
 
-    Before L2, `candidate_lines` on every remaining credit is rebuilt from
-    `settlements` minus whatever payment_ids any earlier decision this run
-    already matched — L0/L1 match whole batches and never touch it, and L3
-    checks already-computed batch totals directly rather than composing
-    from lines, so only L2's composition search needs this. Pass
-    `settlements=None` (the default) to skip this entirely, which is what
-    the runner-behaviour tests do with fake stages that don't look at
-    candidate_lines anyway.
+    Before L2 and before L4, `candidate_lines` on every remaining credit is
+    rebuilt from `settlements` minus whatever payment_ids any earlier
+    decision this run already matched — L0/L1 match whole batches and never
+    touch it, and L3 checks already-computed batch totals directly rather
+    than composing from lines, so only L2's and L4's composition searches
+    need this (L4 re-runs the same search L2 does, to find exact-sum
+    candidates before falling back to a whole-batch guess — see
+    l4_llm.py's module docstring). Pass `settlements=None` (the default) to
+    skip this entirely, which is what the runner-behaviour tests do with
+    fake stages that don't look at candidate_lines anyway.
 
     Under `ctx.no_llm`, anything still unresolved after the last stage gets
     a terminal exception Decision (stage=L4, reason="no_llm_unresolved") —

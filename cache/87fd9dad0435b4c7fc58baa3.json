@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1136,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous: multiple valid settlement compositions exist for the same credit; lock in the currently selected composition or request human confirmation of the exact line-mapping.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_C99enq522wjZRL\", \"AXISP352709577630\", \"setl_vOpOK4esubuC1J\", \"setl_sPtzpFPH2MGlEO\"],\n  \"human_review_required\": true\n}"
+}

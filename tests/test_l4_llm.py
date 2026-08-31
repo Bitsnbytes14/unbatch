@@ -3,7 +3,7 @@ monkeypatched here — no real network call, no API key needed."""
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -14,6 +14,8 @@ from unbatch.models import (
     DecisionOutcome,
     ExpectedBatch,
     RunContext,
+    SettlementLine,
+    SettlementLineType,
     UnresolvedCredit,
 )
 from unbatch.stages import l4_llm
@@ -50,8 +52,28 @@ def _batch(
     )
 
 
-def _ctx(*, cached: bool = False) -> RunContext:
-    return RunContext(run_id=RUN_ID, seed=SEED, cached=cached)
+def _line(
+    payment_id: str,
+    net_paise: int,
+    *,
+    utr: str = "UTR_LINE",
+    settled_date: date = date(2026, 3, 1),
+) -> SettlementLine:
+    return SettlementLine(
+        settlement_id=f"setl_{payment_id}",
+        settlement_utr=utr,
+        payment_id=payment_id,
+        type=SettlementLineType.PAYMENT,
+        gross_paise=net_paise,
+        fee_paise=0,
+        tax_paise=0,
+        net_paise=net_paise,
+        settled_at=datetime.combine(settled_date, datetime.min.time(), tzinfo=UTC),
+    )
+
+
+def _ctx(*, cached: bool = False, llm_only: bool = False) -> RunContext:
+    return RunContext(run_id=RUN_ID, seed=SEED, cached=cached, llm_only=llm_only)
 
 
 def _stub_adjudicate(monkeypatch, result_and_cost=None, error=None, retried=False):
@@ -389,3 +411,143 @@ def test_ctx_cached_is_forwarded_to_adjudicate(monkeypatch) -> None:
     l4_llm.run([unresolved], _ctx(cached=True))
 
     assert calls[0]["cached"] is True
+
+
+def _result(*, confidence: float, human_review_required: bool = False, reason=BreakReason.OTHER):
+    return AdjudicationResult(
+        break_reason=reason,
+        proposed_resolution="x",
+        confidence=confidence,
+        evidence_refs=[],
+        human_review_required=human_review_required,
+    )
+
+
+def test_a_single_exact_composition_is_used_as_the_primary_match(monkeypatch) -> None:
+    """Exactly one exact-sum subset (only possible when L2 hasn't already
+    claimed it — i.e. --llm-only, where L2 never ran) is a confident,
+    rules-established match: matched_payment_ids should be that subset's
+    ids, not some unrelated whole-batch guess."""
+    credit = _credit(credit_paise=1000)
+    lines = [_line("pay_a", 400), _line("pay_b", 600)]  # sums to exactly 1000
+    unresolved = UnresolvedCredit(
+        credit=credit, expected_batches=[_batch()], candidate_lines=lines, candidates=[]
+    )
+    calls = _stub_adjudicate(
+        monkeypatch, result_and_cost=(_result(confidence=0.9), 5)
+    )
+
+    decisions = l4_llm.run([unresolved], _ctx(llm_only=False))
+
+    assert calls[0]["expected_batch"].payment_ids == ["pay_a", "pay_b"]
+    assert calls[0]["delta_paise"] == 0
+    assert decisions[0].outcome == DecisionOutcome.MATCHED
+    assert decisions[0].matched_payment_ids == ["pay_a", "pay_b"]
+
+
+def test_two_exact_compositions_force_exception_regardless_of_confidence(monkeypatch) -> None:
+    """Provable ambiguity (>=2 exact-sum subsets) must never resolve to a
+    specific pick, even if the model reports high confidence and no
+    human_review_required — bias to exception over an arbitrary coin flip."""
+    credit = _credit(credit_paise=1000)
+    lines = [
+        _line("pay_a", 400),
+        _line("pay_b", 600),  # a+b = 1000
+        _line("pay_c", 1000),  # c alone = 1000, a second exact composition
+    ]
+    unresolved = UnresolvedCredit(
+        credit=credit, expected_batches=[_batch()], candidate_lines=lines, candidates=[]
+    )
+    _stub_adjudicate(
+        monkeypatch,
+        result_and_cost=(_result(confidence=0.99, human_review_required=False), 5),
+    )
+
+    decisions = l4_llm.run([unresolved], _ctx(llm_only=False))
+
+    assert decisions[0].outcome == DecisionOutcome.EXCEPTION
+    assert decisions[0].matched_payment_ids == []
+    # the model's classification is still recorded even though the outcome
+    # is forced to exception
+    assert decisions[0].reason == BreakReason.OTHER.value
+
+
+def test_two_exact_compositions_surfaces_the_other_as_a_candidate(monkeypatch) -> None:
+    credit = _credit(credit_paise=1000)
+    lines = [_line("pay_a", 400), _line("pay_b", 600), _line("pay_c", 1000)]
+    unresolved = UnresolvedCredit(
+        credit=credit, expected_batches=[_batch()], candidate_lines=lines, candidates=[]
+    )
+    calls = _stub_adjudicate(monkeypatch, result_and_cost=(_result(confidence=0.5), 5))
+
+    l4_llm.run([unresolved], _ctx(llm_only=False))
+
+    all_candidate_ids = {pid for c in calls[0]["candidates"] for pid in c.payment_ids}
+    # whichever subset wasn't picked as primary shows up as a candidate
+    assert all_candidate_ids == {"pay_a", "pay_b"} or all_candidate_ids == {"pay_c"}
+
+
+def test_llm_only_never_runs_the_composition_search(monkeypatch) -> None:
+    """Even when candidate_lines would produce an exact match, --llm-only
+    must ignore it entirely and fall back to the whole-batch heuristic —
+    re-deriving L2's search here would smuggle a rules capability into the
+    arm that's supposed to have none (and would be far too slow across all
+    ~105 credits with an unpruned pool)."""
+    credit = _credit(credit_paise=1000)
+    lines = [_line("pay_a", 400), _line("pay_b", 600)]  # would exactly compose 1000
+    batch = _batch(payment_ids=["pay_whole_batch"])
+    unresolved = UnresolvedCredit(
+        credit=credit, expected_batches=[batch], candidate_lines=lines, candidates=[]
+    )
+    calls = _stub_adjudicate(monkeypatch, result_and_cost=(_result(confidence=0.9), 5))
+
+    decisions = l4_llm.run([unresolved], _ctx(llm_only=True))
+
+    assert calls[0]["expected_batch"].payment_ids == ["pay_whole_batch"]
+    assert decisions[0].matched_payment_ids == ["pay_whole_batch"]
+
+
+def test_no_exact_composition_falls_back_to_whole_batch_heuristic(monkeypatch) -> None:
+    credit = _credit(credit_paise=1000)
+    lines = [_line("pay_a", 999)]  # doesn't sum to 1000 -> no exact composition
+    batch = _batch(payment_ids=["pay_whole_batch"], net_paise=1000)
+    unresolved = UnresolvedCredit(
+        credit=credit, expected_batches=[batch], candidate_lines=lines, candidates=[]
+    )
+    calls = _stub_adjudicate(monkeypatch, result_and_cost=(_result(confidence=0.9), 5))
+
+    decisions = l4_llm.run([unresolved], _ctx(llm_only=False))
+
+    assert calls[0]["expected_batch"].payment_ids == ["pay_whole_batch"]
+    assert decisions[0].matched_payment_ids == ["pay_whole_batch"]
+
+
+def test_a_pool_too_large_for_compose_falls_back_to_whole_batch_heuristic(monkeypatch) -> None:
+    """compose() refusing to search (pool too large) is not evidence of "no
+    exact match" — it must fall back exactly like a genuine non-match."""
+    credit = _credit(credit_paise=1000)
+    lines = [_line(f"pay_{i}", 1) for i in range(60)]  # over MAX_POOL (48)
+    batch = _batch(payment_ids=["pay_whole_batch"], net_paise=1000)
+    unresolved = UnresolvedCredit(
+        credit=credit, expected_batches=[batch], candidate_lines=lines, candidates=[]
+    )
+    calls = _stub_adjudicate(monkeypatch, result_and_cost=(_result(confidence=0.9), 5))
+
+    decisions = l4_llm.run([unresolved], _ctx(llm_only=False))
+
+    assert calls[0]["expected_batch"].payment_ids == ["pay_whole_batch"]
+    assert decisions[0].matched_payment_ids == ["pay_whole_batch"]
+
+
+def test_synthetic_batch_from_lines_uses_the_subsets_own_sum() -> None:
+    lines = [_line("pay_a", 400, utr="UTR_A"), _line("pay_b", 600, utr="UTR_A")]
+    batch = l4_llm._synthetic_batch_from_lines(lines)
+    assert batch.settlement_utr == "UTR_A"
+    assert batch.payment_ids == ["pay_a", "pay_b"]
+    assert batch.net_paise == 1000
+
+
+def test_synthetic_batch_from_lines_joins_utrs_when_lines_span_more_than_one() -> None:
+    lines = [_line("pay_a", 400, utr="UTR_A"), _line("pay_b", 600, utr="UTR_B")]
+    batch = l4_llm._synthetic_batch_from_lines(lines)
+    assert batch.settlement_utr == "UTR_A+UTR_B"

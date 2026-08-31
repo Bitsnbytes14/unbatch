@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1143,
+  "output_tokens": 134,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag the case for manual reconciliation to review exact line-item mappings of the credit to the candidate settlements and confirm the correct composition.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_qE40fAraVNqTIA\",\"setl_vOpOK4esubuC1J\",\"setl_llXb8oBpKOfD28\",\"AXISP352709577630+HDFCR635024564424\"],\n  \"human_review_required\": true\n}"
+}

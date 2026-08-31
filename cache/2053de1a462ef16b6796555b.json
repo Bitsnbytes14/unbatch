@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1138,
+  "output_tokens": 114,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance_ambiguous and escalate for manual review to identify the correct settlement batch within tolerance.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_81aSQHqNgAC72q\", \"setl_eQIsxfUoLOaxX2\", \"AXISP526716718910\"],\n  \"human_review_required\": true\n}"
+}

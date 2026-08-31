@@ -13,15 +13,23 @@ assumed from training data) — used here because it is what strict structured
 outputs via `response_format={"type": "json_schema", ...}` was originally
 documented against, matching this milestone's explicit shape.
 
-**Model: gpt-5-nano** — $0.05 / $0.40 per 1M input/output tokens, the
-cheapest model on OpenAI's own pricing page at the time of this swap,
-undercutting even the new cost-tier flagship (gpt-5.6-luna, $0.20/$1.20).
-Deliberately the smallest tier, not a mid-range default: this session's
-whole with-LLM-arm-plus-llm-only-arm ablation is ~117 calls of single-label
-classification over a pre-computed delta, on an explicit small budget —
-choosing the cheapest capable model for narrow, low-stakes-per-call
-classification is itself part of the "right tool, right place" argument
-CLAUDE.md already asks the cascade design to make.
+**Model: gpt-5-nano** — $0.05 / $0.40 per 1M input/output tokens, OpenAI's
+cheapest model at the time of this swap. This took two measurements to
+settle, not one: nano first scored 25% break-reason accuracy on the 12 real
+L4 credits, confusing `ambiguous_composition` with `tolerance_ambiguous` on
+most of them; stepping up to `gpt-5-mini` scored *0%*, strictly worse, plus
+a false match on the one `unrelated_credit`. Neither result was actually
+about model capability — `l4_llm.py`'s candidate construction at the time
+only ever offered whole settlement batches, and `ambiguous_composition`'s
+real answer is a strict subset of one batch (see DATA_SPEC.md), which no
+whole-batch candidate can equal exactly. No model could have scored well
+against candidates that couldn't contain the right answer. Once `l4_llm.py`
+was fixed to offer the model's own exact-sum composition search results
+instead (see l4_llm.py's module docstring), nano's accuracy jumped to
+**83%**, with zero false matches, at roughly 1/6 mini's per-call cost —
+mini was never the fix; the candidates were. See FAILURES.md's 2026-08-31
+entries for the full chronology, including the one where mini looked like
+an improvement it wasn't.
 
 The prompt hands the model pre-computed deltas and candidate explanations as
 facts; it never asks the model to calculate, sum, or compute anything (CLAUDE.md
@@ -48,10 +56,12 @@ this wall (see FAILURES.md's 2026-08-31 entry: claude-sonnet-5 rejects
 sampling parameters outright) and this project's reproducibility story
 doesn't need one either: a `--cached` run always replays the exact bytes
 recorded here, regardless of what a live call would produce on any given
-day. `reasoning_effort="minimal"` is sent instead — gpt-5-nano is a
-reasoning-capable model, and this task (single-label classification over an
+day. `reasoning_effort="minimal"` is sent instead — the gpt-5 family are
+reasoning-capable models, and this task (single-label classification over an
 already-computed delta) doesn't benefit from spending reasoning tokens,
-which are billed as output tokens.
+which are billed as output tokens. Kept at "minimal" across the nano ->
+mini swap so the model was the only variable that changed between the two
+measurements.
 
 Malformed JSON is retried once with the validation error appended to the
 prompt; if it is still invalid, adjudication degrades to an
@@ -65,6 +75,7 @@ import json
 from pathlib import Path
 
 import openai
+from dotenv import load_dotenv
 from pydantic import ValidationError
 
 from unbatch.models import (
@@ -73,6 +84,17 @@ from unbatch.models import (
     CandidateExplanation,
     ExpectedBatch,
 )
+
+# Loads OPENAI_API_KEY (and anything else) from a .env file at the repo root
+# into the environment, so `openai.OpenAI()` below finds it with no shell
+# configuration — a judge cloning this repo only needs to drop their own key
+# into .env (see .env.example), never export anything. Path is resolved
+# relative to this file, not the working directory, so this works
+# regardless of where `unbatch` is invoked from. Never overrides a variable
+# already set in the real environment (python-dotenv's default) — an
+# exported OPENAI_API_KEY still wins over .env. Does nothing, silently, if
+# .env doesn't exist (e.g. a `--cached` run needs no key at all).
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 MODEL = "gpt-5-nano"
 PROMPT_VERSION = "v1"
@@ -87,6 +109,13 @@ RESPONSE_SCHEMA_NAME = "adjudication_result"
 # rate is needed just to report LLM spend in the same unit as everything
 # else. This is billing telemetry, not reconciled settlement money —
 # approximate on purpose, and never fed back into any matching decision.
+#
+# See the module docstring: nano's first measurement (25% break-reason
+# accuracy) and gpt-5-mini's subsequent one (0%, worse) were both measuring
+# a broken candidate list, not the models. With l4_llm.py's exact-sum
+# candidates fixed, nano re-measured at 83% accuracy with zero false
+# matches — the cheapest tier turned out sufficient once it was actually
+# being tested fairly.
 USD_TO_INR_RATE = 88
 INPUT_COST_USD_PER_MTOK = 0.05
 OUTPUT_COST_USD_PER_MTOK = 0.40

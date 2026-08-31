@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1075,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous composition; require human reconciliation to inspect line-item-level mappings for exact-sum candidate batches and determine the correct payer-payee linkage.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_e24HZKjht3X13n\", \"setl_MVqt3t9Vj0OXdj\", \"setl_CRDMqOucMC694X\", \"HDFCR626609238109\"],\n  \"human_review_required\": true\n}"
+}

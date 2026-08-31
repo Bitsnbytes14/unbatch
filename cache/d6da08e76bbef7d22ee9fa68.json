@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1175,
+  "output_tokens": 115,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as ambiguous: no single settlement batch net clearly matches within tolerance; escalate for manual reconciliation with supporting logs.\",\n \"confidence\": 0.52,\n \"evidence_refs\": [\"txn_yn9FfcgMXAdx9G\", \"setl_ZwkVRaC6Bnbr5w\", \"HDFCR812343829484\"],\n \"human_review_required\": true\n}"
+}

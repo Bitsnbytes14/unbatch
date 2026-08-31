@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1006,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact settlement lines that contributed to the credited net, then lock the correct composition or escalate for human adjudication if ambiguity persists.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_gW2zMj518Y2bTu\", \"setl_CnQjENGsB4Djh3\", \"setl_CzOUTsYMQ7PXfi\", \"pay_XUHLfpoVybmyyO\", \"pay_cecgAfOJppfFhP\"],\n  \"human_review_required\": true\n}"
+}

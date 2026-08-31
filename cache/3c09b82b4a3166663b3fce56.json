@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1005,
+  "output_tokens": 177,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Lock in the dominant composition: present to reconciler the two confirmed line sets and the alternative 3-line composition, then request confirmation which batch composition actually aligns with the net and pay IDs; if no further data distinguishes, escalate for human review.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_X1YqWg21nYCsXo\", \"setl_1odbJIqO3hMOBB\", \"setl_dAMhnpvwc2qjQF\", \"pay_1mOOBMWlsCDbkj\", \"pay_BFKQ50SD2Syz6O\"],\n  \"human_review_required\": true\n}"
+}
