@@ -1,10 +1,9 @@
 """Break injection and ground_truth.json: every DATA_SPEC.md break type
-appears at least once, the mechanics behind each are structurally sound, and
-nothing under stages/ ever imports ground truth (CLAUDE.md invariant 7)."""
+appears at least once, and the mechanics behind each are structurally
+sound."""
 
 from __future__ import annotations
 
-import ast
 import random
 from collections import Counter
 from pathlib import Path
@@ -240,19 +239,3 @@ def test_written_ground_truth_json_has_no_carriage_returns_and_round_trips(tmp_p
     reloaded = json.loads(raw)
     assert len(reloaded["credits"]) == len(ground_truth.credits)
     assert len(reloaded["orphan_settlements"]) == len(ground_truth.orphan_settlements)
-
-
-def test_no_stage_module_imports_ground_truth() -> None:
-    """CLAUDE.md invariant 7: ground_truth.json is read ONLY by metrics.py."""
-    stages_dir = Path(__file__).resolve().parents[1] / "src" / "unbatch" / "stages"
-    for path in stages_dir.glob("*.py"):
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        for node in ast.walk(tree):
-            names = []
-            if isinstance(node, ast.Import):
-                names = [alias.name for alias in node.names]
-            elif isinstance(node, ast.ImportFrom) and node.module:
-                names = [node.module] + [alias.name for alias in node.names]
-            assert not any("ground_truth" in name for name in names), (
-                f"{path} imports ground_truth — scoring leak"
-            )

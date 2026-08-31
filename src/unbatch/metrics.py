@@ -1,21 +1,53 @@
 """Scoring vs ground truth. The ONLY module permitted to read
-data/ground_truth.json — CLAUDE.md invariant 7. If a stage under
-`unbatch.stages` ever imports ground truth, that is a scoring leak.
+data/ground_truth.json — CLAUDE.md invariant 7. If a module under
+`unbatch.stages`, `unbatch.cli`, `unbatch.compose`, or anywhere else in the
+pipeline ever imports ground truth, that is a scoring leak; see
+tests/test_no_scoring_leak.py for the AST check enforcing this across the
+whole package, not just stages/.
 
 Computes every figure defined in METRICS.md: count and value-weighted match
 rate, false-match rate, exception rate, precision, recall (excluding
-correctly-unresolvable break types from the denominator), the stage funnel,
-LLM call count and cost, and p50/p95 latency per stage.
+correctly-unresolvable break types from the denominator), and the stage
+funnel. LLM-related figures (call count/rate/cost, malformed-JSON/retry/
+adjudication-failed counts) are computed too — correctly zero for a
+`--no-llm` run, since no LLM call ever happened — and will start reporting
+real numbers once L4 exists.
+
+**Comparing `matched_payment_ids` to ground truth `payment_ids`**: both are
+built the same way, one payment_id per contributing settlement line — so a
+payment and its own refund (which share a payment_id; see DATA_SPEC.md) are
+each supposed to contribute their own entry, and a genuinely correct match
+for e.g. refund_in_window has that payment_id appearing *twice*. Compared
+as **multisets** (`collections.Counter`), never as:
+
+- plain sets — would silently discard the duplicate and call a match
+  "correct" when it's actually missing the refund line's contribution;
+- ordered lists — the order lines are discovered in (composition search,
+  batch grouping) isn't guaranteed to match the order ground truth recorded
+  them in, so an order-sensitive comparison would flag correct matches as
+  wrong purely on ordering.
+
+Latency (p50/p95 per stage) is not computed this milestone: nothing in the
+audit schema records per-decision timing, and inventing percentiles from a
+single per-stage wall-clock measurement would be fabricating precision the
+data doesn't have. Per METRICS.md's own rule ("if a number in the README
+does not have a line in metrics.py producing it, delete the number"), it is
+left out entirely rather than reported as a fake zero.
 """
 
 from __future__ import annotations
 
 import sqlite3
+from collections import Counter
 from pathlib import Path
 
 from pydantic import BaseModel
 
-DEFAULT_GROUND_TRUTH_PATH = Path("data/ground_truth.json")
+from unbatch import audit
+from unbatch import generate as generate_module
+from unbatch.models import DecisionOutcome, GroundTruth
+
+DEFAULT_DATA_DIR = Path("data")
 
 
 class MetricsReport(BaseModel):
@@ -23,6 +55,8 @@ class MetricsReport(BaseModel):
     HTML report, or pitch video."""
 
     run_id: str
+    total_credits: int
+
     count_match_rate: float
     value_weighted_match_rate: float
     false_match_rate: float
@@ -30,21 +64,113 @@ class MetricsReport(BaseModel):
     precision: float
     recall: float
     correctly_rejected: int
+
     stage_funnel: dict[str, int]
+
     llm_call_count: int
     llm_call_rate: float
     llm_cost_paise: int
-    latency_p50_ms: dict[str, float]
-    latency_p95_ms: dict[str, float]
     malformed_json_count: int
     retry_count: int
     adjudication_failed_count: int
 
 
+def _load_ground_truth(path: Path) -> GroundTruth:
+    return GroundTruth.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def _is_correct_match(matched_payment_ids: list[str], ground_truth_payment_ids: list[str]) -> bool:
+    """Multiset equality — see this module's docstring for why not a plain
+    set or an ordered list."""
+    return Counter(matched_payment_ids) == Counter(ground_truth_payment_ids)
+
+
 def score(
     conn: sqlite3.Connection,
     run_id: str,
-    ground_truth_path: Path = DEFAULT_GROUND_TRUTH_PATH,
+    *,
+    data_dir: Path = DEFAULT_DATA_DIR,
+    ground_truth_path: Path | None = None,
 ) -> MetricsReport:
-    """Compute the full metrics report for one run against ground truth."""
-    raise NotImplementedError
+    """Compute the full metrics report for one run against ground truth.
+    `ground_truth_path` defaults to `data_dir / "ground_truth.json"`;
+    override it only to point at a ground truth file that doesn't live
+    alongside the rest of that run's data (e.g. in a test fixture)."""
+    ground_truth = _load_ground_truth(ground_truth_path or data_dir / "ground_truth.json")
+    bank_records = generate_module.read_bank_statement_csv(data_dir / "bank_statement.csv")
+    credit_amount_by_id = {
+        record.txn_id: record.credit_paise
+        for record in bank_records
+        if record.credit_paise is not None
+    }
+
+    decisions = audit.fetch_decisions(conn, run_id)
+    decision_by_credit = {decision.credit_id: decision for decision in decisions}
+
+    total_credits = len(ground_truth.credits)
+    resolvable_ids = {credit.txn_id for credit in ground_truth.credits if credit.resolvable}
+
+    resolved_ids: set[str] = set()
+    correct_ids: set[str] = set()
+    false_match_ids: set[str] = set()
+    exception_ids: set[str] = set()
+
+    for credit in ground_truth.credits:
+        decision = decision_by_credit.get(credit.txn_id)
+        if decision is None or decision.outcome == DecisionOutcome.EXCEPTION:
+            exception_ids.add(credit.txn_id)
+            continue
+
+        resolved_ids.add(credit.txn_id)
+        if _is_correct_match(decision.matched_payment_ids, credit.payment_ids):
+            correct_ids.add(credit.txn_id)
+        else:
+            false_match_ids.add(credit.txn_id)
+
+    correctly_rejected_credits = {
+        txn_id for txn_id in exception_ids if txn_id not in resolvable_ids
+    }
+    correctly_rejected = len(correctly_rejected_credits) + len(ground_truth.orphan_settlements)
+
+    total_amount = sum(credit_amount_by_id.get(c.txn_id, 0) for c in ground_truth.credits)
+    resolved_amount = sum(credit_amount_by_id.get(txn_id, 0) for txn_id in resolved_ids)
+
+    count_match_rate = len(resolved_ids) / total_credits if total_credits else 0.0
+    value_weighted_match_rate = resolved_amount / total_amount if total_amount else 0.0
+    false_match_rate = len(false_match_ids) / len(resolved_ids) if resolved_ids else 0.0
+    exception_rate = len(exception_ids) / total_credits if total_credits else 0.0
+    precision = len(correct_ids) / len(resolved_ids) if resolved_ids else 0.0
+    recall = (
+        len(correct_ids & resolvable_ids) / len(resolvable_ids) if resolvable_ids else 0.0
+    )
+
+    stage_funnel: dict[str, int] = {}
+    for decision in decisions:
+        stage_funnel[decision.stage.value] = stage_funnel.get(decision.stage.value, 0) + 1
+
+    llm_decisions = [d for d in decisions if d.llm_model is not None]
+    llm_call_count = len(llm_decisions)
+    llm_call_rate = llm_call_count / total_credits if total_credits else 0.0
+    llm_cost_paise = sum(d.llm_cost_paise or 0 for d in llm_decisions)
+    malformed_json_count = sum(1 for d in decisions if d.reason == "malformed_json")
+    retry_count = sum(1 for d in decisions if d.reason == "adjudication_retry")
+    adjudication_failed_count = sum(1 for d in decisions if d.reason == "adjudication_failed")
+
+    return MetricsReport(
+        run_id=run_id,
+        total_credits=total_credits,
+        count_match_rate=count_match_rate,
+        value_weighted_match_rate=value_weighted_match_rate,
+        false_match_rate=false_match_rate,
+        exception_rate=exception_rate,
+        precision=precision,
+        recall=recall,
+        correctly_rejected=correctly_rejected,
+        stage_funnel=stage_funnel,
+        llm_call_count=llm_call_count,
+        llm_call_rate=llm_call_rate,
+        llm_cost_paise=llm_cost_paise,
+        malformed_json_count=malformed_json_count,
+        retry_count=retry_count,
+        adjudication_failed_count=adjudication_failed_count,
+    )
