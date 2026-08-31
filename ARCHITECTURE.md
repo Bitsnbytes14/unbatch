@@ -147,6 +147,20 @@ cli run --seed 42
 
 `ground_truth.json` is never imported by any module under `stages/`. If it is, that is a scoring leak and the metrics are worthless.
 
+## Operating envelope (E11c)
+
+The honest version of a limitations section: bounded by what was actually measured, not hedged with prose. Three independent measurements, each stressing a different axis, define where this system is reliable and where — and by how much — it degrades.
+
+**Reliable:** at production scale (~105 credits, one settlement window) with clean or arbitrarily noisy narrations, false-match rate is a true, reproducible **0.0%**. `bench --noise 0.0,0.1,0.25,0.5,0.75,1.0` (bench_noise.json) holds count match rate and false-match rate exactly flat across the entire noise range — narration quality, on its own, is not a degradation vector this system is exposed to. L0 resolutions fall from 79 to 21 as noise rises to maximum; L1 (which never reads narration) picks up exactly the slack, 3 → 61. That redundancy is real, not decorative.
+
+**Degrades with dataset composition, not with narration:** `bench --seeds 42,43,44,45,46,47` (bench_multiseed.json) holds narration and scale fixed and varies the random dataset instead. Count match rate stays tight (88.57%–90.48%, mean 89.05%, stdev 0.80 points), but false-match rate ranges **0.0%–2.11%** — 0.0% on 2 of 6 seeds, nonzero on the other 4. Tracing the actual false matches (not just the rate) found every one is a coincidental collision between two *unrelated* quantities landing within a narrow target of each other — an exact-sum coincidence in L2's composition pool, or a tolerance-band coincidence between a credit and an unrelated batch in L3 — never a credit resolving against its own genuinely-broken batch. A guard closing the one L3 false-accept shape that *was* a real logic gap (see FAILURES.md's 2026-08-31 entries) left this range completely unchanged, confirming the remaining floor is coincidence, not a fixable defect.
+
+**The measured worst case:** `bench --adversarial` (bench_adversarial.json) is data built specifically to maximize that same coincidence shape — many more duplicate-UTR batches, amounts deliberately clustered inside each other's tolerance bands, multi-way exact composition ties, and a composition search pushed to its cap. On this dataset, at the same ~105-credit scale, false-match rate reaches **5.21%** — more than double the worst organically-observed seed, because the collisions there are engineered rather than left to chance. This is the number to quote as the floor under genuinely hostile input, not the 0.0% any single clean seed reports.
+
+**Scale:** `bench --scale 5000` (bench_scale.json, see also FAILURES.md) found the audit log's per-decision commit — not the matching logic — becomes the dominant wall-clock cost as decision counts grow past a few hundred, and that L2 candidate pools sitting just under `MAX_POOL` (48) can time out outright rather than merely run slow. Neither was fixed; both are documented costs of deliberate designs (durability-per-decision, a hard pool cap), not defects.
+
+**In one sentence:** this cascade is reliable against messy *text* at any measured scale and unreliable, to a small but non-zero and now-quantified degree, against data where independently-generated amounts happen to collide — a risk that triples to quintuples under deliberately hostile construction and is the honest reason the exception list, not the match-rate headline, is this project's real deliverable.
+
 ## Deliberately excluded
 
 Multi-source expansion beyond these three files, real-time ingestion, auth, multi-tenant, a web UI, forecasting. One loop closed properly beats three half-closed. The brief says a cherry-picked match proves nothing; it does not ask for breadth.
