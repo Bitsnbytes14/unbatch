@@ -1,4 +1,4 @@
-"""Typer entrypoints: generate, run, report, exceptions.
+"""Typer entrypoints: generate, run, metrics, report, exceptions.
 
 `run` orchestrates the cascade directly — L0 -> L1 -> L2 -> L3 -> L4, each
 stage consuming only what the previous stages left unresolved, each writing
@@ -28,6 +28,7 @@ import typer
 
 from unbatch import audit
 from unbatch import generate as generate_module
+from unbatch import metrics as metrics_module
 from unbatch.models import (
     BankStatementRecord,
     Decision,
@@ -258,6 +259,29 @@ def run(
     typer.echo(f"credits: {len(unresolved)}")
     for stage_name, count in counts.items():
         typer.echo(f"{stage_name}\t{count}")
+
+
+@app.command()
+def metrics(
+    seed: int = 42,
+    arm: str = "no_llm",
+    data_dir: Path = generate_module.DEFAULT_OUT_DIR,
+    db: Path = audit.DEFAULT_DB_PATH,
+    out: Path | None = None,
+) -> None:
+    """Score a run's audit log against ground truth and print the result as
+    JSON (METRICS.md). `--arm` must match whichever arm actually produced
+    the run (derive_run_id keys on it) — "no_llm", "with_llm", or
+    "llm_only". `--out PATH` also writes the same JSON to a file, which is
+    how baseline_rules_only.json was produced and can be reproduced.
+    """
+    run_id = audit.derive_run_id(seed, data_dir, arm=arm)
+    conn = audit.connect(db)
+    metrics_report = metrics_module.score(conn, run_id, data_dir=data_dir)
+    payload = metrics_report.model_dump_json(indent=2)
+    if out is not None:
+        out.write_text(payload + "\n", encoding="utf-8", newline="")
+    typer.echo(payload)
 
 
 @app.command()

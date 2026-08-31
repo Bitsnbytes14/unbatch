@@ -1,0 +1,24 @@
+{
+  "run_id": "run_42_no_llm_71f1de1cfb0f",
+  "total_credits": 105,
+  "count_match_rate": 0.9809523809523809,
+  "value_weighted_match_rate": 0.996416781415237,
+  "false_match_rate": 0.0,
+  "exception_rate": 0.01904761904761905,
+  "precision": 1.0,
+  "recall": 0.9903846153846154,
+  "correctly_rejected": 2,
+  "stage_funnel": {
+    "l0": 89,
+    "l1": 3,
+    "l2": 9,
+    "l3": 2,
+    "l4": 2
+  },
+  "llm_call_count": 0,
+  "llm_call_rate": 0.0,
+  "llm_cost_paise": 0,
+  "malformed_json_count": 0,
+  "retry_count": 0,
+  "adjudication_failed_count": 0
+}
