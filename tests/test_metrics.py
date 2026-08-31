@@ -405,6 +405,40 @@ def test_exception_break_type_counts_breaks_down_by_ground_truth_type(scenario) 
     }
 
 
+def test_exception_break_type_counts_key_order_is_derived_from_sorted_txn_ids(
+    tmp_path: Path,
+) -> None:
+    """Regression (FAILURES.md's 2026-08-31 entry): exception_ids is a set
+    internally, whose iteration order depends on PYTHONHASHSEED and can
+    differ across separate process runs even for byte-identical data — the
+    D4 keyless-reproduction check caught this because it diffed two real
+    `--cached` runs, not because any single-process test would have (a
+    set's iteration order is stable *within* one process, which is exactly
+    why this needs an explicit assertion on the resulting order rather than
+    trusting dict `==`, which ignores order entirely). The fix iterates
+    `sorted(exception_ids)` — sorted by txn_id, not by break_type — so the
+    key order below is pinned to this fixture's txn_ids sorting
+    alphabetically as clean/settlement_split/fee_tier_change/
+    refund_in_window/unrelated_credit, not to break_type's own alphabetical
+    order."""
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _write_ground_truth(data_dir / "ground_truth.json")
+    _write_bank_statement(data_dir / "bank_statement.csv")
+    conn = audit.connect(tmp_path / "audit.db")
+    # no decisions recorded at all -> every one of the 5 credits is an
+    # exception, giving exception_break_type_counts 5 distinct keys
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    keys = list(report.exception_break_type_counts.keys())
+    assert keys == [
+        "clean",
+        "settlement_split",
+        "fee_tier_change",
+        "refund_in_window",
+        "unrelated_credit",
+    ]
+
+
 def test_a_missing_decision_counts_as_exception_not_a_crash(tmp_path: Path) -> None:
     """Every credit should have exactly one decision after a full run, but
     scoring a partial/interrupted run must not crash — treat a credit with

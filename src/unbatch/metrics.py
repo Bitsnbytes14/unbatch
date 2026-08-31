@@ -193,7 +193,7 @@ def score(
     )
 
     exception_break_type_counts: dict[str, int] = {}
-    for txn_id in exception_ids:
+    for txn_id in sorted(exception_ids):
         gt_credit = gt_by_txn.get(txn_id)
         if gt_credit is None:
             continue

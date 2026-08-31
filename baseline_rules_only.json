@@ -24,8 +24,8 @@
   "break_reason_accuracy": 0.0,
   "break_reason_confusion": {},
   "exception_break_type_counts": {
-    "ambiguous_composition": 7,
     "tolerance_ambiguous": 4,
+    "ambiguous_composition": 7,
     "unrelated_credit": 1
   }
 }
