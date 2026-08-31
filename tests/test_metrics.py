@@ -387,6 +387,22 @@ def test_adjudication_failed_count_from_llm_scenario(llm_scenario) -> None:
     assert report.adjudication_failed_count == 1
 
 
+def test_cost_paise_per_adjudicated_credit_and_per_exception(llm_scenario) -> None:
+    conn, data_dir = llm_scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    # llm_cost_paise = 10 + 15 + 12 + 0 = 37 across 4 calls, 1 exception (txn_d)
+    assert report.llm_cost_paise == 37
+    assert report.cost_paise_per_adjudicated_credit == pytest.approx(37 / 4)
+    assert report.cost_paise_per_exception == pytest.approx(37 / 1)
+
+
+def test_cost_paise_per_unit_is_zero_with_no_llm_calls(scenario) -> None:
+    conn, data_dir = scenario
+    report = metrics.score(conn, RUN_ID, data_dir=data_dir)
+    assert report.cost_paise_per_adjudicated_credit == 0.0
+    assert report.cost_paise_per_exception == 0.0
+
+
 def test_break_reason_accuracy_is_zero_with_no_llm_decisions(scenario) -> None:
     conn, data_dir = scenario
     report = metrics.score(conn, RUN_ID, data_dir=data_dir)

@@ -108,6 +108,8 @@ def test_ambiguity_framing_splits_out_the_named_categories() -> None:
         llm_call_count=0,
         llm_call_rate=0.0,
         llm_cost_paise=0,
+        cost_paise_per_adjudicated_credit=0.0,
+        cost_paise_per_exception=0.0,
         malformed_json_count=0,
         retry_count=0,
         adjudication_failed_count=0,
@@ -356,6 +358,9 @@ def test_render_with_arm_b_populated_shows_delta_and_break_reason_accuracy(
     # break-reason accuracy called out separately from the delta
     assert "What the delta doesn&#39;t show" in html or "What the delta doesn't show" in html
     assert "break-reason accuracy on arm B is 100.0%" in html
+    # cost per unit: 18 paise total / 2 calls, 18 paise / 1 exception (txn_unrelated)
+    assert "9.00 paise" in html
+    assert "18.00 paise" in html
 
 
 def test_render_with_all_three_arms_states_the_c_vs_b_comparison_precisely(

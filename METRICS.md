@@ -17,6 +17,8 @@ Let `C` = bank credit lines requiring reconciliation.
 | **stage funnel** | resolved count per stage L0–L4 | shows the cascade earning its structure |
 | **LLM call count** | calls / total credits | proves the model sees only the residue, not the batch |
 | **LLM cost** | paise, from the audit log | honesty about unit economics |
+| **cost per adjudicated credit** | LLM cost paise / LLM call count | the per-call unit cost, not just the total |
+| **cost per exception** | LLM cost paise / exception count | what it costs, in LLM spend, per item a human ends up looking at — the framing a payments company actually thinks in |
 | **break-reason accuracy** | correct `break_reason` / classified credits | see below — this is the model's real metric |
 | **p50 / p95 latency** | per credit, per stage | |
 

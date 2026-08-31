@@ -111,6 +111,8 @@ class ArmView:
     confidence_histogram_max: int = 1
     confusion_table: ConfusionTable | None = None
     llm_cost_rupees: str = "₹0.00"
+    cost_per_adjudicated_credit_paise: str = "0.00"
+    cost_per_exception_paise: str = "0.00"
     has_llm_calls: bool = False
 
 
@@ -215,6 +217,8 @@ def build_arm_views(
             confidence_histogram_max=max((count for _label, count in histogram), default=1) or 1,
             confusion_table=_confusion_table(report.break_reason_confusion),
             llm_cost_rupees=format_rupees(report.llm_cost_paise),
+            cost_per_adjudicated_credit_paise=f"{report.cost_paise_per_adjudicated_credit:.2f}",
+            cost_per_exception_paise=f"{report.cost_paise_per_exception:.2f}",
             has_llm_calls=report.llm_call_count > 0,
         )
     return views
