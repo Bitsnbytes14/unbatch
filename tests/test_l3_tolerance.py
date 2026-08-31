@@ -152,7 +152,7 @@ def test_only_unmatched_credits_are_absent_from_the_result() -> None:
 
 
 def test_delta_matching_an_available_line_falls_through_unresolved() -> None:
-    """The 2026-09-03 false-accept fix: a within-tolerance delta that exactly
+    """The 2026-08-31 false-accept guard: a within-tolerance delta that exactly
     equals a real settlement line's net is a composition fact (a whole line
     left out), not fee/rounding noise — L3 must decline it, same as zero or
     multiple within-tolerance batches."""

@@ -145,7 +145,7 @@ def build_unresolved_credits(
 # gets, excluding whatever earlier stages already consumed. Matters most for
 # --llm-only, where L4 is the *only* stage and would otherwise never get a
 # populated pool at all.
-# L3 needs it too (2026-09-03): it checks whether a within-tolerance delta
+# L3 needs it too (2026-08-31): it checks whether a within-tolerance delta
 # exactly equals a real settlement line's net before accepting (see
 # l3_tolerance.py's docstring) — rebuilding here excludes whatever L2 itself
 # just matched, so that check never sees a line another decision already

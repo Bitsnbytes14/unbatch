@@ -42,22 +42,33 @@ half-point fee change — a real settlement pushed to exception for no
 reason. See ARCHITECTURE.md's § Confidence bands for the full reasoning;
 this module only encodes the number.
 
-**2026-09-03 false-accept fix (see FAILURES.md):** `bench --seeds` found
-this stage confidently matching `ambiguous_composition` credits on some
-seeds — the deliberately-unclaimed line (see l4_llm.py's module docstring
-and DATA_SPEC.md) sometimes happens to be small enough that the credit
-lands within tolerance of its own whole batch, and this stage had no way to
-tell that gap apart from a genuine fee-tier drift. The distinction, derived
-from what a tolerance band is *for* rather than tuned to this dataset: a
-band absorbs fee and rounding noise, never a whole missing settlement line.
-So before accepting the one within-tolerance batch, this stage now checks
-whether the delta exactly equals the net of any settlement line still
-sitting in the credit's own date-windowed pool — if it does, that gap has a
-real, named explanation sitting right there, which is a composition
-question L2 already looked at and declined, not tolerance noise. Refusing
-here is strictly narrower than before (a batch that used to match no longer
-does when a line exactly explains the gap); it never widens or narrows
+**2026-08-31 false-accept guard (see FAILURES.md):** a tolerance band exists
+to absorb fee and rounding noise, never a whole missing settlement line. If
+the one within-tolerance batch's delta exactly equals the net of a real
+settlement line still sitting in the credit's own date-windowed pool, that
+gap has a named explanation sitting right there — a composition question
+L2 already looked at and declined, not tolerance noise — so this stage now
+refuses instead of accepting. Refusing here is strictly narrower than
+before (a batch that used to match no longer does when a line exactly
+explains the gap); it never widens or narrows
 `TOLERANCE_RATE`/`TOLERANCE_FLOOR_PAISE` themselves.
+
+**This guard does not close the false-accept path `bench --seeds` actually
+measured.** The original hypothesis was that this stage was matching an
+`ambiguous_composition` credit against *its own* whole batch, with the
+deliberately-unclaimed line small enough to fall inside the band — this
+guard is the correct, verified fix for exactly that shape (see
+tests/test_l3_tolerance.py). But checking the real seed 44/45/46 false
+matches individually after implementing it showed every one of them
+matches a *different, unrelated* batch that happens to land within
+tolerance of the credit by coincidence — the missing line is nowhere near
+small enough to be in play. That is the same "two unrelated quantities
+happen to land within a paise-level target of each other" risk this
+module's own docstring already accepts as a limit of composing over a
+pool (see the L2 coincidental-collision entry in FAILURES.md), just
+surfacing at the tolerance-comparison step instead of the composition-
+search step. Left open — see FAILURES.md's 2026-08-31 entry for the
+measured before/after.
 """
 
 from __future__ import annotations
@@ -147,7 +158,7 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
     within tolerance of the credit's amount. Returns one Decision per credit
     this stage resolves; zero or multiple within-tolerance batches, or a
     delta a real settlement line already exactly explains (a composition
-    fact, not tolerance noise — see this module's 2026-09-03 docstring
+    fact, not tolerance noise — see this module's 2026-08-31 docstring
     entry), leave a credit unresolved."""
     now = datetime.now(UTC)
     decisions: list[Decision] = []
