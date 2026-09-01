@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1299,
+  "output_tokens": 96,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag and quarantine the bank credit as unrelated to any settled batch and alert for manual reconciliation.\",\n  \"confidence\": 0.72,\n  \"evidence_refs\": [\"txn_morUzd4BRUhZXE\", \"SBIN0417661981441\"],\n  \"human_review_required\": true\n}"
+}

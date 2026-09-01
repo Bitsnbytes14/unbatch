@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1203,
+  "output_tokens": 110,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark the credit as unrelated to the selected batch and surface for manual reconciliation against the bank/ledger as a standalone credit.\",\n  \"confidence\": 0.72,\n  \"evidence_refs\": [\"txn_g1kaSlsJ6bOcWw\", \"setl_KDXcYHKyMt6FjO\"],\n  \"human_review_required\": true\n}"
+}

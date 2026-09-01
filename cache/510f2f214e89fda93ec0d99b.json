@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1376,
+  "output_tokens": 157,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as unrelated to any settled batch and hold for investigation; confirm bank credit details and map to correct batch if any.\",\n  \"confidence\": 0.65,\n  \"evidence_refs\": [\"txn_PFKoM4eCEG9JCf\", \"setl_izFqdv9quT4Z6N\", \"setl_lKl26rP6LOkuxW\", \"setl_dsbwBDj8iPuQHs\", \"setl_8ZDEi1LJVN88Gd\"],\n  \"human_review_required\": true\n}"
+}

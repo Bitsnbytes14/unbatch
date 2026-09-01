@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1270,
+  "output_tokens": 92,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch is the true match among candidates; confirm the correct batch from source data and align the credit accordingly.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"AXISP216826350425\"],\n  \"human_review_required\": true\n}"
+}

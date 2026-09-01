@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1384,
+  "output_tokens": 191,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate the batch-UTR linkage for the credit: confirm the  ICICR609882095365 UTR is correct for the given credit and determine if the credit actually corresponds to a separate batch; if not, quarantine the credit and align to the correct settlement batch or mark as unrelated.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"ICICR609882095365\", \"txn_WoiKn958tHU23T\", \"setl_VG3YvemDUVuCwo\", \"setl_AxfMRTFA6Bs89b\", \"setl_Pqc51z9EfuQ2hX\", \"setl_hrwPSCbkxvqqhO\"],\n  \"human_review_required\": true\n}"
+}

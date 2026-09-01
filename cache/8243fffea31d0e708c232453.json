@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1374,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch is the correct match; verify batch nets across candidate windows and align to a single batch before finalizing.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_C7u3wrUpbrgkko\",\"setl_0uNmr2qVEG5jKX\",\"setl_ef9QpxrAgFHjfe\",\"AXISP528273613138\"],\n  \"human_review_required\": true\n}"
+}

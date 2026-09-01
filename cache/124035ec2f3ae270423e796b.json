@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1316,
+  "output_tokens": 161,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the candidate set of settlement batches; determine which batch net aligns with the exact pay IDs and timelines, or flag for manual review if multiple batches could fit.\",\n  \"confidence\": 0.40,\n  \"evidence_refs\": [\"txn_xCXrlZDNkcnAcq\",\"setl_9pzb8CRQxRDLjL\",\"setl_p1LRWfsFFNklSx\",\"AXISP019992482511\",\"AXISP774885863537\",\"SBIN0402154430365\",\"SBIN0753673092990\"],\n  \"human_review_required\": true\n}"
+}

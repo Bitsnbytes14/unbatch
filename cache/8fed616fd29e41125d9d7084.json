@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1343,
+  "output_tokens": 125,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag multiple candidate batches within tolerance and escalate for human confirmation between AXISP449971894146 and SBIN0604936861851 (and others) to determine correct settlement mapping.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"settlement_utr_ICICR744816389910\", \"AXISP449971894146\", \"SBIN0604936861851\"],\n  \"human_review_required\": true\n}"
+}

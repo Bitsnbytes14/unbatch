@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1185,
+  "output_tokens": 102,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Investigate the set of candidate batches whose nets fall within the tolerance band and collect definitive supporting evidence to select the correct batch or adjust the tolerance.\", \"confidence\":0.42, \"evidence_refs\":[\"pay_qaqfP1AxMq9TRb\",\"setl_o5ldBN1F23y9yp\"], \"human_review_required\":true}"
+}

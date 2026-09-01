@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1362,
+  "output_tokens": 120,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm the settlement batch AXISP069111630172 corresponds to the credit; if it does, accept the match; if not, map to the correct batch from the candidate lists or flag as unresolved.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_XQktVl90ojmDYK\", \"AXISP069111630172\"],\n  \"human_review_required\": true\n}"
+}

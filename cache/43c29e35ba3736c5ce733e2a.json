@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1159,
+  "output_tokens": 152,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Consolidate the set of eligible line items for the batch and lock a single composition that matches the credit; if multiple compositions remain equally valid, flag for human review and select one based on documented priority rules within the gateway.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_L9OaYsP6ihgIqL\", \"AXISP098998142403\", \"setl_pay_KMzKG5mSoyPstU\", \"setl_pay_eC99enq522wjZR\"],\n  \"human_review_required\": true\n}"
+}

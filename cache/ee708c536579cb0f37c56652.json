@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1387,
+  "output_tokens": 113,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm the correct settlement batch among candidates; since the delta is zero with the primary batch but there are multiple equally plausible batch candidates within tolerance, escalate for manual review to select the exact batch and adjust reconciliation accordingly.\",\n  \"confidence\": 0.38,\n  \"evidence_refs\": [\"SBIN0780776999021\"],\n  \"human_review_required\": true\n}"
+}

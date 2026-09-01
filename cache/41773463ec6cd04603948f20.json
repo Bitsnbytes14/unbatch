@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1190,
+  "output_tokens": 125,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm whether the AXISP438345086002 settlement UTR is actually the source of this credit; if not, map to the correct batch from the candidate explanations or flag as unsupported credit.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_FfvUbobuuDkHhW\", \"setl_k1N85swsjFTzOr\"],\n  \"human_review_required\": true\n}"
+}

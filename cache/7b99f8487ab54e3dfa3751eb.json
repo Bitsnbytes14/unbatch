@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1060,
+  "output_tokens": 121,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate line compositions that sum to 3620444 and align with the settlement batch(es); select the composition with the most plausible canonical mapping and update the evidence_refs accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"pay_BeQQCoiRIcOSJ9\", \"setl_sbfNHm0Q572NC8\"],\n  \"human_review_required\": true\n}"
+}

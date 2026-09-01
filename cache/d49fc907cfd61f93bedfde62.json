@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1312,
+  "output_tokens": 130,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate the batch grouping to confirm which batch the credit should attach to and adjust mapping accordingly.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_lTkZ7acWK7p67k\",\"setl_rG9nUTynu0Kj9l\",\"setl_UwVQF5g4Nyx8hb\",\"setl_YbyYLpvIfNy4w3\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1377,
+  "output_tokens": 131,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Investigate which of the candidate batches truly matches the settlement window and reconcile against the definitive batch; if ambiguity remains, flag for manual review and wait for confirmation before finalizing.\",\"confidence\":0.52,\"evidence_refs\":[\"setl_eqFOtPkAKYBaLH\",\"setl_wmqKbLhJmwdstr\",\"setl_xIIla0FC5XXckv\",\"setl_Gr4jhcKXoQhQKr\"],\"human_review_required\":true}"
+}

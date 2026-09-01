@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1318,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the batch as ambiguous across multiple candidate settlements within tolerance; escalate for human review to select the correct batch or obtain supporting documentation.\",\n  \"confidence\": 0.38,\n  \"evidence_refs\": [\"txn_XzM0PCKmBZEbYj\",\"setl_IIUKf5WT5Nah6v\",\"setl_yZuIGrMkO6Gtm1V\",\"HDFCR380681751771\"],\n  \"human_review_required\": true\n}"
+}

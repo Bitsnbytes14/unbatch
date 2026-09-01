@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1369,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated credit to this settlement batch and escalate for confirmation; avoid auto-matching and request payment team validation.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_Zny2zRRINtyTni\", \"setl_4ER5oVFXZWYfDG\", \"setl_naIZgQD2aDzVoL\", \"setl_05yQ4uSb1VfcRE\"],\n  \"human_review_required\": true\n}"
+}

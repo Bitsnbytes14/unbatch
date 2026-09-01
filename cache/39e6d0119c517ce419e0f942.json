@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1213,
+  "output_tokens": 113,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate whether the payment(s) could map to multiple batches within the tolerance band and select the most plausible one; if ambiguity remains, flag for manual reconciliation.\",\n  \"confidence\": 0.45,\n  \"evidence_refs\": [\"setl_PkWgpOWuqC4zQ7\",\"AXISP478443383807\"],\n  \"human_review_required\": true\n}"
+}

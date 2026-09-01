@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1342,
+  "output_tokens": 108,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate if the credit corresponds to a different settlement batch; verify which batch the 4675729 paise should tie to and adjust mapping accordingly.\",\n  \"confidence\": 0.68,\n  \"evidence_refs\": [\"txn_08zLY6ghum6lxr\", \"AXISP513891050711\"],\n  \"human_review_required\": true\n}"
+}

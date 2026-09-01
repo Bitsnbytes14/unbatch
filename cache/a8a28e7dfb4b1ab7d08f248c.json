@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1254,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for human reconciliation to confirm correct settlement batch among candidates within tolerance; escalate to verify which batch actually matches the credit and adjust posting accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_0KpxoWEG9jG7je\", \"AXISP148052729376\", \"setl_zSt2HV4rF7FjhN\", \"setl_pyEdfClGsTudtz\"],\n  \"human_review_required\": true\n}"
+}

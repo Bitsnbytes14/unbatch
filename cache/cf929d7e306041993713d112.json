@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1387,
+  "output_tokens": 108,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark as unrelated_credit and perform reconciliation against the correct batch AXISP138072324982 or the candidate batches flagged, then adjust or reassign credit accordingly.\",\n  \"confidence\": 0.72,\n  \"evidence_refs\": [\"txn_nvjEpMrhuss9K1\", \"AXISP138072324982\"],\n  \"human_review_required\": true\n}"
+}

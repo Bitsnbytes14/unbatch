@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1346,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as potentially reconcilable with multiple candidate batches; escalate for human review to select the correct batch or confirm a mismatch.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_43xiTpaHbu1sSp\",\"setl_i7HVYyaXu70Ctm\",\"setl_2k0c4YwEjrWlFI\",\"setl_Omg8xv5tuu1Jmd\",\"setl_9si4JK9WoHzlDN\"],\n  \"human_review_required\": true\n}"
+}

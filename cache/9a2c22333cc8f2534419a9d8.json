@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1019,
+  "output_tokens": 140,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate whether the credit is sent by a different batch or bank instruction; verify reconciliation by checking matching settlement batch IDs and posting references.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_gfaGehAQmOI5Y9\", \"setl_sPiR8CAu9jozDR\", \"setl_sGidq6lg4FTYR5\", \"setl_cr1dQYFzC3MBNX\"],\n  \"human_review_required\": true\n}"
+}

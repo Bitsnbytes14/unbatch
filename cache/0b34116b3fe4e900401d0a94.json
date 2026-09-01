@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1248,
+  "output_tokens": 93,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag as ambiguous within tolerance; escalate for manual review to determine correct batch mapping.\", \"confidence\":0.42, \"evidence_refs\":[\"setl_162FaryaZDVXf6\",\"ICICR138710983670\",\"pay_fb8ibYIGHProco\"], \"human_review_required\":true}"
+}

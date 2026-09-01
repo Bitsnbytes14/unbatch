@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1008,
+  "output_tokens": 119,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate both candidate payment lines for the batch and determine which composition actually contributed to the net; lock the reconciliation to the correct line set or escalate for human review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_pay_6kGL75UQSyPx3B\", \"pay_VFgM0Fmxk754LE\"],\n  \"human_review_required\": true\n}"
+}

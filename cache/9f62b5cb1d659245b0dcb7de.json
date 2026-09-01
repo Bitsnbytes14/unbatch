@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1331,
+  "output_tokens": 101,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark this credit as unrelated and investigate matching batches; do not auto-close without human confirmation.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_ACvFyczbgq7DH4\",\"settlement_utr: KKBK0766249954958\"],\n  \"human_review_required\": true\n}"
+}

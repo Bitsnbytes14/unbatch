@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1266,
+  "output_tokens": 112,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Investigate which settlement batch actually corresponds to the credit; verify which UTR/batches were within tolerance and select the single closest match or escalate for manual reconciliation.\", \"confidence\":0.55, \"evidence_refs\":[\"AXISP460033989799','setl_GYZZtjU7XAdInt\",\"setl_g6y9B12Arm3eQS\"], \"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1123,
+  "output_tokens": 129,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact settlement line composition; if multiple exact-sum line combinations exist, select the one with the simplest or most recent matching batch and flag for manual reconciliation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP714223646957\", \"setl_umaQnjJXBLbQZr\", \"setl_jWCwrBxk383pKh\"],\n  \"human_review_required\": true\n}"
+}

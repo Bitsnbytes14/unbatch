@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1237,
+  "output_tokens": 100,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag as tolerance ambiguity; no single batch nets uniquely within tolerance; escalate for manual review to identify correct batch or adjust tolerance rules.\",\"confidence\":0.58,\"evidence_refs\":[\"setl_Fmi5zBzkDLnA2h\",\"AXISP395245336340\",\"2024-01-27\"],\"human_review_required\":true}"
+}

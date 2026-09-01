@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1369,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of payment lines that compose the settlement; if multiple batches could match, obtain definitive batch-line mapping from the treasury system or adjust to a single best-fit set.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_85CRW8nPi3xbzN\",\"setl_2Zn8rKaMmjZemN\",\"setl_aGTMZsPz9acXK3\",\"setl_iL3jYIbtmtoHlP\"],\n  \"human_review_required\": true\n}"
+}

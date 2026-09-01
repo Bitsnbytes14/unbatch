@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1372,
+  "output_tokens": 162,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Treat the credit as not matching the selected settlement batch and investigate which batch lines actually generated this credit; re-map credits to the correct batch or create a new batch linkage if applicable.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_DZFPWUOTyaAmDa\", \"setl_1uOEOFmaQCLz3K\", \"setl_8CdZ0nMnebbwPm\", \"setl_ick4zU0Pv9Ad2G\", \"setl_R0yhB4EbzEeBJw\"],\n  \"human_review_required\": true\n}"
+}

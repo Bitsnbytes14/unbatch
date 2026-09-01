@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1410,
+  "output_tokens": 149,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm the correct settlement batch by cross-checking the payment_ids and batch nets; if no single batch is clearly right, escalate for human review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_mFfL8e3aGtP3RI\",\"setl_UymINcFYSYBVVq\",\"setl_ZxN8UfeWNLTZTj\",\"setl_2x8O1CF1awrXrZ\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1352,
+  "output_tokens": 136,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance_ambiguous and review multiple candidate batches within tolerance; select the batch with the closest net and corroborating indicators, or escalate for human reconciliation if ambiguity persists.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"AXISP356301017977\", \"AXISP177533457599\", \"ICICR746132571271\", \"HDFCR629710137201\", \"AXISP861618113372\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1208,
+  "output_tokens": 119,
+  "response_text": "{\n  \"break_reason\": \"settlement_split\",\n  \"proposed_resolution\": \"Investigate and confirm if the same settlement UTRs are across multiple lines; consolidate or reallocate to a single batch as appropriate.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"setl_vWlYOiGBOIKBSU\", \"setl_jMKkQyaGXzPJAT\", \"AXISP040250644820\"],\n  \"human_review_required\": true\n}"
+}

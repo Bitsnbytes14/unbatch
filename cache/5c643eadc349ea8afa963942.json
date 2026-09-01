@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1286,
+  "output_tokens": 133,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag the credit as potentially matching multiple settlement batches within the tolerance band and request human reconciliation to determine the correct batch linkage.\",\"confidence\":0.46,\"evidence_refs\":[\"txn_9uWrVMAH9KDkC6\",\"setl_4wUGVqzafBmz8t\",\"setl_7IC76EoAow10k5\",\"setl_u4loAQMYiIKDL\",\"SBIN0674877940448\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1340,
+  "output_tokens": 151,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch within tolerance aligns with the credit, prioritize the closest net and corroborating payment IDs.\",\n  \"confidence\": 0.44,\n  \"evidence_refs\": [\"txn_9Eo7Purbf8IWo0\",\"setl_FDnq9czOQL6Tt0\",\"setl_6VZDuw8rF3Vxo4\",\"setl_xo5CdBUnzTXmYR\",\"setl_32sTdBcAq7rsET\"],\n  \"human_review_required\": true\n}"
+}

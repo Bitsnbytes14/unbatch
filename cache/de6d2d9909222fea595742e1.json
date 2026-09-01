@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1346,
+  "output_tokens": 141,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Verify batch linkage; confirm that the AXISP592495890607 batch net aligns with the credit, otherwise reassign to the correct batch or flag as separate credit for manual cash-letter reconciliation.\",\"confidence\":0.60,\"evidence_refs\":[\"AXISP592495890607\",\"setl_vMyZDx0iNgP4b7\",\"setl_dMzeAk3CiBuVrY\",\"setl_yagLwUCXqEJTNI\",\"txn_zCz5fZSZW1fvM1\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1187,
+  "output_tokens": 119,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag the credit as unrelated to the selected settlement batch and audit against the other candidate batches to identify a matching batch or reject the credit accordingly.\",\"confidence\":0.62,\"evidence_refs\":[\"txn_9qZjcoTh4iGh06\",\"setl_77U42AXmKae5mB\",\"pay_0eOsYqXAonIaMk\",\"KKBK0204751777369\"],\"human_review_required\":true}"
+}

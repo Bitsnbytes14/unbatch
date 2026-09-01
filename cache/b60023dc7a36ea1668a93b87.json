@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1302,
+  "output_tokens": 130,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as not matching the selected settlement batch and investigate which batch actually corresponds; escalate for reconciliation with bank and batch ledger, and confirm correct UTR association.\",\n  \"confidence\": 0.72,\n  \"evidence_refs\": [\"txn_s2UFVomGgrk1Ed\", \"setl_TPRQyrLslcMJ7t\", \"setl_lUPBWZGk6wA0iv\"],\n  \"human_review_required\": true\n}"
+}

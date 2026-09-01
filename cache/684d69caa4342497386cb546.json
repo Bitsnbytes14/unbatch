@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1176,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate whether the bank credit corresponds to the selected settlement batch or one of the alternate batches; if no match, escalate for reconciliation and cross-check UTRs and timestamps.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_vZm8dcRDFt6JdO\", \"setl_KqTQi4TlWG4yEm\", \"AXISP641849806450\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1367,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as within tolerance of multiple candidate batches and escalate for human review to select the correct batch mapping.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_NQvftcYiu8ZVP6\", \"setl_zELR7gN0I8Dlg7\", \"setl_iyXGISbQ9ChD2n\", \"setl_JtqPBjy8IN7W0N\", \"setl_Ax3SgbeuTEExP6\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1056,
+  "output_tokens": 149,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate line compositions for the settlement batch to identify which exact pay_ids contributed to the net, and select the composition that matches the actual posted batch; if multiple valid compositions exist, escalate for manual clearance.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_n9zpdyWy7Y9Juy\",\"setl_GamACoHosJVFkl\",\"pay_zppVPMARxayQTG\",\"pay_EfIRhj43OQ0XuT\"],\n  \"human_review_required\": true\n}"
+}

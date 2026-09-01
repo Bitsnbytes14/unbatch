@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1371,
+  "output_tokens": 104,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Investigate cross-check: this credit appears not to map to the selected batch's net; validate whether the credit corresponds to a different settlement batch or an external credit and reassign accordingly.\", \"confidence\":0.62, \"evidence_refs\":[\"txn_m7Cdy7o7p3OVFT\",\"SBIN0000312544671\"], \"human_review_required\":true}"
+}

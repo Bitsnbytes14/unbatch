@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1198,
+  "output_tokens": 119,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm the settlement batch HDFCR425950684616 aligns with the credit; if confirmed, mark as matched; if not, re-evaluate alternative candidate batches and select the correct one.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_EBB39GpTp3gy4c\", \"HDFCR425950684616\"],\n  \"human_review_required\": true\n}"
+}

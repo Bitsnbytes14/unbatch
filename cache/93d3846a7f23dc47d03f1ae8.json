@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1428,
+  "output_tokens": 172,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as not matching any settled batch and investigate for misattribution; verify sender bank, batch metadata, and reconcile to the correct batch or flag as out-of-band credit.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_1ZlUbLF3LTsmv1\", \"SBIN0324126655439\", \"setl_6cxGzLd76yh54y\", \"setl_ulvEE65idyUuSK\", \"setl_ja3zQdVbXAnJto\", \"setl_VGFrbDrOqbAoau\"],\n  \"human_review_required\": true\n}"
+}

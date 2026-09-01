@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1265,
+  "output_tokens": 162,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify and map the bank credit to the correct settlement batch; if no matching batch is found, flag as unrelated and request payment team to advise on possible mis-post or missing batch.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_HZpRIeqzi6poLG\",\"ICICR091944523737\",\"setl_hDEdoubkciHJNW\",\"setl_ta54xtwqmfbZSM\",\"pay_NAlQyA8jvLJDJ7\",\"pay_1fKoISGK0NYacJ\"],\n  \"human_review_required\": true\n}"
+}

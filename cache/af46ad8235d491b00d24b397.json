@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1277,
+  "output_tokens": 129,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as potentially matching multiple batches within tolerance and escalate for manual tie-breaking among candidate nets.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"AXISP875575468709\", \"setl_bS7ruCvIATOVRM\", \"setl_qbHiNZl4dJd6Mo\", \"setl_7uqZ8uyu3bMyWO\"],\n  \"human_review_required\": true\n}"
+}

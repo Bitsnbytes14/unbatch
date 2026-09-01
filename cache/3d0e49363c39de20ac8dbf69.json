@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1382,
+  "output_tokens": 99,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the batch as tolerance-ambiguous and request human reconciliation to review which candidate settlement batch aligns best with the credit, using additional line-level parity checks.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"SBIN0239375909187\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1233,
+  "output_tokens": 165,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm that the credit corresponds to the selected settlement batch SBIN0120100048339; if not, align with the actual matching batch or mark as unrelated and issue a corrective action.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_pkJlpoGYRmChuU\",\"SBIN0120100048339\",\"setl_USOnxYvJavMhvG\",\"setl_lS2ZPbbjxOk8Kg\",\"pay_zpwbnyBcS3sqFP\",\"pay_QYtVpE3b6ysqsL\"],\n  \"human_review_required\": true\n}"
+}

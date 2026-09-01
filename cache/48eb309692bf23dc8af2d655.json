@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1273,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches; if none clearly matches within tolerance, escalate for manual review to select the most plausible batch or flag as unrelated_credit.\",\n  \"confidence\": 0.45,\n  \"evidence_refs\": [\"txn_ZNKHoCXQvY0cjn\", \"SBIN0968397642670\", \"setl_lHeB8lIiWXNAxQ\", \"setl_JRWOQatEvnNSBF\"],\n  \"human_review_required\": true\n}"
+}

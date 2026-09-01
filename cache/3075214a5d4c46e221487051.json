@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1359,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark the bank credit as unrelated and continue reconciliation against the selected batch net, with a note to investigate potential mis-match in narration mapping.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_Mw6l5n9gLzE5id\", \"setl_HARpgTSPqHXH1T\", \"setl_bgysy6WMytLxiq\", \"setl_E3Z55TRuGuwOX7\", \"setl_nFVGm0IpPguPHl\"],\n  \"human_review_required\": true\n}"
+}

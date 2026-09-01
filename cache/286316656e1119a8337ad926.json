@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1287,
+  "output_tokens": 159,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated credit and place it on hold for manual reconciliation with batch SBIN0032829947792 to confirm integrity and mapping.\",\n  \"confidence\": 0.72,\n  \"evidence_refs\": [\"txn_v9iIElwOorZ5Xo\", \"setl_1o5uZ6H9z4uCzN\", \"setl_1Ev5ecsXAtQqeQ\", \"pay_3BOpV2qwDkgiDm\", \"pay_OaQsSekQQt1N0J\"],\n  \"human_review_required\": true\n}"
+}

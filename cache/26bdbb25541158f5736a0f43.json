@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1124,
+  "output_tokens": 175,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of payment lines that produced the batch net; if multiple compositions exist, consult bank shortfall notes and confirm which composition matches the actual settled lines; merge or split around the settled lines accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP547285808721\", \"setl_sbfNHm0Q572NC8\", \"setl_kKPlpqZVUEfg51\", \"pay_BeQQCoiRIcOSJ9\", \"pay_4CCDgk3DTiJ1DE\", \"txn_fn1xOBoAnAliXt\"],\n  \"human_review_required\": true\n}"
+}

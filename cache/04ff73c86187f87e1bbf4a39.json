@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1322,
+  "output_tokens": 111,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm the correct settlement batch among the candidates within tolerance; if ambiguity persists, escalate to human review to select the definitive batch.\",\n  \"confidence\": 0.45,\n  \"evidence_refs\": [\"txn_iNAw7JxH6kQ7Pg\", \"SBIN0920160429145\"],\n  \"human_review_required\": true\n}"
+}

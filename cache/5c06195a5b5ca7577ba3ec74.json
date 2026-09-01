@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1250,
+  "output_tokens": 106,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated_credit and route for manual reconciliation against the batch SBIN0635325608051 or a potential matching batch after verification.\",\n  \"confidence\": 0.65,\n  \"evidence_refs\": [\"txn_rDE4lNdEUKbpv9\", \"SBIN0635325608051\"],\n  \"human_review_required\": true\n}"
+}

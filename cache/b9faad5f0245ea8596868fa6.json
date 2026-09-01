@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1324,
+  "output_tokens": 117,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate the alternative batches and confirm which batch actually matched the credit; if the selected batch is correct, close; otherwise reassign to the matching batch after verifying UTR/date alignment.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_4FPesHBj0f3Oc7\", \"ICICR142274410286\"],\n  \"human_review_required\": true\n}"
+}

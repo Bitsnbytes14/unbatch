@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1314,
+  "output_tokens": 84,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag this credit as unrelated; do not net into batch; investigate corresponding batch and adjust downstream records accordingly.\",\"confidence\":0.72,\"evidence_refs\":[\"txn_Y5o3wdTkVVPqdT\",\"AXISP852143283403\"],\"human_review_required\":true}"
+}

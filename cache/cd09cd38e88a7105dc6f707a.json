@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1363,
+  "output_tokens": 102,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and map the bank credit to the correct settlement batch or mark as unrelated and await proper reconciliation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_dzvBMFq1Y3hHof\", \"ICICR482836721802\"],\n  \"human_review_required\": true\n}"
+}

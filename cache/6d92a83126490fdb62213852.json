@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1360,
+  "output_tokens": 136,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches and determine which net aligns within the tolerance band; if none clear, escalate for manual review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_Jr9Pu9Sn0Fpi0j\",\"SBIN0548257882529\",\"ICICR324893868909\",\"ICICR073306715938\",\"AXISP116598450401\",\"ICICR543095474519\"],\n  \"human_review_required\": true\n}"
+}

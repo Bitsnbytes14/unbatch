@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1218,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the candidate batches and confirm which lines of payment_ids collectively map to the credit, then lock the matching set or escalate for human decision.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_EYEZLz5BlAW2Ez\", \"setl_r2h5WjU3G0m5x3\", \"ICICR585965075561\"],\n  \"human_review_required\": true\n}"
+}

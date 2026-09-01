@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1060,
+  "output_tokens": 138,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous composition; require human review to determine exact line mapping or request bank batch reconciliation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP302856050840\", \"setl_OseM11YLWJyvDg\", \"setl_KKLgmTRL2VEr6C\", \"pay_G09PUheC5uJ9ZF\", \"pay_8gdrFmDLYU28kr\"],\n  \"human_review_required\": true\n}"
+}

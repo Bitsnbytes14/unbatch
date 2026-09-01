@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1252,
+  "output_tokens": 126,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag the credit as unrelated to any settled batch and investigate the source of the AXISP678000529241 credit; correlate with external remittance records and bank statements before confirming clearance.\",\"confidence\":0.68,\"evidence_refs\":[\"txn_55leBhnHUJ9U8M\",\"AXISP678000529241\",\"setl_fb7iem50aIGwYB\",\"setl_t5OkEgXhVdhrd0\"],\"human_review_required\":true}"
+}

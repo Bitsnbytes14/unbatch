@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1274,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"settlement_split\",\n  \"proposed_resolution\": \"Investigate which of the candidate batches actually corresponds to the credit and re-map the payment lines to the correct settlement batch.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_hQWcYZeMgGiJrE\",\"setl_IkTKdn2BMngMdw\",\"setl_nRg5TGYtLZkdgp\",\"pay_NasF4M2bWPk4fm\",\"pay_OnC8b8OyLrrE5K\",\"SBIN0432710057328\"],\n  \"human_review_required\": true\n}"
+}

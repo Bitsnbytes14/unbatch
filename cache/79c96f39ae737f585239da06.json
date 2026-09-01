@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1335,
+  "output_tokens": 147,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm whether the credit.posting corresponds to the same settlement batch; if not, align to the correct batch or mark as unrelated and flag for reconciliation.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_b1tQ0pwZ9lK8cz\", \"setl_rSxapbYlLNlPdD\", \"setl_av9sKPppiLit4D\", \"setl_x0xjsnVgZdC6gc\"],\n  \"human_review_required\": true\n}"
+}

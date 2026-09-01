@@ -54,19 +54,16 @@
     },
     "llm_call_count": 8,
     "llm_call_rate": 0.0761904761904762,
-    "llm_cost_paise": 8,
-    "cost_paise_per_adjudicated_credit": 1.0,
-    "cost_paise_per_exception": 0.8888888888888888,
-    "malformed_json_count": 0,
-    "retry_count": 0,
-    "adjudication_failed_count": 0,
-    "break_reason_accuracy": 0.375,
+    "llm_cost_paise": 14,
+    "cost_paise_per_adjudicated_credit": 1.75,
+    "cost_paise_per_exception": 1.5555555555555556,
+    "malformed_json_count": 11,
+    "retry_count": 6,
+    "adjudication_failed_count": 5,
+    "break_reason_accuracy": 0.0,
     "break_reason_confusion": {
       "duplicate_utr": {
-        "ambiguous_composition": 4
-      },
-      "ambiguous_composition": {
-        "ambiguous_composition": 3
+        "ambiguous_composition": 2
       },
       "chargeback_deduction": {
         "unrelated_credit": 1

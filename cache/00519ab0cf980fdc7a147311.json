@@ -1,0 +1,5 @@
+{
+  "input_tokens": 994,
+  "output_tokens": 133,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the two candidate line compositions for settlement AXISP022768040250 and determine which lines actually contributed to the batch; select the composition that aligns with the matched credit, or escalate for human review if ambiguity persists.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_kTkx9NIQ0Wobtq\",\"AXISP022768040250\",\"pay_OHnKYaXRvj7uff\"],\n  \"human_review_required\": true\n}"
+}

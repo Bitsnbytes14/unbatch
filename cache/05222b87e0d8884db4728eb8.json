@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1226,
+  "output_tokens": 112,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag as unrelated; escalate for batch reconciliation with the payments belonging to alternative batches and verify dates to map to correct settlement line; remove this credit from current settlement queue until matched.\",\"confidence\":0.58,\"evidence_refs\":[\"AXISP128539007584\",\"txn_BaXskNPuS2vEaK\",\"setl_sMRlT757GQ6di9\"],\"human_review_required\":true}"
+}
