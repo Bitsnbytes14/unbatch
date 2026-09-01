@@ -1,0 +1,794 @@
+{
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47
+  ],
+  "per_seed": {
+    "with_llm": {
+      "42": {
+        "run_id": "run_42_with_llm_a55dd0e67210",
+        "total_credits": 105,
+        "count_match_rate": 0.8857142857142857,
+        "value_weighted_match_rate": 0.9189560046629376,
+        "false_match_rate": 0.0,
+        "exception_rate": 0.11428571428571428,
+        "precision": 1.0,
+        "recall": 0.8942307692307693,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l0": 79,
+          "l1": 3,
+          "l2": 9,
+          "l3": 2,
+          "l4": 12
+        },
+        "llm_call_count": 12,
+        "llm_call_rate": 0.11428571428571428,
+        "llm_cost_paise": 12,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.9166666666666666,
+        "break_reason_confusion": {
+          "ambiguous_composition": {
+            "ambiguous_composition": 7
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 3,
+            "unrelated_credit": 1
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "tolerance_ambiguous": 4,
+          "ambiguous_composition": 7,
+          "unrelated_credit": 1
+        }
+      },
+      "43": {
+        "run_id": "run_43_with_llm_3b6ded81e885",
+        "total_credits": 105,
+        "count_match_rate": 0.8857142857142857,
+        "value_weighted_match_rate": 0.9229167259678008,
+        "false_match_rate": 0.010752688172043012,
+        "exception_rate": 0.11428571428571428,
+        "precision": 0.989247311827957,
+        "recall": 0.8846153846153846,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l0": 79,
+          "l1": 3,
+          "l2": 10,
+          "l3": 1,
+          "l4": 12
+        },
+        "llm_call_count": 12,
+        "llm_call_rate": 0.11428571428571428,
+        "llm_cost_paise": 12,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.9166666666666666,
+        "break_reason_confusion": {
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 4
+          },
+          "ambiguous_composition": {
+            "ambiguous_composition": 6,
+            "unrelated_credit": 1
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "ambiguous_composition": 7,
+          "tolerance_ambiguous": 4,
+          "unrelated_credit": 1
+        }
+      },
+      "44": {
+        "run_id": "run_44_with_llm_011ba69a0d84",
+        "total_credits": 105,
+        "count_match_rate": 0.8952380952380953,
+        "value_weighted_match_rate": 0.940747440613192,
+        "false_match_rate": 0.010638297872340425,
+        "exception_rate": 0.10476190476190476,
+        "precision": 0.9893617021276596,
+        "recall": 0.8942307692307693,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l0": 79,
+          "l1": 3,
+          "l2": 9,
+          "l3": 3,
+          "l4": 11
+        },
+        "llm_call_count": 11,
+        "llm_call_rate": 0.10476190476190476,
+        "llm_cost_paise": 11,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.8181818181818182,
+        "break_reason_confusion": {
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 2,
+            "date_skew": 1,
+            "unrelated_credit": 1
+          },
+          "ambiguous_composition": {
+            "ambiguous_composition": 6
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "tolerance_ambiguous": 4,
+          "ambiguous_composition": 6,
+          "unrelated_credit": 1
+        }
+      },
+      "45": {
+        "run_id": "run_45_with_llm_e6bb68c0f910",
+        "total_credits": 105,
+        "count_match_rate": 0.8952380952380953,
+        "value_weighted_match_rate": 0.94286600709213,
+        "false_match_rate": 0.010638297872340425,
+        "exception_rate": 0.10476190476190476,
+        "precision": 0.9893617021276596,
+        "recall": 0.8942307692307693,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l0": 79,
+          "l1": 3,
+          "l2": 8,
+          "l3": 3,
+          "l4": 12
+        },
+        "llm_call_count": 12,
+        "llm_call_rate": 0.11428571428571428,
+        "llm_cost_paise": 12,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0909090909090908,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.9166666666666666,
+        "break_reason_confusion": {
+          "ambiguous_composition": {
+            "ambiguous_composition": 6
+          },
+          "duplicate_utr": {
+            "unrelated_credit": 1
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 4
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "ambiguous_composition": 6,
+          "unrelated_credit": 1,
+          "tolerance_ambiguous": 4
+        }
+      },
+      "46": {
+        "run_id": "run_46_with_llm_c6783ebe1eb9",
+        "total_credits": 105,
+        "count_match_rate": 0.9047619047619048,
+        "value_weighted_match_rate": 0.9514724042397852,
+        "false_match_rate": 0.021052631578947368,
+        "exception_rate": 0.09523809523809523,
+        "precision": 0.9789473684210527,
+        "recall": 0.8942307692307693,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l0": 79,
+          "l1": 3,
+          "l2": 9,
+          "l3": 4,
+          "l4": 10
+        },
+        "llm_call_count": 10,
+        "llm_call_rate": 0.09523809523809523,
+        "llm_cost_paise": 10,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.8,
+        "break_reason_confusion": {
+          "ambiguous_composition": {
+            "ambiguous_composition": 4,
+            "unrelated_credit": 1
+          },
+          "tolerance_ambiguous": {
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 3
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "ambiguous_composition": 5,
+          "unrelated_credit": 1,
+          "tolerance_ambiguous": 4
+        }
+      },
+      "47": {
+        "run_id": "run_47_with_llm_13d8936aa71d",
+        "total_credits": 105,
+        "count_match_rate": 0.8857142857142857,
+        "value_weighted_match_rate": 0.9233222352177916,
+        "false_match_rate": 0.0,
+        "exception_rate": 0.11428571428571428,
+        "precision": 1.0,
+        "recall": 0.8942307692307693,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l0": 79,
+          "l1": 3,
+          "l2": 9,
+          "l3": 2,
+          "l4": 12
+        },
+        "llm_call_count": 12,
+        "llm_call_rate": 0.11428571428571428,
+        "llm_cost_paise": 12,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 1.0,
+        "break_reason_confusion": {
+          "ambiguous_composition": {
+            "ambiguous_composition": 7
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 4
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "ambiguous_composition": 7,
+          "tolerance_ambiguous": 4,
+          "unrelated_credit": 1
+        }
+      }
+    },
+    "llm_only": {
+      "42": {
+        "run_id": "run_42_llm_only_ede0cdd884be",
+        "total_credits": 105,
+        "count_match_rate": 0.13333333333333333,
+        "value_weighted_match_rate": 0.11466983567119658,
+        "false_match_rate": 0.0,
+        "exception_rate": 0.8666666666666667,
+        "precision": 1.0,
+        "recall": 0.1346153846153846,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l4": 105
+        },
+        "llm_call_count": 105,
+        "llm_call_rate": 1.0,
+        "llm_cost_paise": 105,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.1538461538461537,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.0380952380952381,
+        "break_reason_confusion": {
+          "refund_in_window": {
+            "tolerance_ambiguous": 1
+          },
+          "ambiguous_composition": {
+            "tolerance_ambiguous": 6,
+            "date_skew": 1
+          },
+          "clean": {
+            "date_skew": 7,
+            "tolerance_ambiguous": 32,
+            "unrelated_credit": 35,
+            "ambiguous_composition": 5
+          },
+          "fee_tier_change": {
+            "tolerance_ambiguous": 1
+          },
+          "settlement_split": {
+            "tolerance_ambiguous": 3,
+            "unrelated_credit": 1
+          },
+          "narration_mangled": {
+            "unrelated_credit": 2,
+            "tolerance_ambiguous": 1
+          },
+          "rounding_delta": {
+            "tolerance_ambiguous": 1
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 3,
+            "unrelated_credit": 1
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          },
+          "date_skew": {
+            "unrelated_credit": 1
+          },
+          "chargeback_deduction": {
+            "tolerance_ambiguous": 1
+          },
+          "duplicate_utr": {
+            "tolerance_ambiguous": 2
+          }
+        },
+        "exception_break_type_counts": {
+          "settlement_split": 4,
+          "clean": 67,
+          "duplicate_utr": 2,
+          "tolerance_ambiguous": 4,
+          "ambiguous_composition": 7,
+          "unrelated_credit": 1,
+          "narration_mangled": 2,
+          "rounding_delta": 1,
+          "refund_in_window": 1,
+          "fee_tier_change": 1,
+          "chargeback_deduction": 1
+        }
+      },
+      "43": {
+        "run_id": "run_43_llm_only_f25f89260fb0",
+        "total_credits": 105,
+        "count_match_rate": 0.06666666666666667,
+        "value_weighted_match_rate": 0.0586123438083996,
+        "false_match_rate": 0.0,
+        "exception_rate": 0.9333333333333333,
+        "precision": 1.0,
+        "recall": 0.0673076923076923,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l4": 105
+        },
+        "llm_call_count": 105,
+        "llm_call_rate": 1.0,
+        "llm_cost_paise": 105,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0714285714285714,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.05714285714285714,
+        "break_reason_confusion": {
+          "clean": {
+            "unrelated_credit": 30,
+            "ambiguous_composition": 6,
+            "tolerance_ambiguous": 35,
+            "date_skew": 8
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 4
+          },
+          "rounding_delta": {
+            "tolerance_ambiguous": 1
+          },
+          "date_skew": {
+            "date_skew": 1
+          },
+          "narration_mangled": {
+            "tolerance_ambiguous": 1,
+            "ambiguous_composition": 2
+          },
+          "ambiguous_composition": {
+            "tolerance_ambiguous": 7
+          },
+          "duplicate_utr": {
+            "tolerance_ambiguous": 2
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          },
+          "settlement_split": {
+            "tolerance_ambiguous": 2,
+            "unrelated_credit": 1,
+            "date_skew": 1
+          },
+          "refund_in_window": {
+            "tolerance_ambiguous": 1
+          },
+          "chargeback_deduction": {
+            "date_skew": 1
+          },
+          "fee_tier_change": {
+            "tolerance_ambiguous": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "clean": 72,
+          "ambiguous_composition": 7,
+          "settlement_split": 4,
+          "narration_mangled": 3,
+          "fee_tier_change": 1,
+          "tolerance_ambiguous": 4,
+          "duplicate_utr": 2,
+          "date_skew": 1,
+          "rounding_delta": 1,
+          "chargeback_deduction": 1,
+          "refund_in_window": 1,
+          "unrelated_credit": 1
+        }
+      },
+      "44": {
+        "run_id": "run_44_llm_only_da8f7b943e90",
+        "total_credits": 105,
+        "count_match_rate": 0.05714285714285714,
+        "value_weighted_match_rate": 0.03984280178100786,
+        "false_match_rate": 0.0,
+        "exception_rate": 0.9428571428571428,
+        "precision": 1.0,
+        "recall": 0.057692307692307696,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l4": 105
+        },
+        "llm_call_count": 105,
+        "llm_call_rate": 1.0,
+        "llm_cost_paise": 105,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0606060606060606,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.047619047619047616,
+        "break_reason_confusion": {
+          "clean": {
+            "ambiguous_composition": 4,
+            "unrelated_credit": 31,
+            "tolerance_ambiguous": 35,
+            "date_skew": 9
+          },
+          "date_skew": {
+            "date_skew": 1
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 2,
+            "date_skew": 1,
+            "unrelated_credit": 1
+          },
+          "narration_mangled": {
+            "tolerance_ambiguous": 2,
+            "unrelated_credit": 1
+          },
+          "duplicate_utr": {
+            "tolerance_ambiguous": 1,
+            "date_skew": 1
+          },
+          "settlement_split": {
+            "unrelated_credit": 2,
+            "tolerance_ambiguous": 2
+          },
+          "fee_tier_change": {
+            "date_skew": 1
+          },
+          "ambiguous_composition": {
+            "tolerance_ambiguous": 5,
+            "unrelated_credit": 2
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          },
+          "refund_in_window": {
+            "tolerance_ambiguous": 1
+          },
+          "chargeback_deduction": {
+            "tolerance_ambiguous": 1
+          },
+          "rounding_delta": {
+            "rounding_delta": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "tolerance_ambiguous": 4,
+          "clean": 73,
+          "ambiguous_composition": 7,
+          "settlement_split": 4,
+          "narration_mangled": 3,
+          "unrelated_credit": 1,
+          "fee_tier_change": 1,
+          "duplicate_utr": 2,
+          "date_skew": 1,
+          "chargeback_deduction": 1,
+          "refund_in_window": 1,
+          "rounding_delta": 1
+        }
+      },
+      "45": {
+        "run_id": "run_45_llm_only_016e1755fd71",
+        "total_credits": 105,
+        "count_match_rate": 0.10476190476190476,
+        "value_weighted_match_rate": 0.07893828025573112,
+        "false_match_rate": 0.0,
+        "exception_rate": 0.8952380952380953,
+        "precision": 1.0,
+        "recall": 0.10576923076923077,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l4": 105
+        },
+        "llm_call_count": 105,
+        "llm_call_rate": 1.0,
+        "llm_cost_paise": 105,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.1170212765957446,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.047619047619047616,
+        "break_reason_confusion": {
+          "settlement_split": {
+            "tolerance_ambiguous": 4
+          },
+          "clean": {
+            "tolerance_ambiguous": 36,
+            "unrelated_credit": 33,
+            "ambiguous_composition": 5,
+            "date_skew": 5
+          },
+          "date_skew": {
+            "tolerance_ambiguous": 1
+          },
+          "ambiguous_composition": {
+            "tolerance_ambiguous": 5,
+            "unrelated_credit": 2
+          },
+          "rounding_delta": {
+            "tolerance_ambiguous": 1
+          },
+          "duplicate_utr": {
+            "tolerance_ambiguous": 2
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 4
+          },
+          "chargeback_deduction": {
+            "tolerance_ambiguous": 1
+          },
+          "narration_mangled": {
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 2
+          },
+          "refund_in_window": {
+            "tolerance_ambiguous": 1
+          },
+          "fee_tier_change": {
+            "tolerance_ambiguous": 1
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "clean": 68,
+          "refund_in_window": 1,
+          "ambiguous_composition": 7,
+          "narration_mangled": 3,
+          "unrelated_credit": 1,
+          "chargeback_deduction": 1,
+          "duplicate_utr": 2,
+          "settlement_split": 4,
+          "tolerance_ambiguous": 4,
+          "fee_tier_change": 1,
+          "rounding_delta": 1,
+          "date_skew": 1
+        }
+      },
+      "46": {
+        "run_id": "run_46_llm_only_4066c9ed7302",
+        "total_credits": 105,
+        "count_match_rate": 0.13333333333333333,
+        "value_weighted_match_rate": 0.11568825070308016,
+        "false_match_rate": 0.07142857142857142,
+        "exception_rate": 0.8666666666666667,
+        "precision": 0.9285714285714286,
+        "recall": 0.125,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l4": 105
+        },
+        "llm_call_count": 105,
+        "llm_call_rate": 1.0,
+        "llm_cost_paise": 105,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.1538461538461537,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.0380952380952381,
+        "break_reason_confusion": {
+          "narration_mangled": {
+            "ambiguous_composition": 2,
+            "unrelated_credit": 1
+          },
+          "chargeback_deduction": {
+            "tolerance_ambiguous": 1
+          },
+          "clean": {
+            "tolerance_ambiguous": 39,
+            "ambiguous_composition": 4,
+            "unrelated_credit": 30,
+            "date_skew": 6
+          },
+          "ambiguous_composition": {
+            "tolerance_ambiguous": 4,
+            "date_skew": 2,
+            "unrelated_credit": 1
+          },
+          "duplicate_utr": {
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 1
+          },
+          "settlement_split": {
+            "tolerance_ambiguous": 3,
+            "unrelated_credit": 1
+          },
+          "refund_in_window": {
+            "unrelated_credit": 1
+          },
+          "tolerance_ambiguous": {
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 3
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          },
+          "date_skew": {
+            "unrelated_credit": 1
+          },
+          "rounding_delta": {
+            "date_skew": 1
+          },
+          "fee_tier_change": {
+            "unrelated_credit": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "clean": 68,
+          "settlement_split": 4,
+          "date_skew": 1,
+          "ambiguous_composition": 7,
+          "unrelated_credit": 1,
+          "narration_mangled": 2,
+          "duplicate_utr": 2,
+          "tolerance_ambiguous": 4,
+          "rounding_delta": 1,
+          "chargeback_deduction": 1
+        }
+      },
+      "47": {
+        "run_id": "run_47_llm_only_1817d09efd5c",
+        "total_credits": 105,
+        "count_match_rate": 0.0761904761904762,
+        "value_weighted_match_rate": 0.055607358379450716,
+        "false_match_rate": 0.0,
+        "exception_rate": 0.9238095238095239,
+        "precision": 1.0,
+        "recall": 0.07692307692307693,
+        "correctly_rejected": 8,
+        "stage_funnel": {
+          "l4": 105
+        },
+        "llm_call_count": 105,
+        "llm_call_rate": 1.0,
+        "llm_cost_paise": 105,
+        "cost_paise_per_adjudicated_credit": 1.0,
+        "cost_paise_per_exception": 1.0824742268041236,
+        "malformed_json_count": 0,
+        "retry_count": 0,
+        "adjudication_failed_count": 0,
+        "break_reason_accuracy": 0.047619047619047616,
+        "break_reason_confusion": {
+          "narration_mangled": {
+            "tolerance_ambiguous": 3
+          },
+          "ambiguous_composition": {
+            "tolerance_ambiguous": 5,
+            "unrelated_credit": 1,
+            "date_skew": 1
+          },
+          "duplicate_utr": {
+            "tolerance_ambiguous": 2
+          },
+          "clean": {
+            "tolerance_ambiguous": 41,
+            "unrelated_credit": 25,
+            "date_skew": 7,
+            "ambiguous_composition": 6
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 4
+          },
+          "settlement_split": {
+            "tolerance_ambiguous": 2,
+            "date_skew": 1,
+            "unrelated_credit": 1
+          },
+          "fee_tier_change": {
+            "tolerance_ambiguous": 1
+          },
+          "refund_in_window": {
+            "tolerance_ambiguous": 1
+          },
+          "date_skew": {
+            "tolerance_ambiguous": 1
+          },
+          "rounding_delta": {
+            "tolerance_ambiguous": 1
+          },
+          "unrelated_credit": {
+            "unrelated_credit": 1
+          },
+          "chargeback_deduction": {
+            "tolerance_ambiguous": 1
+          }
+        },
+        "exception_break_type_counts": {
+          "settlement_split": 4,
+          "clean": 71,
+          "ambiguous_composition": 7,
+          "rounding_delta": 1,
+          "duplicate_utr": 2,
+          "narration_mangled": 3,
+          "chargeback_deduction": 1,
+          "date_skew": 1,
+          "tolerance_ambiguous": 4,
+          "unrelated_credit": 1,
+          "refund_in_window": 1,
+          "fee_tier_change": 1
+        }
+      }
+    }
+  },
+  "pooled": {
+    "with_llm": {
+      "total_credits": 630,
+      "pooled_count_match_rate": 0.8920634920634921,
+      "pooled_false_match_rate": 0.008896797153024912,
+      "total_llm_cost_paise": 69,
+      "total_llm_call_count": 69
+    },
+    "llm_only": {
+      "total_credits": 630,
+      "pooled_count_match_rate": 0.09523809523809523,
+      "pooled_false_match_rate": 0.016666666666666666,
+      "total_llm_cost_paise": 630,
+      "total_llm_call_count": 630
+    }
+  },
+  "new_live_call_cost_paise": {
+    "with_llm": 69,
+    "llm_only": 630,
+    "total": 699
+  }
+}
