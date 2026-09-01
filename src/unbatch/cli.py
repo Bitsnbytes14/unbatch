@@ -33,6 +33,7 @@ from pathlib import Path
 import typer
 
 from unbatch import adjudicator, audit, fees, money
+from unbatch import forecast as forecast_module
 from unbatch import generate as generate_module
 from unbatch import metrics as metrics_module
 from unbatch import report as report_module
@@ -367,6 +368,52 @@ def report(
     """
     out_path = report_module.render(seed, data_dir=data_dir, db=db, out_path=out)
     typer.echo(f"wrote {out_path}")
+
+
+@app.command()
+def forecast(
+    horizon: int = 14,
+    as_of: str | None = None,
+    data_dir: Path = generate_module.DEFAULT_OUT_DIR,
+    out: Path | None = None,
+) -> None:
+    """Project expected settlement inflows for the next `horizon` days from
+    the existing settlement report. Pure arithmetic, no LLM — see
+    forecast.py's module docstring for why this never touches the
+    adjudicator.
+
+    `--as-of` (ISO date, e.g. 2024-01-16) fits the lag and fee-deviation
+    distributions on settlements dated on or before it and projects only
+    orders unsettled as of that date — the default is the data's last
+    settled date minus `horizon` days, so a full horizon of genuinely
+    unsettled orders exists to project even though every input file here
+    is already fully settled. Pass an earlier `--as-of` to backtest against
+    already-known outcomes, same as `bench --forecast` does internally.
+    """
+    orders, settlements, _bank_records = load_input_data(data_dir)
+    if as_of is not None:
+        as_of_date = date.fromisoformat(as_of)
+    else:
+        last_settled = max(
+            (
+                line.settled_at.date()
+                for line in settlements
+                if line.type == SettlementLineType.PAYMENT
+            ),
+            default=None,
+        )
+        if last_settled is None:
+            typer.echo("No settled payments in the data to forecast from.", err=True)
+            raise typer.Exit(code=1)
+        as_of_date = last_settled - timedelta(days=horizon)
+
+    report_data = forecast_module.forecast(
+        orders, settlements, as_of=as_of_date, horizon_days=horizon
+    )
+    payload = report_data.model_dump_json(indent=2)
+    if out is not None:
+        out.write_text(payload + "\n", encoding="utf-8", newline="")
+    typer.echo(payload)
 
 
 _EXCEPTION_EXPORT_HEADER = (
@@ -802,10 +849,11 @@ _BASELINE_RULES_ONLY_PATH = Path("baseline_rules_only.json")
 def _bench_adversarial(out: Path) -> None:
     """Generate the adversarial dataset once, run every applicable arm
     against it, and report the worst case honestly. The with-LLM arm is
-    only ever attempted `--cached` — the adversarial credits' prompts are
-    new content the committed cache/ was never built against, so a cache
-    miss there is expected and reported as "not measurable without live
-    calls", never silently patched over by making one."""
+    only ever attempted `--cached` — as of E13b the committed cache/
+    covers the adversarial dataset's prompts too, so this now succeeds; a
+    cache miss (e.g. if the generator or seed ever changes) is still
+    reported as "not measurable without live calls", never silently
+    patched over by making one."""
     seed = _BENCH_ADVERSARIAL_SEED
     with tempfile.TemporaryDirectory(prefix="unbatch-bench-adversarial-") as tmp:
         tmp_root = Path(tmp)
@@ -919,19 +967,201 @@ def _bench_adversarial(out: Path) -> None:
     typer.echo(f"wrote {out}")
 
 
+def _last_settled_payment_date(settlements: list[SettlementLine]) -> date | None:
+    return max(
+        (line.settled_at.date() for line in settlements if line.type == SettlementLineType.PAYMENT),
+        default=None,
+    )
+
+
+def _actual_daily_inflow(
+    settlements: list[SettlementLine], horizon_dates: list[date]
+) -> dict[date, int]:
+    """Ground truth for backtest *scoring only* — every PAYMENT-type net
+    actually settled on each horizon day, drawn from the full settlement
+    report. Never passed into `forecast.forecast()` itself, which only
+    ever sees data up to `as_of`; this is the held-out comparison, exactly
+    like a scoring module reading ground truth the pipeline never does."""
+    daily = dict.fromkeys(horizon_dates, 0)
+    for line in settlements:
+        if line.type != SettlementLineType.PAYMENT:
+            continue
+        d = line.settled_at.date()
+        if d in daily:
+            daily[d] += line.net_paise
+    return daily
+
+
+def _backtest_one_seed(seed: int, horizon: int, data_dir: Path) -> dict:
+    generate_module.generate(seed, out_dir=data_dir)
+    orders, settlements, _bank_records = load_input_data(data_dir)
+
+    last_settled = _last_settled_payment_date(settlements)
+    assert last_settled is not None, f"seed {seed}: no settled payments to backtest against"
+    as_of = last_settled - timedelta(days=horizon)
+
+    report = forecast_module.forecast(orders, settlements, as_of=as_of, horizon_days=horizon)
+    actual = _actual_daily_inflow(settlements, [day.date for day in report.daily])
+
+    abs_errors_by_offset: dict[str, int] = {}
+    in_band_count = 0
+    total_abs_error = 0
+    total_expected = 0
+    for offset, day_forecast in enumerate(report.daily, start=1):
+        actual_paise = actual[day_forecast.date]
+        error = abs(actual_paise - day_forecast.expected_paise)
+        abs_errors_by_offset[str(offset)] = error
+        total_abs_error += error
+        total_expected += day_forecast.expected_paise
+        if day_forecast.low_paise <= actual_paise <= day_forecast.high_paise:
+            in_band_count += 1
+
+    mean_absolute_error_paise = total_abs_error / horizon if horizon else 0.0
+    mae_pct_of_projected = total_abs_error / total_expected if total_expected else None
+    coverage = in_band_count / horizon if horizon else 0.0
+    total_actual = sum(actual.values())
+    # What fraction of the horizon's real inflow the forecaster's own
+    # tracked population (already-captured, still-unsettled orders) could
+    # ever explain — low by construction under a 1-2 day settlement lag,
+    # since most of a 14-day horizon's money comes from orders not yet
+    # captured at all as of `as_of`. This is what actually explains a large
+    # MAE/zero coverage: not a bad projection of what it tracks, but a
+    # structurally tiny tracked population. See forecast.py's docstring.
+    fraction_of_actual_captured = total_expected / total_actual if total_actual else None
+
+    return {
+        "seed": seed,
+        "as_of": as_of.isoformat(),
+        "horizon_days": horizon,
+        "unsettled_payment_count": report.unsettled_payment_count,
+        "total_expected_paise": report.total_expected_paise,
+        "total_actual_paise": total_actual,
+        "fraction_of_actual_captured": fraction_of_actual_captured,
+        "mean_absolute_error_paise": mean_absolute_error_paise,
+        "mae_pct_of_projected": mae_pct_of_projected,
+        "coverage": coverage,
+        "abs_error_by_horizon_distance_paise": abs_errors_by_offset,
+    }
+
+
+def _bench_forecast(seeds: str, horizon: int, out: Path) -> None:
+    """Backtest the forecaster on seeds 42-47 (or whichever are given):
+    hold out everything after `as_of = last_settled_date - horizon`, fit
+    only on data up to `as_of`, and score the projection against what
+    actually settled — the same seeds and the same reasoning as
+    `bench --seeds`, applied to the forecaster instead of the cascade."""
+    seed_list = [int(s.strip()) for s in seeds.split(",") if s.strip()]
+
+    per_seed: dict[str, dict] = {}
+    with tempfile.TemporaryDirectory(prefix="unbatch-bench-forecast-") as tmp:
+        tmp_root = Path(tmp)
+        for seed in seed_list:
+            data_dir = tmp_root / f"seed_{seed}" / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            per_seed[str(seed)] = _backtest_one_seed(seed, horizon, data_dir)
+
+    mae_values = [per_seed[str(s)]["mean_absolute_error_paise"] for s in seed_list]
+    coverage_values = [per_seed[str(s)]["coverage"] for s in seed_list]
+    pct_values = [
+        per_seed[str(s)]["mae_pct_of_projected"]
+        for s in seed_list
+        if per_seed[str(s)]["mae_pct_of_projected"] is not None
+    ]
+    fraction_captured_values = [
+        per_seed[str(s)]["fraction_of_actual_captured"]
+        for s in seed_list
+        if per_seed[str(s)]["fraction_of_actual_captured"] is not None
+    ]
+
+    error_by_offset_across_seeds: dict[str, list[int]] = {
+        str(offset): [] for offset in range(1, horizon + 1)
+    }
+    for s in seed_list:
+        for offset, error in per_seed[str(s)]["abs_error_by_horizon_distance_paise"].items():
+            error_by_offset_across_seeds[offset].append(error)
+    mean_error_by_offset = {
+        offset: statistics.mean(values) for offset, values in error_by_offset_across_seeds.items()
+    }
+
+    summary = {
+        "mean_absolute_error_paise": {
+            "mean": statistics.mean(mae_values),
+            "min": min(mae_values),
+            "max": max(mae_values),
+            "stdev": statistics.stdev(mae_values) if len(mae_values) > 1 else 0.0,
+        },
+        "coverage": {
+            "mean": statistics.mean(coverage_values),
+            "min": min(coverage_values),
+            "max": max(coverage_values),
+            "stdev": statistics.stdev(coverage_values) if len(coverage_values) > 1 else 0.0,
+        },
+        "mae_pct_of_projected": (
+            {
+                "mean": statistics.mean(pct_values),
+                "min": min(pct_values),
+                "max": max(pct_values),
+            }
+            if pct_values
+            else None
+        ),
+        "fraction_of_actual_captured": (
+            {
+                "mean": statistics.mean(fraction_captured_values),
+                "min": min(fraction_captured_values),
+                "max": max(fraction_captured_values),
+            }
+            if fraction_captured_values
+            else None
+        ),
+        "mean_abs_error_by_horizon_distance_paise": mean_error_by_offset,
+    }
+
+    payload = {
+        "seeds": seed_list,
+        "horizon_days": horizon,
+        "per_seed": per_seed,
+        "summary": summary,
+    }
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="")
+
+    typer.echo(f"seeds: {seed_list}, horizon: {horizon}")
+    typer.echo(
+        f"MAE: mean={summary['mean_absolute_error_paise']['mean']:.1f}p "
+        f"stdev={summary['mean_absolute_error_paise']['stdev']:.1f}p"
+    )
+    typer.echo(
+        f"coverage: mean={summary['coverage']['mean']:.3f} "
+        f"stdev={summary['coverage']['stdev']:.3f}"
+    )
+    if summary["fraction_of_actual_captured"] is not None:
+        typer.echo(
+            f"fraction of actual inflow the tracked population could ever explain: "
+            f"mean={summary['fraction_of_actual_captured']['mean']:.4f}"
+        )
+    typer.echo("mean abs error by horizon distance (paise):")
+    for offset, err in mean_error_by_offset.items():
+        typer.echo(f"  day {offset}: {err:.1f}")
+    typer.echo(f"wrote {out}")
+
+
 @app.command()
 def bench(
     seeds: str | None = None,
     scale: int | None = None,
     noise: str | None = None,
     adversarial: bool = False,
+    forecast: str | None = None,
+    forecast_horizon: int = 14,
     out: Path = Path("bench_multiseed.json"),
     scale_out: Path = Path("bench_scale.json"),
     noise_out: Path = Path("bench_noise.json"),
     adversarial_out: Path = Path("bench_adversarial.json"),
+    forecast_out: Path = Path("bench_forecast.json"),
 ) -> None:
     """Measure metric stability across seeds, cascade throughput at scale,
-    degradation under narration noise, or the worst case on hostile data.
+    degradation under narration noise, the worst case on hostile data, or
+    the cash forecaster's backtest accuracy.
 
     `--seeds 42,43,44,45,46,47` (comma-separated) generates each seed's own
     fixtures into a fresh temp directory, runs the rules-only (--no-llm) arm
@@ -960,21 +1190,34 @@ def bench(
 
     `--adversarial` generates the hostile dataset (see `unbatch generate
     --adversarial`) into a temp directory and runs every applicable arm
-    against it: rules-only always, and with-LLM `--cached` attempted but
-    only ever attempted — the adversarial credits' prompts are new content
-    the committed cache/ was never built against, so a cache miss there is
-    reported as "not measurable without live calls" rather than triggering
-    one. Written to `--adversarial-out` (default bench_adversarial.json),
-    including a stage-funnel comparison against the committed
-    baseline_rules_only.json.
+    against it: rules-only always, and with-LLM `--cached` — as of E13b the
+    committed cache/ covers the adversarial dataset's prompts too, so this
+    now succeeds and reports break-reason accuracy alongside match rate; a
+    cache miss (e.g. if the adversarial generator or seed ever changes) is
+    still handled by reporting "not measurable without live calls" rather
+    than silently making one. Written to `--adversarial-out` (default
+    bench_adversarial.json), including a stage-funnel comparison against
+    the committed baseline_rules_only.json.
 
-    Exactly one of --seeds/--scale/--noise/--adversarial must be given.
+    `--forecast 42,43,44,45,46,47` (comma-separated) backtests `unbatch
+    forecast` on each seed: holds out everything after `as_of = last
+    settled date - --forecast-horizon` (default 14), fits only on data up
+    to `as_of`, and scores the projection against what actually settled —
+    mean absolute error in paise, as a percentage of projected inflow,
+    error by horizon distance, and coverage (how often the actual falls
+    inside the low/high band) — mean/min/max/stdev across seeds, written to
+    `--forecast-out` (default bench_forecast.json). Never touches the
+    cascade or the audit log.
+
+    Exactly one of --seeds/--scale/--noise/--adversarial/--forecast must be
+    given.
     """
-    modes = [bool(seeds), bool(scale), bool(noise), adversarial]
+    modes = [bool(seeds), bool(scale), bool(noise), adversarial, bool(forecast)]
     if sum(modes) != 1:
         typer.echo(
             "Pass exactly one of --seeds (e.g. 42,43,44), --scale (e.g. 5000), "
-            "--noise (e.g. 0.0,0.25,0.5,1.0), or --adversarial",
+            "--noise (e.g. 0.0,0.25,0.5,1.0), --adversarial, or --forecast "
+            "(e.g. 42,43,44,45,46,47)",
             err=True,
         )
         raise typer.Exit(code=1)
@@ -984,8 +1227,11 @@ def bench(
         _bench_scale(scale, scale_out)
     elif noise:
         _bench_noise(noise, noise_out)
-    else:
+    elif adversarial:
         _bench_adversarial(adversarial_out)
+    else:
+        assert forecast is not None
+        _bench_forecast(forecast, forecast_horizon, forecast_out)
 
 
 if __name__ == "__main__":
