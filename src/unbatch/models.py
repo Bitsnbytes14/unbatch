@@ -224,6 +224,51 @@ class Decision(BaseModel):
     created_at: datetime
 
 
+class CascadeConfig(BaseModel):
+    """Every tunable cascade parameter, collected in one place instead of
+    scattered as module constants across compose.py, l2_compose.py,
+    l3_tolerance.py, and l4_llm.py (three of those modules each used to
+    define their own copy of DATE_WINDOW_DAYS). Current values are the
+    existing defaults, unchanged; only where they live has moved. See
+    ARCHITECTURE.md for why each one is what it is.
+
+    `compose.py`'s own MAX_POOL/MAX_SUBSET/DEFAULT_TIMEOUT_S are left as
+    that module's standalone defaults (it deliberately imports nothing from
+    the rest of the pipeline) rather than removed; the cascade always
+    passes this config's values explicitly instead of relying on them.
+    """
+
+    max_pool: int = 48
+    max_subset: int = 25
+    compose_timeout_s: float = 5.0
+    date_window_days: int = 3
+    tolerance_rate: float = 0.006
+    tolerance_floor_paise: int = 50
+    confidence_auto_accept: float = 0.85
+    confidence_human_review: float = 0.60
+
+    @model_validator(mode="after")
+    def _validate(self) -> CascadeConfig:
+        if self.max_pool <= 0:
+            raise ValueError("max_pool must be positive")
+        if self.max_subset <= 0:
+            raise ValueError("max_subset must be positive")
+        if self.compose_timeout_s <= 0:
+            raise ValueError("compose_timeout_s must be positive")
+        if self.date_window_days <= 0:
+            raise ValueError("date_window_days must be positive")
+        if not 0 <= self.tolerance_rate <= 1:
+            raise ValueError("tolerance_rate must be in [0, 1]")
+        if self.tolerance_floor_paise < 0:
+            raise ValueError("tolerance_floor_paise must be non-negative")
+        if not 0 <= self.confidence_human_review <= self.confidence_auto_accept <= 1:
+            raise ValueError(
+                "confidence bands must be ordered: "
+                "0 <= confidence_human_review <= confidence_auto_accept <= 1"
+            )
+        return self
+
+
 class RunContext(BaseModel):
     """Config threaded through every stage of one cascade run."""
 
@@ -232,8 +277,7 @@ class RunContext(BaseModel):
     cached: bool = False
     no_llm: bool = False
     llm_only: bool = False
-    max_pool: int = 48
-    max_subset: int = 25
+    config: CascadeConfig = Field(default_factory=CascadeConfig)
 
 
 class GroundTruthCredit(BaseModel):

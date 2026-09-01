@@ -74,21 +74,19 @@ from unbatch.models import (
     UnresolvedCredit,
 )
 
-CONFIDENCE_AUTO_ACCEPT = 0.85
-CONFIDENCE_HUMAN_REVIEW = 0.60
-
-DATE_WINDOW_DAYS = 3
 TOP_K_CANDIDATES = 4
 
 REASON_ADJUDICATION_FAILED = "adjudication_failed"
 
 
-def _candidate_lines_in_window(unresolved_credit: UnresolvedCredit) -> list[SettlementLine]:
+def _candidate_lines_in_window(
+    unresolved_credit: UnresolvedCredit, ctx: RunContext
+) -> list[SettlementLine]:
     """Mirrors l2_compose.py's own date-window filter exactly — this stage
     is re-running the same search, not a different one, so it needs the
     same window."""
     credit = unresolved_credit.credit
-    window_start = credit.value_date - timedelta(days=DATE_WINDOW_DAYS)
+    window_start = credit.value_date - timedelta(days=ctx.config.date_window_days)
     return [
         line
         for line in unresolved_credit.candidate_lines
@@ -103,13 +101,14 @@ def _exact_composition_candidates(
     if the pool was too large or the search timed out (a refusal to search,
     not a negative result — the caller must not treat it as "no exact
     composition exists")."""
-    pool = _candidate_lines_in_window(unresolved_credit)
+    pool = _candidate_lines_in_window(unresolved_credit, ctx)
     try:
         return compose(
             unresolved_credit.credit.credit_paise,
             pool,
-            max_pool=ctx.max_pool,
-            max_subset=ctx.max_subset,
+            max_pool=ctx.config.max_pool,
+            max_subset=ctx.config.max_subset,
+            timeout_s=ctx.config.compose_timeout_s,
         )
     except (PoolTooLargeError, ComposeTimeoutError):
         return None
@@ -149,14 +148,17 @@ def _candidates_from_exact_subsets(
     ]
 
 
-def _scored_batches(unresolved_credit: UnresolvedCredit) -> list[tuple[ExpectedBatch, int]]:
+def _scored_batches(
+    unresolved_credit: UnresolvedCredit, ctx: RunContext
+) -> list[tuple[ExpectedBatch, int]]:
     """Every candidate batch paired with its delta against the credit,
-    nearest first. Prefers batches whose window overlaps the same 3-day
-    lookback L2/L3 use; falls back to the full batch list only when nothing
-    is in that window, so a truly unrelated credit still gets the single
-    closest-by-date batch as its point of comparison rather than nothing."""
+    nearest first. Prefers batches whose window overlaps the same
+    lookback window L2/L3 use; falls back to the full batch list only when
+    nothing is in that window, so a truly unrelated credit still gets the
+    single closest-by-date batch as its point of comparison rather than
+    nothing."""
     credit = unresolved_credit.credit
-    window_start = credit.value_date - timedelta(days=DATE_WINDOW_DAYS)
+    window_start = credit.value_date - timedelta(days=ctx.config.date_window_days)
     windowed = [
         batch
         for batch in unresolved_credit.expected_batches
@@ -169,11 +171,11 @@ def _scored_batches(unresolved_credit: UnresolvedCredit) -> list[tuple[ExpectedB
 
 
 def _pick_batch_and_candidates(
-    unresolved_credit: UnresolvedCredit,
+    unresolved_credit: UnresolvedCredit, ctx: RunContext
 ) -> tuple[ExpectedBatch, int, list[CandidateExplanation]]:
     """Whole-batch nearest-neighbor fallback — used only when no exact-sum
     line composition exists at all (see module docstring)."""
-    scored = _scored_batches(unresolved_credit)
+    scored = _scored_batches(unresolved_credit, ctx)
     primary_batch, delta_paise = scored[0]
     candidates = [
         CandidateExplanation(
@@ -216,19 +218,21 @@ def _pick_primary_and_candidates(
             candidates = _candidates_from_exact_subsets(exact_subsets[1 : 1 + TOP_K_CANDIDATES])
             return primary_batch, 0, candidates, len(exact_subsets) >= 2
 
-    primary_batch, delta_paise, candidates = _pick_batch_and_candidates(unresolved_credit)
+    primary_batch, delta_paise, candidates = _pick_batch_and_candidates(unresolved_credit, ctx)
     return primary_batch, delta_paise, candidates, False
 
 
-def _confidence_band_outcome(confidence: float, human_review_required: bool) -> DecisionOutcome:
+def _confidence_band_outcome(
+    confidence: float, human_review_required: bool, ctx: RunContext
+) -> DecisionOutcome:
     """ARCHITECTURE.md's fixed bands decide the default outcome; the model's
     own `human_review_required` flag can only push a confident call down to
     human review, never push an unconfident one up to auto-accept — bias to
     exception/review over a wrong match applies to the model's output just
     as much as to the rules layers."""
-    if confidence < CONFIDENCE_HUMAN_REVIEW:
+    if confidence < ctx.config.confidence_human_review:
         return DecisionOutcome.EXCEPTION
-    if confidence < CONFIDENCE_AUTO_ACCEPT or human_review_required:
+    if confidence < ctx.config.confidence_auto_accept or human_review_required:
         return DecisionOutcome.HUMAN_REVIEW
     return DecisionOutcome.MATCHED
 
@@ -321,7 +325,9 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
             outcome = DecisionOutcome.EXCEPTION
             matched_payment_ids: list[str] = []
         else:
-            outcome = _confidence_band_outcome(result.confidence, result.human_review_required)
+            outcome = _confidence_band_outcome(
+                result.confidence, result.human_review_required, ctx
+            )
             matched_payment_ids = (
                 [] if outcome == DecisionOutcome.EXCEPTION else primary_batch.payment_ids
             )

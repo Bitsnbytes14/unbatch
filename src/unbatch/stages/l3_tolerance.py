@@ -21,10 +21,12 @@ quantity, not an assembled one, so this check has nothing left to be
 coincidentally right or wrong about.
 
 **The band, and why it's this size, not tuned to make numbers look good:**
-`TOLERANCE_RATE = 0.006` (0.6% of the credit amount), floored at
-`TOLERANCE_FLOOR_PAISE = 50` for very small credits. Derived from the fee
-structure this project's own fees.py defines, not picked to fit this
-dataset's two observed cases:
+`ctx.config.tolerance_rate = 0.006` (0.6% of the credit amount), floored at
+`ctx.config.tolerance_floor_paise = 50` for very small credits (see
+`CascadeConfig` in models.py — every cascade-tunable value lives there now,
+not as a module constant here). Derived from the fee structure this
+project's own fees.py defines, not picked to fit this dataset's two
+observed cases:
 
 - Pure rounding noise (per-line vs per-batch GST rounding, see fees.py) is
   bounded by a few paise per batch — utterly swamped by a 50-paise floor.
@@ -40,7 +42,7 @@ Wider than this starts accepting deltas explainable only by an actually
 wrong batch — a false match. Narrower starts rejecting a legitimate
 half-point fee change — a real settlement pushed to exception for no
 reason. See ARCHITECTURE.md's § Confidence bands for the full reasoning;
-this module only encodes the number.
+this module only applies the number.
 
 **2026-08-31 false-accept guard (see FAILURES.md):** a tolerance band exists
 to absorb fee and rounding noise, never a whole missing settlement line. If
@@ -51,7 +53,7 @@ L2 already looked at and declined, not tolerance noise — so this stage now
 refuses instead of accepting. Refusing here is strictly narrower than
 before (a batch that used to match no longer does when a line exactly
 explains the gap); it never widens or narrows
-`TOLERANCE_RATE`/`TOLERANCE_FLOOR_PAISE` themselves.
+`ctx.config.tolerance_rate`/`ctx.config.tolerance_floor_paise` themselves.
 
 **This guard does not close the false-accept path `bench --seeds` actually
 measured.** The original hypothesis was that this stage was matching an
@@ -86,20 +88,22 @@ from unbatch.models import (
 )
 
 CONFIDENCE = 0.75
-DATE_WINDOW_DAYS = 3
-
-TOLERANCE_RATE = 0.006
-TOLERANCE_FLOOR_PAISE = 50
 
 REASON_MATCH = "tolerance_band_match"
 
 
-def _tolerance_for(credit_paise: int) -> int:
-    return max(TOLERANCE_FLOOR_PAISE, round(credit_paise * TOLERANCE_RATE))
+def _tolerance_for(credit_paise: int, ctx: RunContext) -> int:
+    return max(
+        ctx.config.tolerance_floor_paise, round(credit_paise * ctx.config.tolerance_rate)
+    )
 
 
-def _batches_in_window(unresolved_credit: UnresolvedCredit) -> list[ExpectedBatch]:
-    window_start = unresolved_credit.credit.value_date - timedelta(days=DATE_WINDOW_DAYS)
+def _batches_in_window(
+    unresolved_credit: UnresolvedCredit, ctx: RunContext
+) -> list[ExpectedBatch]:
+    window_start = unresolved_credit.credit.value_date - timedelta(
+        days=ctx.config.date_window_days
+    )
     window_end = unresolved_credit.credit.value_date
     return [
         batch
@@ -108,8 +112,12 @@ def _batches_in_window(unresolved_credit: UnresolvedCredit) -> list[ExpectedBatc
     ]
 
 
-def _candidate_lines_in_window(unresolved_credit: UnresolvedCredit) -> list[SettlementLine]:
-    window_start = unresolved_credit.credit.value_date - timedelta(days=DATE_WINDOW_DAYS)
+def _candidate_lines_in_window(
+    unresolved_credit: UnresolvedCredit, ctx: RunContext
+) -> list[SettlementLine]:
+    window_start = unresolved_credit.credit.value_date - timedelta(
+        days=ctx.config.date_window_days
+    )
     window_end = unresolved_credit.credit.value_date
     return [
         line
@@ -165,11 +173,11 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
 
     for unresolved_credit in unresolved:
         credit = unresolved_credit.credit
-        tolerance = _tolerance_for(credit.credit_paise)
+        tolerance = _tolerance_for(credit.credit_paise, ctx)
 
         within_tolerance = [
             (batch, credit.credit_paise - batch.net_paise)
-            for batch in _batches_in_window(unresolved_credit)
+            for batch in _batches_in_window(unresolved_credit, ctx)
             if abs(credit.credit_paise - batch.net_paise) <= tolerance
         ]
 
@@ -177,7 +185,7 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
             continue  # zero or multiple: not certain enough, stays unresolved
 
         batch, delta = within_tolerance[0]
-        if _delta_is_a_missing_line(delta, _candidate_lines_in_window(unresolved_credit)):
+        if _delta_is_a_missing_line(delta, _candidate_lines_in_window(unresolved_credit, ctx)):
             continue  # a whole line explains the gap — L2's call, not tolerance
 
         decisions.append(
