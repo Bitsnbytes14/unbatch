@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1335,
+  "output_tokens": 115,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance-ambiguous since multiple batches land within tolerance, assign to the primary batch HDFCR900223625581 but keep an audit note for reconciliation checks.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_Bh6wdEcNQVnmS9\", \"HDFCR900223625581\"],\n  \"human_review_required\": true\n}"
+}

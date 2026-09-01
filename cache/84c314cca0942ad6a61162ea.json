@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1282,
+  "output_tokens": 138,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity; hold final decision and request human reconciliation to review which batch net aligns best within tolerance bands.\",\n  \"confidence\": 0.32,\n  \"evidence_refs\": [\"txn_wNdlZCEZOkC1v7\", \"setl_8hPkBD5Q3wf13m\", \"setl_rw2wipMqEDtLcp\", \"setl_TWsn5UFQfdyiv6\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1243,
+  "output_tokens": 156,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for human review to confirm the correct batch among candidates within the tolerance band and align posting date; surface all plausible batches with their deltas for adjudication.\",\n  \"confidence\": 0.46,\n  \"evidence_refs\": [\"txn_Wcgse2PYOnrLXM\", \"setl_jTEPTukxyNL73L\", \"setl_chXsbwCcu2L23H\", \"pay_KgcAF3D6UDl86X\", \"pay_7nmVHIAQzCxI0h\"],\n  \"human_review_required\": true\n}"
+}

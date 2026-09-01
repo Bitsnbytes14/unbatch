@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1287,
+  "output_tokens": 207,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Investigate the credit's alignment with the selected settlement batch and confirm whether the 3896053 paise corresponds to a different batch or a malformed/duplicate entry; if no match is found, flag for manual reconciliation and advise matching against the batch with exact UTR AXISP853002738582 or mark as unrelated and reverse if needed.\",\"confidence\":0.54,\"evidence_refs\":[\"txn_atIqSUMBzFZ9n1\",\"AXISP853002738582\",\"setl_5reZAoWBZeugSo\",\"setl_s00GuryYfaloZr\",\"setl_XPUyjkLWBhkp32\",\"pay_IWZqzdp3wQKx6I\",\"pay_GBdh0O5hAmX9yF\",\"pay_mFb4zrorFGUWa1\"],\"human_review_required\":true}"
+}

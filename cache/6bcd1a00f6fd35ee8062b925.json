@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1177,
+  "output_tokens": 150,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Due to multiple candidate settlement batches fitting the same credit within the constraints, escalate to human review to determine the correct batch and align postings.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_BaXskNPuS2vEaK\", \"setl_sMRlT757GQ6di9\", \"setl_SvcR1tLIzKOvr1\", \"setl_1Lbw5M8IBkMDZw\", \"AXISP128539007584\"],\n  \"human_review_required\": true\n}"
+}

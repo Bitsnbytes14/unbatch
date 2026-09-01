@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1251,
+  "output_tokens": 129,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Review the competing batches within the tolerance band and select the batch whose net most closely matches the credit after validating the payment set; if ambiguity persists, hold reconciliation for human confirmation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_j24ClBPWe3jzn9\", \"SBIN0087006615475\", \"setl_QwPwUYoUCA03Bf\"],\n  \"human_review_required\": true\n}"
+}

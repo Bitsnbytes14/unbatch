@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1211,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as potentially matching multiple batches within tolerance; escalate for manual review to identify the correct settlement batch and adjust the link accordingly.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_BdcgygnFDCOVjw\", \"setl_rNnqDsAnqRpx3e\", \"setl_kQGkX7MBcbeaG6\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1300,
+  "output_tokens": 176,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Verify the posting date alignment for the involved payments; if the batch net matches but the credit date differs, align the settlement posting date with the bank credit date or investigate batch-level dating; revert to confirming the correct batch and adjust the reconciliation accordingly.\",\n  \"confidence\": 0.36,\n  \"evidence_refs\": [\"txn_8VfhFNaQh7APZ0\", \"setl_9066oOnBGipK00\", \"setl_E2ZyWcRG3vLHPR\", \"setl_kHNMNt66VWiCKm\", \"setl_JqZ5ixmBx8Thqy\"],\n  \"human_review_required\": true\n}"
+}

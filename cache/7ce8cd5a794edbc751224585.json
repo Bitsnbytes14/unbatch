@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1150,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Confirm the credit corresponds to the settled batch SBIN0341517848656; if not, re-associate to the correct batch or flag as reconciliation mismatch for investigation.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_0xu36wiHCBLaJQ\", \"setl_btVRD1w4SMYcmH\", \"SBIN0341517848656\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1319,
+  "output_tokens": 147,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the case for manual review to identify the correct settlement batch among multiple candidates within the tolerance band.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"txn_rwnuxW7mQm80PU\", \"setl_styZ797Z5wA80j\", \"setl_j00EUXfgFz9DEv\", \"setl_gZDvOveH08OSz0\", \"setl_elCMxCpIUBhKuv\"],\n  \"human_review_required\": true\n}"
+}

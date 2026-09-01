@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1305,
+  "output_tokens": 155,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Investigate and confirm that the credited amount corresponds to the settlement batch HDFCR610320897738; if not, flag as unrelated_credit and align processing with the correct batch or segregate for reconciliation.\",\"confidence\":0.58,\"evidence_refs\":[\"txn_dsf6XSZ9I1feh2\",\"setl_N9lkn2YfzQD981\",\"setl_IHXUErCE0NKKXC\",\"setl_EVgp6nkos1ki6o\",\"setl_MWvrhx1ECSD0iV\",\"HDFCR610320897738\"],\"human_review_required\":true}"
+}

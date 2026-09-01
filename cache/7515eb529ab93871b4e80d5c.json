@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1196,
+  "output_tokens": 146,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as not aligning to the selected batch and investigate the bank credit source; confirm which settlement batch (if any) the credit truly belongs to or mark as unreconcilable.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_Ak0YxfFEVLFJxd\", \"AXISP100712743739\", \"setl_7q3D2cfl1buuWR\", \"setl_bB2NGCdWEkx6E7\"],\n  \"human_review_required\": true\n}"
+}

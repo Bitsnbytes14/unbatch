@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1160,
+  "output_tokens": 132,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the actual settlement batch composition; if multiple candidate batches could match, isolate the exact line items and verify against bank posting details before finalizing the match.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_48hT942uSE6R01\", \"setl_cg7Asc39nc5DhW\", \"setl_klc0KMBytAPVGp\"],\n  \"human_review_required\": true\n}"
+}

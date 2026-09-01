@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1309,
+  "output_tokens": 147,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as not matching any settled batch and initiate a cross-check with the original remittance advice to re-anchor the credit to the correct batch or mark as uncorrelated for manual reconciliation.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_EfvearhtUcMiXT\", \"setl_wisot3uVcNZtxq\", \"setl_fp6CLmP8VeDPWR\", \"setl_yckz6lzeiaZ46s\"],\n  \"human_review_required\": true\n}"
+}

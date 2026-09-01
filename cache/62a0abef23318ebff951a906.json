@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1306,
+  "output_tokens": 145,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Trace the credit to the corresponding settlement batch; if no matching batch is found, escalate for investigation to map the bank credit to its origin.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_8EDqo4DO5GlRX6\", \"setl_ZTmAoykDF1O1oI\", \"setl_azmWwR2pT5kzZB\", \"setl_JIjYqIR7dNhsBO\"],\n  \"human_review_required\": true\n}"
+}

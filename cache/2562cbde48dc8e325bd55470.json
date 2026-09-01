@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1239,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Flag as date skew: the credit and batch net match, but the posting date differs; investigate and align the posting date to the batch window or reclassify to the correct settlement batch.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_ntUt7z4Eqbm2v6\", \"setl_SmXOafXaiXTTLF\", \"setl_hAUp7HLDRrVO7a\"],\n  \"human_review_required\": true\n}"
+}

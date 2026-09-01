@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1195,
+  "output_tokens": 153,
+  "response_text": "{\"break_reason\":\"ambiguous_composition\",\"proposed_resolution\":\"Investigate all candidate batches and confirm which combination of payment lines actually corresponds to the credit; if multiple batches fit, request confirmation from operations or vendor to resolve the correct settlement grouping.\",\"confidence\":0.38,\"evidence_refs\":[\"txn_XC6CFQvI6zgIKM\",\"AXISP449971894146\",\"setl_6XaxIBAl82zToN\",\"setl_gsOwSSK9ONbWAF\",\"setl_kDPcaLt7Kgfvf3\",\"setl_5L4K5bxcOf33UF\"],\"human_review_required\":true}"
+}

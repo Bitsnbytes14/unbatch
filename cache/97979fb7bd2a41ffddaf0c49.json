@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1159,
+  "output_tokens": 167,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance-ambiguous since multiple settlement batches fall within the same tolerance band for the credit amount and none is clearly the unique match; escalate for human review to confirm the correct batch mapping.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_vhs28pRWZabfJm\",\"AXISP040250644820\",\"setl_vWlYOiGBOIKBSU\",\"setl_jMKkQyaGXzPJAT\",\"pay_8VBfqQbzOGkAIq\",\"pay_ZWo3sHO9gJo9FV\"],\n  \"human_review_required\": true\n}"
+}

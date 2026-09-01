@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1183,
+  "output_tokens": 152,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm which settlement batch net aligns with the credit within tolerance bands; if ambiguity persists, escalate for manual confirmation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_pkJlpoGYRmChuU\",\"SBIN0120100048339\",\"setl_USOnxYvJavMhvG\",\"setl_lS2ZPbbjxOk8Kg\",\"pay_zpwbnyBcS3sqFP\",\"pay_QYtVpE3b6ysqsL\"],\n  \"human_review_required\": true\n}"
+}

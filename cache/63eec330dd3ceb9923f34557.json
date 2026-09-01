@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1286,
+  "output_tokens": 109,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as within the tolerance band of multiple candidate batches and request human reconciliation to select the correct batch.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_dV9C3JxZdwRfIy\", \"setl_lxObO0rfMv6vNr\"],\n  \"human_review_required\": true\n}"
+}

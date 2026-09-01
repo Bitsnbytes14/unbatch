@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1212,
+  "output_tokens": 143,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Review the settlement posting dates; the net amounts match but the eligible batch that aligns with the same UTR is a different date window; confirm the correct batch and adjust reconciliation accordingly.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"AXISP442254414821\", \"setl_m1yIxWymwSMdi1\", \"setl_02Tgmwt0Jr6n2F\", \"txn_HDt7Yaj539rDYo\"],\n  \"human_review_required\": true\n}"
+}

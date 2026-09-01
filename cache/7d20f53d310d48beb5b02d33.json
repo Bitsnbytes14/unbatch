@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1349,
+  "output_tokens": 160,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches and confirm which net aligns; if multiple batches fall within the tolerance, pick the most credible based on posting dates and related payment IDs, or escalate for human review.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_5lXPDIHqiPFUPm\",\"setl_B8ab21GIkw9wb1\",\"setl_UjZJY2Ypu32nnv\",\"setl_FpyI68xhmAF5Dc\",\"setl_fG8rBUYkqoRnLE\"],\n  \"human_review_required\": true\n}"
+}

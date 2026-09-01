@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1234,
+  "output_tokens": 139,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Treat this bank credit as not matching the selected settlement batch; flag for manual reconciliation and verify against other candidate batches or refunds, then reassign to the correct batch if found.\",\"confidence\":0.55,\"evidence_refs\":[\"txn_iindjYb9pRAMd5\",\"setl_mGiogBafBX009z\",\"setl_39QJuagJ2Tqflo\",\"pay_E7iK1RTEGFCqHe\",\"pay_rx9c2wKhPRWSYO\"],\"human_review_required\":true}"
+}

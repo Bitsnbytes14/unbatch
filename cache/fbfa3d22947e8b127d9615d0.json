@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1327,
+  "output_tokens": 160,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Confirm the credit maps to the selected settlement batch ICICR706231426213; if reconciliation persists, file as unrelated_credit and flag for investigation of posting source.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_OS34dpysIo3u35\", \"setl_9uTkZYy8Rjl7d6\", \"setl_9rk0xTKBSESeAC\", \"setl_X1XAFB1kwXTRNz\", \"setl_lT9jEGoFaXgRZj\"],\n  \"human_review_required\": true\n}"
+}

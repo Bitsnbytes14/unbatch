@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1212,
+  "output_tokens": 121,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag the credit as potentially matching multiple candidate batches and escalate for human verification of which batch actually maps to the credit.\",\n  \"confidence\": 0.44,\n  \"evidence_refs\": [\"txn_WYTDRjxticd8xt\", \"setl_0JXSZPX0elQDtL\", \"setl_ScNhY4voxxaoQI\"],\n  \"human_review_required\": true\n}"
+}

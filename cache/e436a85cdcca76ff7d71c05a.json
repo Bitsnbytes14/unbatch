@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1283,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Pin the credit to the selected settlement batch whose net matches and investigate the posting date alignment; if the batch is correct, log reconciliation note and proceed with standard funds-confirmation workflow.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_XqKeCnFrB9L0Nu\", \"setl_6x2pIX9FW3z8ql\", \"setl_R2IR2pJjTfxIEy\"],\n  \"human_review_required\": true\n}"
+}

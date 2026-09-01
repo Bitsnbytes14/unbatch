@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1242,
+  "output_tokens": 122,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the exact set of lines in the settlement batch to confirm which payment IDs belong to this credit and adjust mapping accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_DjqAdCNCE1FLXU\", \"setl_IkTKdn2BMngMdw\", \"setl_nRg5TGYtLZkdgp\"],\n  \"human_review_required\": true\n}"
+}

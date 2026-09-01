@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1304,
+  "output_tokens": 129,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark the credit as unrelated to any settled batch and perform a de-ypothesis check to determine if an internal reconciliation entry is missing; escalate for trace to confirm source bank statement mapping.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_dzmZzZKUPWTXyk\", \"ICICR696256247208\", \"setl_I4GTXGdsfiRUIL\"],\n  \"human_review_required\": true\n}"
+}

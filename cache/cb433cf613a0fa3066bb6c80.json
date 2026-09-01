@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1221,
+  "output_tokens": 120,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated_credit and hold for human reconciliation to map to the correct batch or confirm if offset is expected.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_4eiXXn8YfY9Ubk\",\"setl_pXZibVU2YcMFqy\",\"setl_U6qyQOqJfduUAV\"],\n  \"human_review_required\": true\n}"
+}

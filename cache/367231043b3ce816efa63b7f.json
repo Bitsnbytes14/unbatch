@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1151,
+  "output_tokens": 110,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Mark the credit as unrelated and route for audit to verify against all batch nets; if no matching batch is found, file for reconciliation and hold the credit.\",\"confidence\":0.42,\"evidence_refs\":[\"txn_x93T0bM4vLgVn8\",\"setl_RiEE21op0SlJt9\",\"ICICR782363583987\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1273,
+  "output_tokens": 139,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the case for human review to determine the correct batch among near-tolerance candidates and lock in a reconciliation decision.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_WCjuzvm8vapVSD\", \"setl_uqN3nJGrHuj0rU\", \"setl_UJ65hFGoSvAu5X\", \"setl_iLJOE9hW7pvLH9\"],\n  \"human_review_required\": true\n}"
+}

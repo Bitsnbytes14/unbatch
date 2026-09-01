@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1240,
+  "output_tokens": 136,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated credit and continue batch reconciliation using this batch net; investigate origin of the matching settlement but do not reassign this credit to another batch without confirmation.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_sf13WZdgdnkWdx\",\"setl_K238fatnADgOZ0\",\"setl_8VRMwiTY0AQwPz\",\"KKBK0361452419443\"],\n  \"human_review_required\": true\n}"
+}

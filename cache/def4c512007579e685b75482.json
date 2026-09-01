@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1345,
+  "output_tokens": 140,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock the settled batch as KKBK0328500076177 since its net matches and the delta is zero; investigate other candidate batches which fall within tolerance but not exact, and choose the exact batch by corroborating with posting dates and pay IDs.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"settlement_utr: KKBK0328500076177\", \"delta_paise: 0\", \"alternative_batches_listed_in_warning\"],\n  \"human_review_required\": true\n}"
+}

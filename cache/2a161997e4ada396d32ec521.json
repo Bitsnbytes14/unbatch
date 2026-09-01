@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1375,
+  "output_tokens": 176,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate whether the 6213877 paise credit corresponds to the selected settlement batch KKBK0975631735865; if no match is found, flag as unrelated and halt automatic reconciliation, prompting manual verification against bank statement and batch postings.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_fKyN083d2gLTxW\", \"setl_ZvSXiMpVo3M9Aj\", \"setl_xlxpCMkFjSgucj\", \"setl_sScudPc8FTiMif\", \"setl_YJYEs5FdMCt0DB\"],\n  \"human_review_required\": true\n}"
+}

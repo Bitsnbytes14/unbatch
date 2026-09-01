@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1180,
+  "output_tokens": 251,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for human review to resolve which batch, if any, actually matches within tolerance; temporarily hold reconciliation and compare candidate batches to determine the correct net.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_M8uRY40ApxCjlo\", \"setl_343XRoJLFiArZc\", \"setl_DFRuSYMj9TiGqZ\", \"pay_DHeVUeAFJgb6Y9\", \"pay_tGfEocp2mKLa2G\", \"pay_jYsaHuZnzLIudw\", \"pay_0BL7XbQS0GInhH\", \"pay_lUcUNlw3geIHGG\", \"pay_BgKQ3L3oj2cEzw\", \"pay_Tp1Hvi7cYXlrd9\", \"setl_343XRoJLFiArZc\", \"setl_DFRuSYMj9TiGqZ\"],\n  \"human_review_required\": true\n}"
+}

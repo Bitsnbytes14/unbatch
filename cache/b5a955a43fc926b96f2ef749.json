@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1187,
+  "output_tokens": 120,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for manual review to determine which batch net aligns with the credit within tolerance, then adjust mapping accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_r9zvkIwts4DQ9H\", \"setl_WMBkXaqVzBPQcC\", \"setl_euOvOqadQ2FNWh\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1275,
+  "output_tokens": 102,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches within the tolerance band and determine the most corroborated match or flag for manual review.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_2trAbSfLdAp6sw\", \"SBIN0760344614391\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1151,
+  "output_tokens": 132,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Verify posting date alignment between the credit and its corresponding settlement batch and adjust mapping if needed, or confirm that the credit matches the 2024-01-27 window batch AXISP668891249176.\",\n  \"confidence\": 0.45,\n  \"evidence_refs\": [\"txn_gZzcgrpcSdrRUW\", \"setl_EZJQTOeRjnDh8V\", \"AXISP668891249176\"],\n  \"human_review_required\": true\n}"
+}

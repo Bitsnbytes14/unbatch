@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1241,
+  "output_tokens": 163,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the exact line-item composition of the batch to identify whether the three payments truly comprise the 3854781 paise, or if another candidate batch within the window could fit equally well; isolate the correct settlement line group or confirm no exact match exists.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_RiCPXCEbAx0HUA\", \"setl_poGYRmChuUYDJG\", \"setl_t9JjyhW2WGTYUh\", \"setl_VokgOyHx8Kcq9Y\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1171,
+  "output_tokens": 108,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches and confirm which net aligns most closely; if ambiguity persists, escalate for manual reconciliation with business input.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"setl_Sl8npgE22zYk6w\", \"setl_AXIS...\"], \n  \"human_review_required\": true\n}"
+}

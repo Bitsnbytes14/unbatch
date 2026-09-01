@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1317,
+  "output_tokens": 143,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches and confirm which net aligns with the credit, selecting the sole batch whose net falls within the reconciliation tolerance band.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_UVsjzhL1zj6klG\", \"setl_fTZGqj0C21xOFr\", \"setl_s4fidRCLi8lkfq\", \"setl_tHcSXLtjQlnm9d\"],\n  \"human_review_required\": true\n}"
+}

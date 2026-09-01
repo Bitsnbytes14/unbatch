@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1339,
+  "output_tokens": 118,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate and align posting date of the bank credit with the settlement batch; confirm correct batch by checking transaction date and reconciliation window, then re-associate to the matching batch or flag for manual adjustment.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_lsJ6bOcWwfyOix\", \"AXISP675973659081\"],\n  \"human_review_required\": true\n}"
+}

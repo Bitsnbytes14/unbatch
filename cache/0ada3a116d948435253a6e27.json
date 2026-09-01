@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1195,
+  "output_tokens": 170,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Flag as date_skew: the amounts match the batch net but the posting date/timestamp alignment differs; request confirmation of settlement batch date and, if correct, adjust posting date to batch date or map to the correct batch.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\n    \"txn_Yvhrm4JIn1hYrY\",\n    \"setl_7q3D2cfl1buuWR\",\n    \"setl_bB2NGCdWEkx6E7\",\n    \"AXISP100712743739\",\n    \"2024-01-23\"\n  ],\n  \"human_review_required\": true\n}"
+}

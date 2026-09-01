@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1319,
+  "output_tokens": 155,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Proceed with manual review to identify the correct batch whose net lies within the tolerance band and confirm the authoritative settlement mapping.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"txn_lIb83huDgUOwaJ\", \"setl_DGgFYHBlXgV8O5\", \"setl_gtbHkKkt1V0dsi\", \"setl_gZEG6u3GGEh91E\", \"setl_DuSkaSF6ldlXje\"],\n  \"human_review_required\": true\n}"
+}

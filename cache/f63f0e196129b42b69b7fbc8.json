@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1141,
+  "output_tokens": 109,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark as unrelated_credit and quarantine for manual cross-check against bank statements to determine matching settlement batch.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_FfvUbobuuDkHhW\",\"setl_k1N85swsjFTzOr\",\"AXISP438345086002\"],\n  \"human_review_required\": true\n}"
+}

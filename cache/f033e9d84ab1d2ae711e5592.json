@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1339,
+  "output_tokens": 156,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for manual review to determine the correct batch by comparing the within-band nets and requesting confirmation from the settlements team.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"txn_c7LfhfPjYgHBca\", \"setl_DWTVx98pYLxOVz\", \"setl_DnjF7aYz5Ve1m0\", \"setl_8gekJuvVYF0rww\", \"setl_yG1dQOSEIOp2dX\"],\n  \"human_review_required\": true\n}"
+}

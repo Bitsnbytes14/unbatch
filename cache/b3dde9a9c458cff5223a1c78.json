@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1306,
+  "output_tokens": 108,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and report all candidate batches within tolerance; request clarification or perform manual reconciliation to select the precise batch or adjust tolerance thresholds.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"txn_cVj0Z2dtccAKcQ\", \"ICICR023352838962\"],\n  \"human_review_required\": true\n}"
+}

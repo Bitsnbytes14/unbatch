@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1350,
+  "output_tokens": 96,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated credit; recheck reconciliation mappings and hold for human confirmation before posting to batch.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_tyyyphUEYm9fb7\", \"ICICR892790109883\"],\n  \"human_review_required\": true\n}"
+}

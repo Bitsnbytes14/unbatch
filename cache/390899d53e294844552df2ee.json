@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1200,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate batches that could reconcile the credit and determine the exact set of payment lines that produced the net; if multiple batches fit, escalate to review to identify the correct composition.\",\n  \"confidence\": 0.45,\n  \"evidence_refs\": [\"txn_IzECVAcekv3DAm\", \"setl_8KCEajNjz7fsJv\", \"setl_NRAGOPurE3BMrB\"],\n  \"human_review_required\": true\n}"
+}

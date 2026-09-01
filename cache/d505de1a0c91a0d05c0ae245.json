@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1318,
+  "output_tokens": 109,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch net aligns most plausibly with the credit and flag for closer matching or manual reconciliation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_C0LquT3tAoIHV2\", \"setl_lFSVpGEmjhG7w9\"],\n  \"human_review_required\": true\n}"
+}

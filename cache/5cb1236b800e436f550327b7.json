@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1347,
+  "output_tokens": 159,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as unrelated to the selected batch and reconcile manually against the bank statement, investigating which batch it should belong to or whether it is a floating/placeholder credit.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_nMlNUFQSP8pcr8\", \"setl_APUR6ZcwyRKmPk\", \"setl_0ks6lSJs282iHd\", \"setl_ibpH1iTSarJX3u\", \"setl_MOliInjyYxyo46\"],\n  \"human_review_required\": true\n}"
+}

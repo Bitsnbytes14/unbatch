@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1295,
+  "output_tokens": 148,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches; if multiple nets land within tolerance, select the most strongly supported one or escalate for manual review.\",\n  \"confidence\": 0.44,\n  \"evidence_refs\": [\"setl_yYK2CvLQSbqwV8\",\"setl_Ikh1ymihq2B0KE\",\"setl_geuN87Ptw3IGXP\",\"setl_iOyt0POnoscnmA\",\"txn_qxfpj0ZA47hvfK\"],\n  \"human_review_required\": true\n}"
+}

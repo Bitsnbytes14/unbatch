@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1343,
+  "output_tokens": 162,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and audit the four candidate alternate batches; determine which, if any, lands within the tolerance band and confirm with batch metadata to lock a single reconciliation point.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_uEQ1nZ3EG5Jk0y\", \"setl_5qSZgNLnljD5GW\", \"setl_c01FJsindftJQ4\", \"setl_cHV0VybOjUKdkV\", \"setl_6sAcHisAYpKGe5\"],\n  \"human_review_required\": true\n}"
+}

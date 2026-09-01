@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1332,
+  "output_tokens": 170,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate the batch ICICR746132571271 as the only batch with exact net to the credit; if no other batch within tolerance exists, mark as matched and proceed with normal settlement reconciliation; otherwise flag for human review.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_qSNFMNUCSOXfrS\", \"setl_8zrcNoLtgANKdb\", \"setl_QUSLfp27q2jgmM\", \"setl_LsAkKPRvClH1mu\", \"setl_A5KfXQajpR02WS\"],\n  \"human_review_required\": false\n}"
+}

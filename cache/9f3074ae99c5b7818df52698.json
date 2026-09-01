@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1347,
+  "output_tokens": 174,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Verify and align the actual posting date of the batch with the credit date; if the batch is indeed settled on 2024-01-12, keep as is, otherwise re-associate to the correct batch and adjust records.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_Zny0FuH8NCMJlf\", \"setl_N5JmSIBlQ1mTqE\", \"setl_bOQZ3f2jiFlRyM\", \"setl_yqL2CbIQegfnKD\", \"setl_Ub69HXBjKmcAre\"],\n  \"human_review_required\": true\n}"
+}

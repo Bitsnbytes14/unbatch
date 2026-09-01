@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1334,
+  "output_tokens": 115,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Identify the settlement batch that lies within the tolerance band and retain that as the correct match; if multiple batches within tolerance, escalate for human review to select the most plausible candidate.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_cqNGPDRXtbpv97\", \"ICICR052855769045\"],\n  \"human_review_required\": true\n}"
+}

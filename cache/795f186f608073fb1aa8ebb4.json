@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1341,
+  "output_tokens": 126,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate the posting date alignment for AXISP598281572603 and confirm the batch's settlement date; if the batch is indeed dated 2024-01-12, proceed with reconciliation; otherwise adjust the mapping to the correct batch.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"AXISP598281572603_settlement\", \"txn_G8Cs63IngEsp1w\"],\n  \"human_review_required\": true\n}"
+}

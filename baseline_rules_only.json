@@ -18,6 +18,8 @@
   "llm_call_count": 0,
   "llm_call_rate": 0.0,
   "llm_cost_paise": 0,
+  "cost_paise_per_adjudicated_credit": 0.0,
+  "cost_paise_per_exception": 0.0,
   "malformed_json_count": 0,
   "retry_count": 0,
   "adjudication_failed_count": 0,

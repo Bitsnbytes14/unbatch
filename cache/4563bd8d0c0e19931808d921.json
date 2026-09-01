@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1288,
+  "output_tokens": 104,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Review candidate batches within tolerance and select the exact batch that matches the settlement context, or escalate for human validation if ambiguity persists.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_FNMrl92LpiFro8_settlement_AXISP861618113372\"],\n  \"human_review_required\": true\n}"
+}

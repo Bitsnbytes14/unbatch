@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1243,
+  "output_tokens": 116,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Treat the credit as not corresponding to the selected batch; investigate for an unmatched credit and verify source before reversal or reallocation.\",\"confidence\":0.52,\"evidence_refs\":[\"txn_oZ1nzxvk3zifj0\",\"setl_wEPTv1NZMeGc4p\",\"setl_7VwMBKoTrrbQ0U\",\"HDFCR526300818860\"],\"human_review_required\":true}"
+}

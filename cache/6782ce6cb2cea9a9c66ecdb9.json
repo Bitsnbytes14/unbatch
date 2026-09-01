@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1313,
+  "output_tokens": 104,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag multiple candidate batches within tolerance and escalate for manual verification to pick the exact batch or adjust tolerance rules.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_dzvBMFq1Y3hHof\", \"ICICR482836721802\"],\n  \"human_review_required\": true\n}"
+}

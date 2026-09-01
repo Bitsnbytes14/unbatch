@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1349,
+  "output_tokens": 167,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as not matching any settled batch exactly; investigate the listed alternate batches and confirm if routing/narration aligns; if none match, hold credit for investigation and request bank for raw batch details.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_9oyANvl4uTNcqH\", \"setl_OONhM1SOoj27d9\", \"setl_LcRt6kLsgwsfBd\", \"setl_EuvbzgaQ6c8IVR\", \"setl_YpPGsHCnUaGIkp\"],\n  \"human_review_required\": true\n}"
+}

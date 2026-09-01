@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1158,
+  "output_tokens": 116,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous; request human reconciliation to map the credit to the correct underlying batch composition.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_4v90p5Bm0XNh83\", \"setl_2ctEsOSDwo8ZQM\", \"setl_opDP1xeSeooPdu\"],\n  \"human_review_required\": true\n}"
+}

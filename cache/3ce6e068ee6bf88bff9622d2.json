@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1352,
+  "output_tokens": 176,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate and confirm the posting date alignment between the credited amount and the settlement batch; if the batch net is correct for 2024-01-16, align the credit accordingly or reclassify to the correct batch date.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_q6c3kdtB52cUOp\", \"setl_JAc0WPp6gO7ybs\", \"setl_fIF8JhQY07b81W\", \"setl_pJxtviVJqewko9\", \"setl_8gcewOZW4xH59B\"],\n  \"human_review_required\": true\n}"
+}

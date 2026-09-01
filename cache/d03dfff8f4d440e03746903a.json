@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1295,
+  "output_tokens": 114,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for manual review to determine the correct settlement batch among candidates within tolerance; confirm which batch aligns with internal settlement files and historical posting rules.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"txn_Fza7XeKawokl9U\", \"setl_L21ZjzhQnN7qVl\"],\n  \"human_review_required\": true\n}"
+}

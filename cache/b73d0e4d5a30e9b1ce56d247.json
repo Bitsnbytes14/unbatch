@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1326,
+  "output_tokens": 157,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark the credit as not matching any settled batch and investigate the bank statement versus settled batches to locate the originating batch or reject the credit.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_0H6LuFwpFLbYeG\", \"setl_hTUWsMK6WqRQFj\", \"setl_xLw68rBqD4HBEf\", \"setl_K1cMe3pJ5Yx7vi\", \"setl_MoOlBVSKojUUDa\"],\n  \"human_review_required\": true\n}"
+}

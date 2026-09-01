@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1311,
+  "output_tokens": 177,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify the 5116194 paise credit against the documented settlement batch SBIN0650922063689; since delta is 0 but alternative batches are suggested, confirm the primary batch and ensure postings align per window, otherwise flag as unrelated and route for reconciliation review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_GPEjb80fLW3eiy\", \"setl_7ejN1vVH0XrsOf\", \"setl_jF3YoTmt907Xff\", \"setl_OlxXDpnLZyg32i\", \"setl_puZvNcdqHWvTAG\"],\n  \"human_review_required\": true\n}"
+}

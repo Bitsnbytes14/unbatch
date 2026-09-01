@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1322,
+  "output_tokens": 99,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as not corresponding to any single settlement batch and isolate it for manual reconciliation with supporting bank statements.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_DZFPWUOTyaAmDa\", \"HDFCR227371592230\"],\n  \"human_review_required\": true\n}"
+}

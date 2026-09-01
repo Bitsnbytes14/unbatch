@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1260,
+  "output_tokens": 115,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Escalate for manual review to determine the exact combination of payment lines that correspond to the credit, as multiple candidate batches could fit the observed net within the given hints.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_0xOgDYdGnXo9uW\", \"AXISP116598450401\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1296,
+  "output_tokens": 105,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance_ambiguous and request a targeted reconciliation review to confirm the intended batch among candidates within the tolerance band.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_43xiTpaHbu1sSp\", \"ICICR140174919178\"],\n  \"human_review_required\": true\n}"
+}

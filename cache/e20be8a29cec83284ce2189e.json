@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1152,
+  "output_tokens": 116,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Review all candidate batches within tolerance and select the one with exact net or escalate for manual confirmation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_aJ4QFxnC7jMGfp\", \"setl_NCyql7loZ1kO8z\", \"SBIN0283297857561\"],\n  \"human_review_required\": true\n}"
+}

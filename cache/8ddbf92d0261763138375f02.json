@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1306,
+  "output_tokens": 141,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches within tolerance and select the one with exact match or least additional adjustments; if multiple remain, escalate for manual review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_Y7s5nVloPLPGvX\", \"setl_7CJ2mt0zuegPAN\", \"setl_COODwpoHOfZSkR\", \"setl_MGINGnMF5AVTj3\"],\n  \"human_review_required\": true\n}"
+}

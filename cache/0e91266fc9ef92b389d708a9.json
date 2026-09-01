@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1326,
+  "output_tokens": 175,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Flag the credit to the batch with matching net and audit posting date; if date aligns, rebind to settlement batch ICICR515162545841 for 2024-01-30.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_PFKoM4eCEG9JCf\", \"setl_izFqdv9quT4Z6N\",\"setl_lKl26rP6LOkuxW\",\"setl_dsbwBDj8iPuQHs\",\"setl_8ZDEi1LJVN88Gd\",\"ICICR515162545841\"],\n  \"human_review_required\": true\n}"
+}

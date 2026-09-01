@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1159,
+  "output_tokens": 117,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch within tolerance matches the credit and align accounting accordingly.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_MsOqaqQMl0Zr7q\", \"setl_g3cb0zNhqHcMjO\", \"setl_WKmCxwECN26lMR\"],\n  \"human_review_required\": true\n}"
+}

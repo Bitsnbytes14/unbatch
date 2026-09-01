@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1305,
+  "output_tokens": 167,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate batches and confirm which exact set of payments belong to the ICICR138693114531 window; if multiple feasible compositions exist, request human validation to select the correct one or apply a deterministic tie-break rule.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_7VjVsZE25QXZnc\", \"setl_edxvO5e80gKrv3\", \"setl_VjQ8mfSWutUPzv\", \"setl_leSTRLBhS5ZiMo\", \"ICICR138693114531\"],\n  \"human_review_required\": true\n}"
+}

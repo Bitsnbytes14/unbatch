@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1322,
+  "output_tokens": 153,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Decline this credit as no single settled batch matches conclusively; flag for manual review to verify the correct batch mapping or identify a misplaced credit.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_OfkucMaCQj9KUS\", \"setl_55oROsBQtQJdbH\", \"setl_psiLstD6hNcsvy\", \"setl_VSe73Nr4DcSfdq\", \"setl_X7350mYuoRDmWh\"],\n  \"human_review_required\": true\n}"
+}

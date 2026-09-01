@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1199,
+  "output_tokens": 115,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity and request human review to pick the correct batch among near-equal nets within tolerance.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_Pk25PpRG56w35J\", \"setl_162FaryaZDVXf6\", \"ICICR138710983670\"],\n  \"human_review_required\": true\n}"
+}

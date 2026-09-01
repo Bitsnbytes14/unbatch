@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1344,
+  "output_tokens": 153,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as tolerance-ambiguous and request human reconciliation to review which candidate batch nets best fits the bank credit within tolerance.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_WWEhpXkbgCCrHR\", \"setl_74mF5nAVofxkql\", \"setl_CGssoB1Vp9Cc5G\", \"setl_yvSefnFsBCXd6y\", \"setl_T91KBBASIehm3V\"],\n  \"human_review_required\": true\n}"
+}

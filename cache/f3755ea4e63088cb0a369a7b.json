@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1304,
+  "output_tokens": 155,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock the currently selected batch as the authoritative settlement for this credit and flag the alternative candidate batches for manual review to confirm there is no single clearly right match.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_XMJRidfGRMzwpS\", \"setl_YxK1bcZhXfYFrm\", \"setl_rxUi7HtFTdVytn\", \"setl_S90o76gyuOz8t1\", \"setl_XSCzlkYEKRSNOi\"],\n  \"human_review_required\": true\n}"
+}

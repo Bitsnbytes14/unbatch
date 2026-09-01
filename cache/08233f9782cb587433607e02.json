@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1267,
+  "output_tokens": 126,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous composition: multiple candidate batch compositions could explain the credit; escalate with human review to select the correct settlement batch and reconcile the component payments.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_7sv9FKxaJXBhfd\", \"ICICR736258707580\", \"setl_1z5aQugnFTvH2t\"],\n  \"human_review_required\": true\n}"
+}

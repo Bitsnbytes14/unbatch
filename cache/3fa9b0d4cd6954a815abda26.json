@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1293,
+  "output_tokens": 104,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which batch is the correct match; corroborate with production batch submission timestamps and settle in the batch whose net is within tolerance, or escalate for human review if ambiguity persists.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"ICICR744816389910\"],\n  \"human_review_required\": true\n}"
+}

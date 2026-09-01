@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1223,
+  "output_tokens": 160,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the partition of the batch's net among the three identified payment_ids and confirm the exact real batch composition; if multiple plausible compositions exist, lock to the currently selected batch but document the ambiguity and request a reconciliation note.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_sBVVJ7qgQAQRpT\", \"setl_bmdpjsPq8aAG4v\", \"setl_adrd4sXqljpf2S\", \"txn_u4ifCb4Zj28VVh\"],\n  \"human_review_required\": true\n}"
+}

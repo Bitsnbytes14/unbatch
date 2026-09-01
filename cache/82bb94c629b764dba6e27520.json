@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1181,
+  "output_tokens": 110,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Investigate and confirm the credit maps to the listed settlement batch AXISP395245336340; if unmatched, flag as unrelated_credit and quarantine until reconciliation confirms linkage.\",\"confidence\":0.62,\"evidence_refs\":[\"txn_NtEfthDuxb9naK\",\"setl_Fmi5zBzkDLnA2h\",\"AXISP395245336340\"],\"human_review_required\":true}"
+}

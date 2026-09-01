@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1302,
+  "output_tokens": 148,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Notify reconciler to review candidate batches within tolerance and select the most plausible one based on additional corroborating data.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_1u2bydmMUafWOo\", \"setl_KsdhSIcUteODGF\", \"setl_DTaPX9cc6URRSG\", \"setl_uKrjP0ChuuVDvB\", \"setl_00CNlwFWmy4sY9\"],\n  \"human_review_required\": true\n}"
+}

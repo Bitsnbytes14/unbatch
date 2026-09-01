@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1272,
+  "output_tokens": 139,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Treat this bank credit as not matching the selected settlement batch and investigate the unrelated credit as a potential orphan payment outside the current window.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_H8TYBQX5HcvGds\", \"setl_rWmbJr3BLFr4bl\", \"setl_0mFU35lASHLQFj\", \"setl_xS77jhfCkvPO8j\"],\n  \"human_review_required\": true\n}"
+}

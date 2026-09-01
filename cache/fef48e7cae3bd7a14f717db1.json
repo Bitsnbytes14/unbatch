@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1283,
+  "output_tokens": 147,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate which exact settlement batch lines (among the candidates) actually contributed to the credit by mapping the payment_ids to the batch nets and confirm a single matching composition.\",\n  \"confidence\": 0.36,\n  \"evidence_refs\": [\"txn_MmxQWZrtwItzaZ\", \"setl_8cJg25a38ZChAn\", \"setl_FodCO5thFuYZQv\", \"setl_UWaEw3RJ8DOmD7\"],\n  \"human_review_required\": true\n}"
+}

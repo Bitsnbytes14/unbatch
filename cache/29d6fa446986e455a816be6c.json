@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1327,
+  "output_tokens": 169,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm which settlement batch (if any) actually matches the credit window; if ambiguity remains, flag for manual review and exclude this credit from automatic reconciliation pending batch alignment.\",\n  \"confidence\": 0.40,\n  \"evidence_refs\": [\"txn_tKFbrFFSs84sin\",\"SBIN0857677831281\",\"setl_r3mW6oA9YWQuj6\",\"setl_x6IUteDn4rQ77m\",\"setl_ToGw2H2UVQz5vQ\",\"setl_gUz8D0wotqLfxm\"],\n  \"human_review_required\": true\n}"
+}

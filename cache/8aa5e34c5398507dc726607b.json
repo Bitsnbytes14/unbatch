@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1300,
+  "output_tokens": 165,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify that the credit corresponds to the selected 2024-01-29 batch; if not, reassign to the matching batch or flag as unmatched and investigate the alternate batches listed.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"settlement_id:setl_brqyn0V2E2aMWC\", \"settlement_id:setl_60xMGobkPdp7yC\", \"settlement_id:setl_SMVuyjhoEzlHp9\", \"settlement_id:setl_vM3Wb9oWQmc3ys\"],\n  \"human_review_required\": true\n}"
+}

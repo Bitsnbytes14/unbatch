@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1357,
+  "output_tokens": 159,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate batches and payment line sets to determine the exact composition that matches the credit, then select the unique batch set or escalate if ambiguity remains.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_XOlqUMKPjRFsmf\",\"setl_xmEfatrrlj0EEU\",\"setl_MpIbPu2psQ2CQ\",\"setl_p31Y2QgyxfNgrK\",\"setl_PvBecR849b5Vz2\",\"ICICR105324421405\"],\n  \"human_review_required\": true\n}"
+}

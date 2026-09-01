@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1343,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Identify all candidate batches within the tolerance band and select the most plausible, documenting the tie-breaker or escalate for manual review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_04cuwxHpO250nU\",\"HDFCR610320897738\",\"SBIN0819640493675\",\"SBIN0557975644413\",\"SBIN0966605827537\",\"HDFCR611357542665\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1327,
+  "output_tokens": 149,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of payment lines that comprise the settled batch; if multiple candidate batches fit equally well, request bank/processor lineage data to resolve the composition and update the reconciliation mapping.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_qfE77AsrKDcihw\", \"setl_xuo0B6Mn2Wjuud\", \"setl_BkFwJBBCIctbma\", \"txn_fuqHo6Qi9PXINV\"],\n  \"human_review_required\": true\n}"
+}

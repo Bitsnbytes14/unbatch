@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1248,
+  "output_tokens": 139,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the set of candidate batches; confirm which exact combination of lines matches the observed credit and reconcile the batch accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_LASmbFTCX6kzAr\",\"setl_krh07vSPiyOmBS\",\"setl_weJIYv2VkJoHHt\",\"setl_wZ8aiUx9Hz7dtN\",\"SBIN0713346527791\"],\n  \"human_review_required\": true\n}"
+}

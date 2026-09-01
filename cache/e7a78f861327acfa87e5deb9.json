@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1236,
+  "output_tokens": 141,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for manual review to identify the correct settlement batch among candidates within tolerance; verify batch nets and payment mappings before final reconciliation.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_2AbDzMQZt5vX2S\", \"setl_LS2JWQixMNSwxS\", \"setl_srwtC9hUaWlUkB\", \"setl_44LfZMb8lLY6Iz\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1296,
+  "output_tokens": 167,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the four candidate batches and confirm which set of payment lines truly map to this credit; if multiple batches fit, select the one with the exact or closest per-batch composition and update records accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_bVKgz50UfN2nf9\", \"setl_K7Sj3R74SWrJXX\", \"setl_7n8MwhfhhUU6us\", \"setl_mfLWvgkLkWOsaT\", \"setl_JRiEQO6scnoMGO\"],\n  \"human_review_required\": true\n}"
+}

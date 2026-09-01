@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1262,
+  "output_tokens": 133,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches within tolerance and confirm the correct batch or mark as unresolved if ambiguity remains.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_3vbyNN4v7ajEOz\", \"setl_2ZInluvpVmPsS6\", \"setl_EVL6j383iJaycU\", \"setl_mch6ByjFmiTsHI\"],\n  \"human_review_required\": true\n}"
+}

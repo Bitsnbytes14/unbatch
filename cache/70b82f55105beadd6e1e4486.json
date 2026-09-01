@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1252,
+  "output_tokens": 147,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm whether the credit line corresponds to any settled batch; if not, flag as unmatched and reject or quarantine the credit until reconciliation with the proper batch is identified.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_0SezR5kpW7ffUt\", \"setl_u8e4AsIafCT1sP\", \"setl_Hhdf0llO2mysci\", \"setl_VMZYbAtVpKYsEo\"],\n  \"human_review_required\": true\n}"
+}

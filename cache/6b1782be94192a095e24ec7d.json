@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1160,
+  "output_tokens": 156,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of lines in the settlement that produced the credit; if multiple candidate batches could explain the credit, select the batch that matches the payment_id pairing and window most closely, or escalate for manual reconciliation if ambiguity persists.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_gPEYrPmRQHD6wf\", \"SBIN0406212203800\", \"setl_LSvXHyy7uwU7qg\", \"setl_O0tFjaEFOEyle5\"],\n  \"human_review_required\": true\n}"
+}

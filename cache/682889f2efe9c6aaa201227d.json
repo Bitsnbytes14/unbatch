@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1245,
+  "output_tokens": 123,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate and align posting date between the bank credit (txn date) and the settlement batch; verify if the credit should be mapped to the 2024-01-09 batch or another batch, and adjust the reconciliation accordingly.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_43JoGw7cxQLIVo\", \"AXISP852143283403\"],\n  \"human_review_required\": true\n}"
+}

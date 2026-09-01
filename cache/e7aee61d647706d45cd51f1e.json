@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1269,
+  "output_tokens": 134,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as unmatched to the selected batch and escalate for manual reconciliation against additional candidate batches.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_2L32djZzntV8r4\", \"setl_ODWREMC3J2X2Hc\", \"setl_LQ04TcxjHQLBmI\", \"setl_gRCSgwHcqsUEtG\"],\n  \"human_review_required\": true\n}"
+}

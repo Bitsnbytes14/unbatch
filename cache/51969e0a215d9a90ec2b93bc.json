@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1250,
+  "output_tokens": 156,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance-ambiguous: the batch net matches within the tolerance band of multiple possible settlement batches; require human review to confirm the correct batch alignment.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_2KDHx3NVUzKQte\",\"setl_OSGncsAZESw6Jj\",\"setl_6CRxgRABR23HO1\",\"setl_dTGKW8tH7d4exb\",\"setl_jhBaFIUCnRwSRc\"],\n  \"human_review_required\": true\n}"
+}

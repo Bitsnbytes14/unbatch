@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1332,
+  "output_tokens": 131,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as ambiguous between multiple batches within tolerance and escalate for manual tie-break using additional bank data.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_Pio45gTWIytDIV\",\"setl_mZ7IDHhCXYY6Xw\",\"setl_WR2V6kp8ao0sAh\",\"setl_Ta77bCub8b4bTG\"],\n  \"human_review_required\": true\n}"
+}
