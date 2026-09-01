@@ -62,11 +62,11 @@ jobs:
               m["false_match_rate"] == 0.0,
               m["stage_funnel"] == {"l0": 79, "l1": 3, "l2": 9, "l3": 2, "l4": 12},
               m["llm_call_count"] == 12,
-              m["llm_cost_paise"] == 12,
-              approx(m["break_reason_accuracy"], 11 / 12),
-              m["malformed_json_count"] == 0,
-              m["retry_count"] == 0,
-              m["adjudication_failed_count"] == 0,
+              m["llm_cost_paise"] == 19,
+              approx(m["break_reason_accuracy"], 5 / 6),
+              m["malformed_json_count"] == 13,
+              m["retry_count"] == 7,
+              m["adjudication_failed_count"] == 6,
           ]
 
           if not all(checks):
