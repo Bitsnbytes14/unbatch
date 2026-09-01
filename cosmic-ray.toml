@@ -1,0 +1,15 @@
+[cosmic-ray]
+module-path = [
+    "src/unbatch/compose.py",
+    "src/unbatch/fees.py",
+    "src/unbatch/money.py",
+    "src/unbatch/stages/l0_utr.py",
+    "src/unbatch/stages/l1_exact.py",
+    "src/unbatch/stages/l2_compose.py",
+    "src/unbatch/stages/l3_tolerance.py",
+]
+timeout = 30.0
+test-command = "uv run pytest -x -q tests/test_compose.py tests/test_fees.py tests/test_money.py tests/test_l0_utr.py tests/test_l0_utr_integration.py tests/test_l1_exact.py tests/test_l1_exact_integration.py tests/test_l2_compose.py tests/test_l2_compose_integration.py tests/test_l3_tolerance.py tests/test_l3_tolerance_integration.py"
+
+[cosmic-ray.distributor]
+name = "local"
