@@ -66,6 +66,30 @@ measurements.
 Malformed JSON is retried once with the validation error appended to the
 prompt; if it is still invalid, adjudication degrades to an
 `adjudication_failed` outcome rather than crashing the pipeline.
+
+The schema only proves the response has the right SHAPE — its CONTENT is
+still untrusted model output. `_validate_semantics` checks it against the
+prompt's own facts: every `evidence_ref` must name a payment_id/settlement_id
+the model was actually shown, or the credit's own txn_id (never something it
+invented outright); `confidence` must fall inside [0.0, 1.0] (the schema has
+no numeric-range keyword to enforce this — OpenAI's strict json_schema mode
+doesn't support minimum/maximum); and `break_reason` must be a real
+BreakReason value (this one is already unreachable via the normal path
+since BreakReason is a StrEnum pydantic validates against directly; kept
+anyway as a defense-in-depth assertion against that constraint being
+loosened later). A semantic failure raises the same internal error a
+schema failure does, so it goes through the identical retry-then-degrade
+path above — not a new outcome.
+
+**2026-09-01 measurement, not a guess:** checking every cached with-LLM
+response across seeds 42-47 and the adversarial dataset (77 total)
+against a stricter evidence_refs check (payment_id/settlement_id only,
+no txn_id) found gpt-5-nano citing the credit's own txn_id as evidence in
+76 of them (98.7%) — its default habit, not an occasional slip. That's a
+real, self-referential identifier, never a wrong pointer, so it's included
+in the valid set rather than treated as a rejection; the check still
+catches an actually-unrelated or fabricated payment/settlement id, which
+is what it exists for.
 """
 
 from __future__ import annotations
@@ -81,6 +105,7 @@ from pydantic import ValidationError
 from unbatch.models import (
     AdjudicationResult,
     BankStatementRecord,
+    BreakReason,
     CandidateExplanation,
     ExpectedBatch,
 )
@@ -330,17 +355,76 @@ def _require_text(text: str | None) -> str:
     return text
 
 
-def _parse_response(text: str) -> AdjudicationResult:
+def _validate_semantics(
+    result: AdjudicationResult,
+    credit: BankStatementRecord,
+    expected_batch: ExpectedBatch,
+    candidates: list[CandidateExplanation],
+) -> None:
+    """Schema validation only proves the response has the right SHAPE;
+    treat its CONTENT as untrusted too — a response can be perfectly
+    well-formed JSON matching AdjudicationResult and still name evidence
+    the model was never shown, or a confidence value outside what
+    "confidence" can mean. Any violation here raises the same
+    _MalformedResponseError schema failures do, so it goes through the
+    identical retry-then-degrade path (adjudicate()) rather than a new
+    failure mode.
+
+    `credit.txn_id` is deliberately included in the valid-reference set,
+    not just the batch's payment_ids/settlement_ids and each candidate's
+    payment_ids: measured against every cached with-LLM response across
+    seeds 42-47 and the adversarial dataset, gpt-5-nano cites the credit
+    under discussion by its own txn_id in 76 of 77 responses (98.7%) —
+    a real, self-referential identifier that's never a wrong pointer, just
+    outside the "payment_id or settlement_id" vocabulary the prompt names.
+    That is categorically different from citing an unrelated or fabricated
+    payment/settlement id, which is what this check exists to catch."""
+    valid_refs = (
+        {credit.txn_id} | set(expected_batch.payment_ids) | set(expected_batch.settlement_ids)
+    )
+    for candidate in candidates:
+        valid_refs.update(candidate.payment_ids)
+    hallucinated_refs = [ref for ref in result.evidence_refs if ref not in valid_refs]
+    if hallucinated_refs:
+        raise _MalformedResponseError(
+            f"evidence_refs names records not in the candidate set: {hallucinated_refs}"
+        )
+
+    if not (0.0 <= result.confidence <= 1.0):
+        raise _MalformedResponseError(
+            f"confidence {result.confidence} is outside the valid [0.0, 1.0] range"
+        )
+
+    if result.break_reason not in BreakReason:
+        # Unreachable today via the normal path — pydantic already refuses to
+        # construct an AdjudicationResult with anything but a real BreakReason
+        # member, and OpenAI's strict json_schema mode encodes BreakReason as
+        # an enum constraint too. Kept as an explicit, tested assertion
+        # anyway: if AdjudicationResult.break_reason were ever loosened to a
+        # plain str, this is what would still catch a hallucinated reason.
+        raise _MalformedResponseError(
+            f"break_reason {result.break_reason!r} is not a known BreakReason value"
+        )
+
+
+def _parse_response(
+    text: str,
+    credit: BankStatementRecord,
+    expected_batch: ExpectedBatch,
+    candidates: list[CandidateExplanation],
+) -> AdjudicationResult:
     try:
         payload = json.loads(text)
     except json.JSONDecodeError as exc:
         raise _MalformedResponseError(f"response is not valid JSON: {exc}") from exc
     try:
-        return AdjudicationResult.model_validate(payload)
+        result = AdjudicationResult.model_validate(payload)
     except ValidationError as exc:
         raise _MalformedResponseError(
             f"response does not match the required shape: {exc}"
         ) from exc
+    _validate_semantics(result, credit, expected_batch, candidates)
+    return result
 
 
 def _append_validation_error(user: str, error_message: str) -> str:
@@ -377,11 +461,15 @@ def adjudicate(
 
     Checks the cache first; if `cached` is True and no entry exists, raises
     CacheMissError rather than calling the API. On a live call, validates
-    the response against AdjudicationResult; a malformed response is retried
-    once with the validation error appended to the prompt, and a second
-    failure raises AdjudicationFailedError rather than crashing the cascade
-    (a caller catching that should treat it as retried=True too — degrading
-    only ever happens after exactly one retry, by construction).
+    the response against AdjudicationResult (schema) and then against the
+    prompt's own facts (semantics: evidence_refs must name something the
+    model was actually shown, confidence must be in [0, 1], break_reason
+    must be a real BreakReason — see _validate_semantics). A response
+    failing either check is retried once with the validation error appended
+    to the prompt, and a second failure raises AdjudicationFailedError
+    rather than crashing the cascade (a caller catching that should treat
+    it as retried=True too — degrading only ever happens after exactly one
+    retry, by construction).
     """
     system, user = build_prompt(credit, expected_batch, delta_paise, candidates)
     text, input_tokens, output_tokens = _get_response(
@@ -390,7 +478,8 @@ def adjudicate(
     cost_paise = _cost_paise(input_tokens, output_tokens)
 
     try:
-        return _parse_response(_require_text(text)), cost_paise, False
+        result = _parse_response(_require_text(text), credit, expected_batch, candidates)
+        return result, cost_paise, False
     except _MalformedResponseError as first_error:
         retry_user = _append_validation_error(user, str(first_error))
         retry_text, retry_input, retry_output = _get_response(
@@ -398,6 +487,7 @@ def adjudicate(
         )
         cost_paise += _cost_paise(retry_input, retry_output)
         try:
-            return _parse_response(_require_text(retry_text)), cost_paise, True
+            result = _parse_response(_require_text(retry_text), credit, expected_batch, candidates)
+            return result, cost_paise, True
         except _MalformedResponseError as second_error:
             raise AdjudicationFailedError(str(second_error)) from second_error

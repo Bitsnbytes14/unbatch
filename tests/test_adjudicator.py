@@ -13,7 +13,13 @@ from pathlib import Path
 import pytest
 
 from unbatch import adjudicator
-from unbatch.models import BankStatementRecord, BreakReason, CandidateExplanation, ExpectedBatch
+from unbatch.models import (
+    AdjudicationResult,
+    BankStatementRecord,
+    BreakReason,
+    CandidateExplanation,
+    ExpectedBatch,
+)
 
 _CREDIT = BankStatementRecord(
     txn_id="TXN1",
@@ -47,6 +53,23 @@ _VALID_JSON = json.dumps(
 
 _MALFORMED_JSON = "here is my answer: " + _VALID_JSON  # not valid JSON on its own
 _INVALID_SHAPE_JSON = json.dumps({"break_reason": "not_a_real_reason", "confidence": 2.0})
+
+
+def _valid_json_with(**overrides: object) -> str:
+    payload = json.loads(_VALID_JSON)
+    payload.update(overrides)
+    return json.dumps(payload)
+
+
+# evidence_refs=["pay_a", "pay_b"] are both real (in _BATCH.payment_ids);
+# "pay_z" is not in _BATCH's payment_ids/settlement_ids or any candidate's
+# payment_ids passed to adjudicate() below — a hallucinated reference.
+_HALLUCINATED_EVIDENCE_JSON = _valid_json_with(evidence_refs=["pay_a", "pay_z"])
+# BreakReason.model_validate would already reject a string outside the
+# enum's members, well-formed shape otherwise — isolates that rejection
+# from _INVALID_SHAPE_JSON above, which is also missing required fields.
+_UNKNOWN_BREAK_REASON_JSON = _valid_json_with(break_reason="not_a_real_reason")
+_OUT_OF_RANGE_CONFIDENCE_JSON = _valid_json_with(confidence=1.5)
 
 
 @dataclass
@@ -313,6 +336,126 @@ def test_a_response_with_no_content_is_treated_as_malformed(monkeypatch, tmp_pat
 
     assert result.break_reason == BreakReason.FEE_TIER_CHANGE
     assert retried is True
+
+
+def test_hallucinated_evidence_ref_is_rejected_then_valid_retries_and_succeeds(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """A well-formed response naming a payment_id/settlement_id never shown
+    in the prompt (never in expected_batch or any candidate) is semantically
+    invalid even though it passes schema validation — same retry-then-
+    degrade path as a malformed body."""
+    fake = _install_fake_client(
+        monkeypatch, [_text_response(_HALLUCINATED_EVIDENCE_JSON), _text_response(_VALID_JSON)]
+    )
+
+    result, _cost, retried = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+
+    assert result.break_reason == BreakReason.FEE_TIER_CHANGE
+    assert retried is True
+    assert len(fake.calls) == 2
+    retry_prompt = fake.calls[1]["messages"][1]["content"]
+    assert "evidence_refs" in retry_prompt
+
+
+def test_hallucinated_evidence_ref_twice_degrades_to_adjudication_failed(
+    monkeypatch, tmp_path: Path
+) -> None:
+    _install_fake_client(
+        monkeypatch,
+        [_text_response(_HALLUCINATED_EVIDENCE_JSON), _text_response(_HALLUCINATED_EVIDENCE_JSON)],
+    )
+
+    with pytest.raises(adjudicator.AdjudicationFailedError):
+        adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+
+
+def test_evidence_ref_naming_a_candidates_payment_id_is_accepted() -> None:
+    """Not a rejection case: a candidate's own payment_ids are valid
+    evidence, not just the expected batch's — confirms the check isn't
+    accidentally too narrow."""
+    candidate = CandidateExplanation(payment_ids=["pay_c"], delta_paise=-100, hint="split line")
+    parsed = AdjudicationResult.model_validate(
+        json.loads(_valid_json_with(evidence_refs=["pay_c"]))
+    )
+    adjudicator._validate_semantics(parsed, _CREDIT, _BATCH, [candidate])  # must not raise
+
+
+def test_evidence_ref_naming_the_credits_own_txn_id_is_accepted() -> None:
+    """Not a rejection case, and not a small one: measured across every
+    cached with-LLM response (seeds 42-47 + adversarial), gpt-5-nano cites
+    the credit's own txn_id as evidence in 76 of 77 responses — a real,
+    self-referential identifier, never a wrong pointer, so this is the
+    model's default habit, not an edge case to special-case away."""
+    parsed = AdjudicationResult.model_validate(
+        json.loads(_valid_json_with(evidence_refs=[_CREDIT.txn_id]))
+    )
+    adjudicator._validate_semantics(parsed, _CREDIT, _BATCH, [])  # must not raise
+
+
+def test_out_of_range_confidence_is_rejected_then_valid_retries_and_succeeds(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """confidence > 1.0 passes schema validation (plain float) but is
+    semantically invalid — same retry-then-degrade path as a malformed
+    body."""
+    fake = _install_fake_client(
+        monkeypatch, [_text_response(_OUT_OF_RANGE_CONFIDENCE_JSON), _text_response(_VALID_JSON)]
+    )
+
+    result, _cost, retried = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+
+    assert result.break_reason == BreakReason.FEE_TIER_CHANGE
+    assert retried is True
+    assert len(fake.calls) == 2
+    retry_prompt = fake.calls[1]["messages"][1]["content"]
+    assert "confidence" in retry_prompt
+
+
+def test_out_of_range_confidence_twice_degrades_to_adjudication_failed(
+    monkeypatch, tmp_path: Path
+) -> None:
+    _install_fake_client(
+        monkeypatch,
+        [
+            _text_response(_OUT_OF_RANGE_CONFIDENCE_JSON),
+            _text_response(_OUT_OF_RANGE_CONFIDENCE_JSON),
+        ],
+    )
+
+    with pytest.raises(adjudicator.AdjudicationFailedError):
+        adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+
+
+def test_unknown_break_reason_is_rejected_then_valid_retries_and_succeeds(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """An otherwise well-formed response naming a break_reason outside
+    BreakReason's members is rejected at schema validation (pydantic
+    refuses to construct AdjudicationResult with it) — same retry-then-
+    degrade path, isolated here from _INVALID_SHAPE_JSON's other missing
+    fields."""
+    fake = _install_fake_client(
+        monkeypatch, [_text_response(_UNKNOWN_BREAK_REASON_JSON), _text_response(_VALID_JSON)]
+    )
+
+    result, _cost, retried = adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
+
+    assert result.break_reason == BreakReason.FEE_TIER_CHANGE
+    assert retried is True
+    assert len(fake.calls) == 2
+
+
+def test_unknown_break_reason_twice_degrades_to_adjudication_failed(
+    monkeypatch, tmp_path: Path
+) -> None:
+    _install_fake_client(
+        monkeypatch,
+        [_text_response(_UNKNOWN_BREAK_REASON_JSON), _text_response(_UNKNOWN_BREAK_REASON_JSON)],
+    )
+
+    with pytest.raises(adjudicator.AdjudicationFailedError):
+        adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
 
 
 def test_a_refusal_is_treated_as_malformed(monkeypatch, tmp_path: Path) -> None:
