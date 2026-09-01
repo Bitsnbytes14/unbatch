@@ -120,7 +120,7 @@ Format:
 
 **Considered because:** narrowing it would shrink the coincidence-collision window; widening it would catch more genuine fee-tier drift.
 
-**Rejected because:** the band (`max(50 paise, 0.6% × credit)`) is derived once from the fee structure itself (the actual per-method fee rates and the largest fee-tier shift the generator models), not tuned against observed results. Adjusting it after seeing the false-match numbers would make the band a function of what makes a given run's metrics look best, exactly what METRICS.md's honesty rules exist to prevent.
+**Rejected because:** the band (`max(50 paise, 0.6% × credit)`, paise being 1/100 of a rupee) is derived once from the fee structure itself (the actual per-method fee rates and the largest fee-tier shift the generator models), not tuned against observed results. Adjusting it after seeing the false-match numbers would make the band a function of what makes a given run's metrics look best, exactly what METRICS.md's honesty rules exist to prevent.
 
 **What we did instead:** the band stayed fixed at its fee-derived value across every measurement in this project: six seeds, the noise sweep, and the adversarial dataset. Its cost is reported, not hidden by moving the goalposts.
 
@@ -172,7 +172,7 @@ Format:
 
 ## A layered domain/application/infrastructure restructure
 
-**Considered because:** the module boundaries here (stages, compose, audit, adjudicator) aren't organized into the classic layered folders a longer-lived service would use, and a reviewer used to that shape might read the flat `src/unbatch/` layout as under-designed.
+**Considered because:** the module boundaries here (stages, compose, audit, adjudicator, the module that calls the LLM to classify a break) aren't organized into the classic layered folders a longer-lived service would use, and a reviewer used to that shape might read the flat `src/unbatch/` layout as under-designed.
 
 **Rejected because:** a full refactor of a 110-commit project days before submission would end the history with one enormous restructure commit, which reads worse than incremental discipline. That is exactly the history a reviewer is told to read (README.md's own pointer to the git log). The boundaries that matter already hold without the folder ceremony: the adjudicator isolates the LLM, stages are pure functions with an enforced signature, and metrics.py alone reads ground truth. Renaming that into `domain/`, `application/`, `infrastructure/` would move code without changing any of those actual guarantees.
 
