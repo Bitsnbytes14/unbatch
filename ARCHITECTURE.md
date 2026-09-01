@@ -13,24 +13,33 @@ That is the loop this closes. Three input files, a many-to-one relationship betw
 Data flow, top to bottom:
 
 ```
-three input files                    matching cascade                 outputs
-------------------                   ----------------                 -------
-
-order_ledger.csv        --+
-                          |
-settlement_report.csv   --+--> expected settlement batches --+
-                                                              |
-bank_statement.csv      ------------> bank credit lines    --+
-                                                              |
-                                                              v
-                                    L0 -> L1 -> L2 -> L3 -> L4
-                                (each stage writes one audit row)
-                                                              |
-                                                              v
-                                                    audit log (SQLite)
-                                                              |
-                                                              v
-                                                       out/report.html
+ order_ledger.csv, settlement_report.csv, bank_statement.csv
+                              v
+      expected settlement batches  +  bank credit lines
+                              v
+         +-----------------------------------------+
+         | L0  UTR exact match                1.00 |
+         +-----------------------------------------+
+                              v  unresolved
+         +-----------------------------------------+
+         | L1  amount + date exact            0.98 |
+         +-----------------------------------------+
+                              v  unresolved
+         +-----------------------------------------+
+         | L2  batch composition              0.90 |
+         +-----------------------------------------+
+                              v  unresolved
+         +-----------------------------------------+
+         | L3  tolerance band                 0.75 |
+         +-----------------------------------------+
+                              v  unresolved: 12 of 105 credits (seed 42)
+         +-----------------------------------------+
+         | L4  LLM adjudication     model-reported |
+         +-----------------------------------------+
+                              v
+       audit log (SQLite, one Decision row per credit)
+                              v
+out/report.html, unbatch metrics, unbatch exceptions --export
 ```
 
 Why this pair and not invoice-vs-payment 1:1: 1:1 matching is a solved problem and leaves the model nothing real to do. Many-to-one produces genuine ambiguity, which is where AI judgment can be demonstrated instead of asserted.
