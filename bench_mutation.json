@@ -1,0 +1,160 @@
+{
+  "tool": "cosmic-ray 8.7.0",
+  "note": "mutmut refuses to run on native Windows (\"please use WSL\"); cosmic-ray is the pre-authorized fallback. Config: cosmic-ray.toml.",
+  "modules_targeted": [
+    "src/unbatch/compose.py",
+    "src/unbatch/fees.py",
+    "src/unbatch/money.py",
+    "src/unbatch/stages/l0_utr.py",
+    "src/unbatch/stages/l1_exact.py",
+    "src/unbatch/stages/l2_compose.py",
+    "src/unbatch/stages/l3_tolerance.py"
+  ],
+  "modules_excluded_deliberately": [
+    "src/unbatch/stages/l4_llm.py (LLM boundary, exercised by cache-driven tests, not the arithmetic this exercise targets)",
+    "adjudicator.py, audit.py, metrics.py, report.py, forecast.py, generate.py, cli.py, models.py"
+  ],
+  "test_command": "uv run pytest -x -q tests/test_compose.py tests/test_fees.py tests/test_money.py tests/test_l0_utr.py tests/test_l0_utr_integration.py tests/test_l1_exact.py tests/test_l1_exact_integration.py tests/test_l2_compose.py tests/test_l2_compose_integration.py tests/test_l3_tolerance.py tests/test_l3_tolerance_integration.py",
+  "before_fixes": {
+    "total_mutants": 582,
+    "killed": 389,
+    "incompetent": 109,
+    "survived": 84,
+    "mutation_score": 0.8224,
+    "mutation_score_formula": "killed / (killed + survived), incompetent excluded from the denominator"
+  },
+  "after_fixes": {
+    "total_mutants": 582,
+    "killed": 407,
+    "incompetent": 141,
+    "survived": 34,
+    "mutation_score": 0.9229,
+    "mutation_score_formula": "killed / (killed + survived), incompetent excluded from the denominator"
+  },
+  "tests_added": {
+    "tests/test_compose.py": [
+      "test_max_pool_is_48",
+      "test_max_subset_is_25",
+      "test_default_timeout_is_5_seconds",
+      "test_max_pool_etc_must_be_passed_by_keyword",
+      "test_enumerate_subset_sums_never_exceeds_max_subset",
+      "test_enumerate_subset_sums_raises_on_an_already_past_deadline",
+      "test_enumerate_subset_sums_does_not_raise_exactly_at_the_deadline",
+      "test_compose_checks_timeout_before_merging_even_with_no_candidates",
+      "test_compose_merge_loop_does_not_raise_exactly_at_the_deadline",
+      "test_deadline_is_computed_by_adding_timeout_not_another_operator",
+      "test_target_zero_never_returns_the_empty_subset",
+      "test_empty_subset_skip_does_not_abort_the_rest_of_the_merge_bucket",
+      "test_oversized_subset_skip_does_not_abort_the_rest_of_the_merge_bucket"
+    ],
+    "tests/test_fees.py": [
+      "test_batch_tax_is_gst_on_the_batch_fee"
+    ],
+    "tests/test_money.py": [
+      "test_fewer_than_two_decimal_places_is_still_valid"
+    ],
+    "tests/test_l0_utr.py": [
+      "test_multi_day_window_excludes_a_date_before_the_start_boundary",
+      "test_multi_day_window_matches_strictly_between_the_boundaries"
+    ],
+    "tests/test_l1_exact.py": [
+      "test_multi_day_window_excludes_a_date_before_the_start_boundary",
+      "test_multi_day_window_matches_strictly_between_the_boundaries"
+    ],
+    "tests/test_l2_compose.py": [
+      "confidence==0.0 assertion added to the existing pool_too_large and compose_timeout tests",
+      "test_a_pool_too_large_exception_does_not_stop_later_credits_from_being_tried",
+      "test_a_compose_timeout_does_not_stop_later_credits_from_being_tried"
+    ],
+    "tests/test_l3_tolerance.py": [
+      "test_tolerance_floor_is_50_paise",
+      "test_delta_exactly_at_the_tolerance_boundary_still_resolves",
+      "test_guard_does_not_block_when_the_delta_exceeds_every_line_in_the_pool",
+      "test_guard_uses_value_equality_not_identity_for_large_amounts",
+      "test_candidate_line_exactly_at_window_start_is_included",
+      "test_candidate_line_strictly_inside_the_window_is_included",
+      "test_candidate_line_after_window_end_is_excluded",
+      "test_the_false_accept_guard_does_not_stop_later_credits_from_being_tried"
+    ]
+  },
+  "notable_gaps_killed": [
+    {
+      "module": "fees.py",
+      "finding": "compute_batch_fee_and_tax_paise's tax return value (the batch-level GST figure) was completely unchecked — the one existing test that calls it discards the tax half of the tuple. All 6 arithmetic-operator mutations of `Decimal(fee) * GST_RATE` survived as a result. This is the core money-tax computation CLAUDE.md invariant 1 is about, so it was the highest-priority finding of the exercise."
+    },
+    {
+      "module": "compose.py",
+      "finding": "Two ReplaceContinueWithBreak mutants in the merge loop (the empty-subset skip and the oversized-subset skip) survived: a `break` there would silently drop every remaining valid composition sharing that sum bucket, not just the one being skipped. Both existing test fixtures never had more than one candidate per sum bucket, so the bug was never exercised. Killed with hand-constructed multi-candidate-per-bucket fixtures (a payment+refund pair cancelling to zero; an oversized+valid pair sharing a sum)."
+    },
+    {
+      "module": "compose.py",
+      "finding": "`>` vs `>=` at the wall-clock deadline check survived for both the enumeration-time and merge-loop checks — an already-past deadline satisfies both operators identically, so the existing timeout test never discriminated them. Killed by mocking time.monotonic() to force an exact tie."
+    },
+    {
+      "module": "l2_compose.py / l3_tolerance.py",
+      "finding": "A `continue`->`break` on the per-credit loop in both l2_compose.run and l3_tolerance.run would, if it were a real bug, silently stop processing every credit after the first pool_too_large/compose_timeout/false-accept-guard case in a batch. No existing test ran more than one credit through these paths together."
+    },
+    {
+      "module": "l0_utr.py / l1_exact.py",
+      "finding": "The chained date-window comparison (window_start <= value_date <= window_end) was only ever tested with single-day windows (window_start == window_end), so the two ends of the chain were indistinguishable from each other or from ==/>=. Killed with genuinely multi-day window fixtures."
+    }
+  ],
+  "documented_equivalents": [
+    {
+      "modules": ["l0_utr.py", "l1_exact.py"],
+      "mutants": 22,
+      "operator": "ReplaceBinaryOperator_BitOr_*",
+      "pattern": "-> ExpectedBatch | None  becomes  -> ExpectedBatch <op> None (11 operators each, both modules)",
+      "reason": "Both modules start with `from __future__ import annotations` (PEP 563): every annotation, including this return type, is stored as an unevaluated string and never executed at runtime. Mutating the operator inside it changes the annotation text but has zero runtime behavioral effect — no test could ever observe a difference. True equivalent mutants, not a coverage gap."
+    },
+    {
+      "modules": ["l0_utr.py", "l1_exact.py"],
+      "mutants": 2,
+      "operator": "NumberReplacer (matches[0] -> matches[-1])",
+      "reason": "Reached only when `len(matches) == 1` (checked immediately above). Index 0 and index -1 of a one-element list are the same element."
+    },
+    {
+      "modules": ["l2_compose.py", "l3_tolerance.py"],
+      "mutants": 2,
+      "operator": "NumberReplacer (results[0] -> results[-1], within_tolerance[0] -> within_tolerance[-1])",
+      "reason": "Same shape as the l0/l1 case above: both are reached only after a `len(...) != 1: continue` guard, so index 0 and -1 are provably the same element."
+    },
+    {
+      "modules": ["l2_compose.py", "l3_tolerance.py"],
+      "mutants": 2,
+      "operator": "ReplaceBinaryOperator_Mul_Div (*, -> /,)",
+      "reason": "Both hit the keyword-only marker on the private, module-internal `_decision()` helper (compose.py's public compose() has the same marker and IS tested — see test_max_pool_etc_must_be_passed_by_keyword). `_decision` has exactly one caller, in the same file, already using keywords; there is no external contract this marker is protecting, so a dedicated test would only be pinning an implementation detail no caller could ever violate."
+    },
+    {
+      "modules": ["compose.py"],
+      "mutants": 1,
+      "operator": "NumberReplacer (midpoint = len(candidates) // 2 -> // 3)",
+      "reason": "Meet-in-the-middle is correct for ANY split point, not just an even one — the split only trades off how balanced (and therefore how fast) the two halves' enumeration is. Every existing correctness test still passes verbatim under // 3; a test that could tell them apart would have to measure runtime at a genuine near-MAX_POOL scale, which test_pool_at_exactly_max_pool_boundary_is_accepted_not_refused's own docstring already declines to do for this exact reason (a real 48-item worst case can legitimately take seconds)."
+    },
+    {
+      "modules": ["compose.py"],
+      "mutants": 1,
+      "operator": "ReplaceBinaryOperator_FloorDiv_RShift (// 2 -> >> 2)",
+      "reason": "Same reasoning as the // 3 case: >> 2 divides by 4 instead of 2, an even more lopsided split, but meet-in-the-middle's correctness still doesn't depend on the split ratio."
+    },
+    {
+      "modules": ["compose.py"],
+      "mutants": 1,
+      "operator": "ReplaceComparisonOperator_Eq_LtE (len(left_idxs) + len(right_idxs) == 0 -> <= 0)",
+      "reason": "len() is never negative, so a sum of two lengths is never negative either — <= 0 and == 0 are the same predicate here."
+    },
+    {
+      "modules": ["compose.py"],
+      "mutants": 1,
+      "operator": "ReplaceBinaryOperator_Add_BitOr (len(left_idxs) + len(right_idxs) == 0 -> len(left_idxs) | len(right_idxs) == 0)",
+      "reason": "For non-negative integers, a | b == 0 iff a == 0 and b == 0, which is exactly the same condition a + b == 0 tests. `|` binds tighter than `==` in Python, so the grouping is unchanged; only the arithmetic differs, and it happens to coincide at this boundary."
+    },
+    {
+      "modules": ["compose.py"],
+      "mutants": 2,
+      "operator": "ReplaceComparisonOperator_Lt_NotEq, ReplaceComparisonOperator_Lt_IsNot (len(idxs) < max_subset -> != / is not)",
+      "reason": "Subset length in _enumerate_subset_sums only ever grows by exactly 1 per doubling round, starting from 0 — it can never skip over max_subset. For a value that only ever counts up by one and is always a small (small-int-cache-range) integer, `< n`, `!= n`, and `is not n` are all the same predicate at every step it actually takes. Confirmed by test_enumerate_subset_sums_never_exceeds_max_subset, which does directly kill the <= variant of this same mutation (a genuinely different predicate) while these two remain unreachable."
+    }
+  ],
+  "seed_42_pinned_numbers": "unchanged, verified via tests/test_end_to_end.py"
+}
