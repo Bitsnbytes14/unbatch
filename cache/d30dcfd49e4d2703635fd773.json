@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1326,
+  "output_tokens": 102,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Verify the credit against the selected settlement batch and, if no match is found, reject or reclassify the credit to the correct batch if identified.\",\"confidence\":0.54,\"evidence_refs\":[\"txn_v15Nqnm0Y7BWtP\",\"setl_35DO5A3eTjZIRk\"],\"human_review_required\":true}"
+}

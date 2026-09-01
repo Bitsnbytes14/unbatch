@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1250,
+  "output_tokens": 125,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch net aligns best by validating all candidate batches against the credit and related payment lines, and select the batch with the smallest acceptable delta within tolerance or escalate for manual review if ambiguity remains.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_vACvFyczbgq7DH\", \"setl_rDwCFH4PKvxsNR\"],\n  \"human_review_required\": true\n}"
+}

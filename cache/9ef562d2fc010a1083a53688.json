@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1327,
+  "output_tokens": 166,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm which settlement batch is the intended match among candidates within tolerance; escalate for manual review to select the correct batch and align postings.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_5RaD7NWk2Ft7Zg\", \"setl_eqFOtPkAKYBaLH\", \"setl_wmqKbLhJmwdstr\", \"setl_xIIla0FC5XXckv\", \"setl_Gr4jhcKXoQhQKr\", \"ICICR427470781364\"],\n  \"human_review_required\": true\n}"
+}

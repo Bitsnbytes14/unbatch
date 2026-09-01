@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1269,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm which settlement batch net actually corresponds, then align the credit to that specific batch or adjust the batch mapping accordingly.\",\n \"confidence\": 0.42,\n \"evidence_refs\": [\"txn_fn1xOBoAnAliXt\", \"setl_CGOqrfN5Buicwm\", \"setl_1expX9gz48QCDP\", \"setl_g6XSdjt4yl2tW5\"],\n \"human_review_required\": true\n}"
+}

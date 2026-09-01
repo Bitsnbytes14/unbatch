@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1206,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Since multiple settlement batches fall within the tolerance band of this credit, flag for manual review to confirm the correct batch and reconcile against the bank statement.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_0WZtXHXpc63kLT\",\"setl_qfqvWefU5hpTiC\",\"ICICR187471936296\",\"pay_v67NxPObrrWlJZ\"],\n  \"human_review_required\": true\n}"
+}

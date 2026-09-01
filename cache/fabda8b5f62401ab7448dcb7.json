@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1291,
+  "output_tokens": 195,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Identify the exact set of payment lines that produced the 4401081 paise net; flag the batch as ambiguous and request a re-run to resolve the correct settlement composition or collect the missing line-items.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"settlement SBIN0324126655439 (setl_6cxGzLd76yh54y)\", \"settlement SBIN0324126655439 (setl_ulvEE65idyUuSK)\", \"settlement SBIN0324126655439 (setl_ja3zQdVbXAnJto)\", \"settlement SBIN0324126655439 (setl_VGFrbDrOqbAoau)\"],\n  \"human_review_required\": true\n}"
+}

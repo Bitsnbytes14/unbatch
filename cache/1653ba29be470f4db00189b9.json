@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1149,
+  "output_tokens": 121,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Mark as date_skew and investigate posting date alignment between the credit and the settlement batch; confirm whether the credit posted to a different date window than the batch and adjust reconciliation notes accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_YCWu3UM0P1vx6A\", \"setl_BbBGunjzbMZyip\"],\n  \"human_review_required\": true\n}"
+}

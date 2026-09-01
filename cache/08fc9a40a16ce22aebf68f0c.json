@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1148,
+  "output_tokens": 129,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as not reconciled to any of the candidate batches and route for manual investigation to determine the correct association or to reject if orphaned.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_2E4Ji4s5IyGxec\", \"setl_JeabwvM6ulPCHs\", \"pay_pnEybzFIOXDI9p\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1294,
+  "output_tokens": 225,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches within tolerance and select the one that most plausibly matches the payment lines, or request batch-level confirmation from the processor to resolve ambiguity.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_gWz3gM4EBZyFA4\", \"AXISP270939652289\", \"setl_fr8m0aCylgLMsw\", \"setl_CyoVkskRUhC0J2\", \"setl_evbsryFCiPpDwv\", \"setl_UwtjBt8SF7gCGM\", \"pay_6PizHn3HYCnZSP\", \"pay_guCE2shJQ1xxUP\", \"pay_iCHHYu0MjeI9Qk\", \"pay_LoTUDoDRnVzz0L\"] ,\n  \"human_review_required\": true\n}"
+}

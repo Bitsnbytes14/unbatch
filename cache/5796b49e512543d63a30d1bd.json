@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1221,
+  "output_tokens": 139,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Reconcile by confirming the posting date alignment and, if necessary, adjust the batch linkage to the 2024-01-04 window only.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_x8Kcq9YZCS17T0\",\"setl_2HQntLegbyy6QJ\",\"setl_nuuG8iqOMeh7p9\",\"setl_9DDAx14CsjHUuH\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1302,
+  "output_tokens": 120,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag as tolerance_ambiguous and review all candidate batches within the tolerance band to identify a single reconciled batch or adjust tolerance rules.\",\"confidence\":0.58,\"evidence_refs\":[\"txn_EdyxRDaoFdvCyq\",\"setl_gjiZRvkmp9Hnnr\",\"setl_HqVCXBnbpSQpad\",\"setl_LpUhcUZDkGiRww\"],\"human_review_required\":true}"
+}

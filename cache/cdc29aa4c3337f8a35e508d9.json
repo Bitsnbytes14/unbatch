@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1281,
+  "output_tokens": 145,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag multiple candidate settlement batches whose nets fall within the tolerance band and request manual review to select the correct batch.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_cRiCPXCEbAx0HU\", \"setl_rLKFFOUFUUJimi\", \"setl_D5NyZ214gDlSDI\", \"setl_DgcMOzTIm0K0id\", \"setl_gEVd5ID0Atcu89\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1315,
+  "output_tokens": 165,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark as unrelated and strip the credit from reconciliation, investigate which batch dropped the approved credit and align future postings.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_wGU5ZLS76MRZ1H\",\"setl_oJPLqgYu7gJLp0\",\"setl_eutOxeJSWUJcDC\",\"setl_b6lyvdsxl9HuJ7\",\"setl_8FAqJRbHPL27uA\",\"pay_j8V1UvE0RGicFw\",\"ICICR898371046429\"],\n  \"human_review_required\": true\n}"
+}

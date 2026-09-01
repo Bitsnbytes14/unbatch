@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1257,
+  "output_tokens": 151,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches within tolerance and select the most plausible by cross-checking line items and posting dates, then reclassify the credit to that batch or request reconciliation notes.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_3yK1oFK6betZ0i\", \"setl_1MinPso2b6yVrh\", \"setl_DrpTVVPHaZqrke\", \"setl_v9aw6yoHlutjym\"],\n  \"human_review_required\": true\n}"
+}

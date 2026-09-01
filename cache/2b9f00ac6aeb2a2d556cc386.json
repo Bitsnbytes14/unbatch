@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1246,
+  "output_tokens": 143,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as not matching the selected batch and investigate which batch generated the funds, then either re-associate the credit to the correct batch or mark as unmatched and flag for manual reconciliation.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_pqKl2xZHvo8lKI\", \"setl_goYp86DoJO01bx\", \"setl_3KwWevFUKFWzgG\", \"HDFCR890514167645\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1294,
+  "output_tokens": 144,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for/manual reconciliation to determine the correct batch/partition within tolerance; verify which alternate batch fits the credit within tolerance bands and document the chosen set.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_DlZyNy8u12Ne6k\", \"setl_1MinPso2b6yVrh\", \"setl_DrpTVVPHaZqrke\", \"setl_v9aw6yoHlutjym\"],\n  \"human_review_required\": true\n}"
+}

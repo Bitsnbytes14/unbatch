@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1329,
+  "output_tokens": 140,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Review within-tolerance candidates and confirm the unique batch by cross-checking post-date or additional metadata to select the correct settlement batch.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_EKPaGcEahJCoYm\", \"setl_mbFtH4vgoWGQOy\", \"setl_EKtnv5ECyQqj8v\", \"setl_5IRzjTiNaXuJDz\"],\n  \"human_review_required\": true\n}"
+}

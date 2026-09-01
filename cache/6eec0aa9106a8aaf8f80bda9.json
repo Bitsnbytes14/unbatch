@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1221,
+  "output_tokens": 149,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate which exact set of payment lines actually constitute the settlement net; confirm the primary batch matches the given settlement_utr AXISP216826350425 and identify if any partial or alternative composition could also fit.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_8lLnGb2BXo3wMW\", \"AXISP216826350425\", \"setl_YxbZ0YWUrmNDUt\", \"setl_fNrRBTBGj9Xd46\"],\n  \"human_review_required\": true\n}"
+}

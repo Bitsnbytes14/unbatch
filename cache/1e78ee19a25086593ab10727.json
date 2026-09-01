@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1154,
+  "output_tokens": 145,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Confirm the batch net matches the credit on the same date and align posting dates; if the batch should be ICICR998118401220 with net 598374 remains valid, mark as reconciled; otherwise investigate alternate batches listed and adjust mappings accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_kMXTTzS4MjZcas\", \"setl_0qKpDbruxkLWNt\", \"ICICR998118401220\"],\n  \"human_review_required\": true\n}"
+}

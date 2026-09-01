@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1272,
+  "output_tokens": 159,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Verify the reconciliation against the actual settlement batch ICICR810796436314 and confirm whether the credit corresponds to that batch or a mismatched/unknown batch; if truly unmatched, flag as unresolved and perform forensic trace to identify the correct batch or flag as erroneous credit.\",\"confidence\":0.44,\"evidence_refs\":[\"txn_nBmNJePTlMQrUd\",\"setl_Lc3iOuiK1R9SOc\",\"setl_52Bmb0neg3kMZK\",\"setl_u9jzxzV4k5Z353\",\"ICICR810796436314\"],\"human_review_required\":true}"
+}

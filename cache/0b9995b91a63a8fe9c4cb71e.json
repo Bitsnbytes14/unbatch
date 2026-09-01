@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1195,
+  "output_tokens": 133,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Verify posting dates for the conflicting batches; align the credit to the batch whose net corresponds to the 2024-01-03 window and adjust reconciliation accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_az2S9S6r47ru2Z\", \"setl_UyuxcRDATqfnDh\", \"setl_XI5ALBYB1k7XhX\"],\n  \"human_review_required\": true\n}"
+}

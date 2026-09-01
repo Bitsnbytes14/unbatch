@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1223,
+  "output_tokens": 104,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Ignore the bank credit as it does not correspond to the selected settlement batch's net and investigate the alternative batches suggested by other candidates.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_TbSJ3das8vInFV\", \"ICICR286929702135\"],\n  \"human_review_required\": true\n}"
+}

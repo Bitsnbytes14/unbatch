@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1295,
+  "output_tokens": 130,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Since the credit amount matches the batch net but the posting date does not align with the selected window, investigate and adjust to the correct settlement batch or re-map the credit to the batch whose window and net align.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_bC9gWcLEuTQ3aw\", \"setl_Jh1l2E3475lXU2\"],\n  \"human_review_required\": true\n}"
+}

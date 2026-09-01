@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1165,
+  "output_tokens": 131,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark the credit as unrelated to the selected batch and investigate the alternative batches indicated by the hints to identify the correct match or confirm a mis-posted credit.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_loG3kKCo7q0IuY\", \"setl_GtfLUvOr0LnX5g\", \"setl_JkO01hgzDxBpX2\"],\n  \"human_review_required\": true\n}"
+}

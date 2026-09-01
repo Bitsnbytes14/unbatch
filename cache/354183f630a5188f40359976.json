@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1350,
+  "output_tokens": 118,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag multiple candidate batches whose nets lie within the tolerance band and select the one with the closest net to the credit after excluding out-of-band options for manual review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_SVtL4dSEoLa2LM\", \"setl_zOrd8vNJ9zKE45\"],\n  \"human_review_required\": true\n}"
+}

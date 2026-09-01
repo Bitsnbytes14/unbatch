@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1151,
+  "output_tokens": 131,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as unrelated to the selected settlement batch and investigate the other candidate batches listed, as multiple batches could fit but the confirmed net equals the primary batch only, requiring reconciliation review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_E2AAoQSPj2Ehmh\", \"setl_Zk9HhMclyiMcIk\", \"SBIN0961800239745\"],\n  \"human_review_required\": true\n}"
+}

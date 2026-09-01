@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1200,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate and confirm the actual settlement batch date and align posting dates; if a different batch net matches, re-associate to the correct batch.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_3uGRk0WdKwlL8I\", \"setl_YmPD5FBcgWwuJT\", \"setl_LI2uRQUMikKPkZ\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1288,
+  "output_tokens": 155,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity: multiple settlement batches fall within tolerance around the credit; require human review to select the correct batch or adjust tolerance rules.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_XgdKo1eFSehyv7\", \"setl_vuQQgoo8GJNzm0\", \"setl_lWM4ljpSMoMhEV\", \"setl_gHZjOpjQtPkVbx\", \"setl_6ezP8T1w2mcWOt\"],\n  \"human_review_required\": true\n}"
+}

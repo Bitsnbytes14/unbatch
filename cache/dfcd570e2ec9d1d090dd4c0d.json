@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1110,
+  "output_tokens": 161,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Further investigate to determine if multiple payment line sets can explain the same net; verify which batch was actually settled and align payment_ids accordingly.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_TxHpxR2ZF0sMr3\", \"setl_G0zkhbk1Kk32Ij\", \"setl_KfCzqJWPDlkObd\", \"setl_FTEqIrgAoZuRAr\", \"setl_ig85OCssCC8FeZ\", \"AXISP136317335866\"],\n  \"human_review_required\": true\n}"
+}

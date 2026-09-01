@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1336,
+  "output_tokens": 148,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity; hold auto-settlement match and route to human for confirmation among candidate batches within tolerance band.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_AaxuqiJQmcqRqO\",\"setl_2DuGGinFJWyPoZ\",\"setl_WqqCo6PS56z94a\",\"setl_6H0wSoRJYfnIQR\",\"setl_4zIZcVcDRY8YNI\"],\n  \"human_review_required\": true\n}"
+}

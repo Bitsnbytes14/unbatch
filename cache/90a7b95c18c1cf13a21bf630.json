@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1307,
+  "output_tokens": 110,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as not tied to the selected settlement batch and investigate cross-batch postings to identify the correct matching batch or confirm an external credit; escalate to reconciliation for mapping or batch reassignment.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_Nc5pmegOqxL0mF\"],\n  \"human_review_required\": true\n}"
+}

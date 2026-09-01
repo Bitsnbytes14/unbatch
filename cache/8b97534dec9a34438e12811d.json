@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1252,
+  "output_tokens": 143,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate posting dates of the alternative candidate batches and confirm which batch aligns with the bank credit date; lock the correct settlement batch or mark as unrelated if none match.\",\n  \"confidence\": 0.46,\n  \"evidence_refs\": [\"txn_A4nT1uNNgRqbp7\",\"setl_Va627nKJe5LKtB\",\"setl_LYxehOy0vynivH\",\"setl_xV65gt3O84SmdM\"],\n  \"human_review_required\": true\n}"
+}

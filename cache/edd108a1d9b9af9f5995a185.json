@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1156,
+  "output_tokens": 99,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Mark the credit as standalone/unrelated and request a batch-matching review to align future mappings.\",\"confidence\":0.42,\"evidence_refs\":[\"txn_zTEx6zvSyO9n1L\",\"setl_KDXcYHKyMt6FjO\",\"HDFCR014892015152\"],\"human_review_required\":true}"
+}

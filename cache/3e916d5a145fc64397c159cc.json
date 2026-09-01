@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1250,
+  "output_tokens": 120,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate posting dates for the conflicting batches; confirm which batch actually funded this credit and align the settlement batch to the correct posting date, updating records or applying reconciliation notes as needed.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_Rn2WZvemunpQHN\", \"setl_R9X5BKLNZ7u7DM\"],\n  \"human_review_required\": true\n}"
+}

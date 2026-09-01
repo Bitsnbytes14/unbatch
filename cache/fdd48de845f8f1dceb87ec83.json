@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1308,
+  "output_tokens": 167,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify that the 3671533 paise credit corresponds to settlement_utr AXISP056483768699; if not, map to the correct batch or flag as mismatch and investigate the history of the three listed candidate batches for reconciliation.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_JoGw7cxQLIVo04\", \"AXISP056483768699\", \"setl_ZPKxYASbyPPOho\", \"setl_zFOFF1o1kL5hVt\", \"setl_uRfPKEbQbEmVJu\"],\n  \"human_review_required\": true\n}"
+}

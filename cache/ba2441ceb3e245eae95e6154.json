@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1259,
+  "output_tokens": 178,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm which settlement batch within the tolerance band actually matches the credit, then align the credit to that batch or record reconciliation notes if no single match remains.\",\n \"confidence\": 0.38,\n \"evidence_refs\": [\"txn_r1U9OqbPMFWxDS\",\"setl_71n5wJMbJn3dkf\",\"setl_V9P3uTOzwuPKde\",\"setl_I8ktK4JUbFgnhF\",\"pay_os4PAnhM2lHuMM\",\"pay_1KgxJ8c2zIchLt\",\"pay_wBXP9akEgJ3dss\"],\n \"human_review_required\": true\n}"
+}

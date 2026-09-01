@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1136,
+  "output_tokens": 147,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate posting dates: the credit matches the batch net but the reconciliation references the wrong settlement window; verify the settlement batch with UTR KKBK0204751777369 corresponds to the 2024-01-08 window and adjust mapping if necessary.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_9qZjcoTh4iGh06\", \"setl_77U42AXmKae5mB\", \"KKBK0204751777369\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1287,
+  "output_tokens": 163,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch net is the correct match by narrowing to batches within the tolerance band and select the one with the exact or closest net, then update reconciliation accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"SBIN0586254932609\",\"setl_0eepLZcGYXgCga\",\"setl_lnBl0BtnhdvhGN\",\"setl_jyIX1YkBhcNNdR\",\"setl_LvctZzQVhvwCyg\",\"txn_hjxTaDeq39holp\"],\n  \"human_review_required\": true\n}"
+}

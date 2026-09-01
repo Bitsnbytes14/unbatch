@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1301,
+  "output_tokens": 131,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Verify posting date alignment for the AXISP707445594930 batch and confirm that the credited amount matches the batch total on 2024-01-25; if not, adjust the mapping to the correct batch or initiate a reclaim/rebatch as needed.\",\n  \"confidence\": 0.56,\n  \"evidence_refs\": [\"settlement_AXISP707445594930\", \"txn_8YednGp85SiBtl\"],\n  \"human_review_required\": true\n}"
+}

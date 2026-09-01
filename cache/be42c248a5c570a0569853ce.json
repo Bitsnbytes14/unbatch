@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1167,
+  "output_tokens": 164,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance-ambiguous: the credit sits within the tolerance band of multiple candidate settlement nets; escalate for manual reconciliation to select the correct batch and adjust mapping accordingly.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_DepjcAqncn8uRy\", \"setl_ndtp8hsJEVXDYT\", \"pay_P4JPtLVvsGREuU\", \"SBIN0144808028094\", \"AXISP460033989799\", \"HDFCR548229483542\", \"SBIN0166155824068\"],\n  \"human_review_required\": true\n}"
+}

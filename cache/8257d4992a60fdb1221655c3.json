@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1339,
+  "output_tokens": 151,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous: multiple candidate batch compositions fit the observed data equally well; escalate for manual review to determine the correct settlement batch linkage.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_e9G5CPTcLffq2V\",\"setl_doUqYD8AuBFL6I\",\"setl_qjSdaeuTfPSHI3\",\"setl_NQZci6qQ0Plh7g\",\"setl_bYkdKMNYTOqnKe\"],\n  \"human_review_required\": true\n}"
+}

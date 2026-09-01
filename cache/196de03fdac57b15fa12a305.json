@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1165,
+  "output_tokens": 162,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm the correct settlement batch among candidates within tolerance; lock the batch that matches the bank credit or request additional supporting data from operations.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_tLkQ9uQj9dpzVH\",\"AXISP162659612374\",\"setl_5Web9CRyDlnn7L\",\"setl_clQL0eXNB0ThOH\",\"pay_OWl2a6FjHjEaZr\",\"pay_tMivdEXkSvYZTr\"],\n  \"human_review_required\": true\n}"
+}

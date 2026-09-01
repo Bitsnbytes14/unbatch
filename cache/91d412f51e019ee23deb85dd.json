@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1325,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as ambiguous; investigate all candidate batches within tolerance and determine the correct matching batch or escalate for manual reconciliation.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_W0FngAongJXgZS\",\"setl_JsZlJs4xZ1RnVU\",\"setl_0qSeZFRj4DYTvW\",\"setl_dfjJdRM2wkAnnb\",\"setl_sBayxMzuJQxELu\",\"AXISP576617078312\"],\n  \"human_review_required\": true\n}"
+}

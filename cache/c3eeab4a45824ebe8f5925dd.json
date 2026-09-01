@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1247,
+  "output_tokens": 121,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify that the credit aligns to the selected settlement batch and mark the credit as matched only to the correct batch; if no batch matches, flag as unrelated_credit and investigate the issuer/bank message ID and account details.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_Rcn2IPmBxM3nWu\", \"AXISP462878302322\"],\n  \"human_review_required\": true\n}"
+}

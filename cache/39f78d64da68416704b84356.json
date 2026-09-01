@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1274,
+  "output_tokens": 93,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate the set of candidate batches; determine which batch net lands most centrally within the tolerance band and flag others for review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"ICICR142274410286\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1278,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock the current batch as the authoritative settlement for this credit and flag other candidate batches as near-misses for audit review.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_aNJcDj9IYNL0bv\", \"setl_nVMIbmKdSfAobJ\", \"setl_UhzDZrQIZ30kaN\", \"setl_5TP4YsQAtSj8i4\"],\n  \"human_review_required\": true\n}"
+}

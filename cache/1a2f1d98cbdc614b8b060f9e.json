@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1281,
+  "output_tokens": 90,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for manual review to identify the exact matching batch within tolerance and select the correct settlement set.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"txn_85f8DjCeUHgoFW\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1302,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock the reconciliation to the originally selected settlement batch and route the ambiguity for manual review to confirm the correct batch among candidates.\",\n  \"confidence\": 0.38,\n  \"evidence_refs\": [\"txn_BCEkUz2YCwkOIo\", \"setl_UYxzmNLA6tr0yK\", \"setl_opVUlBcKLGegC1\", \"setl_tV3iVPz5gc0Ql\"],\n  \"human_review_required\": true\n}"
+}

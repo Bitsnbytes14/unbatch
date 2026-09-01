@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1244,
+  "output_tokens": 125,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Verify the credit against the bank statement; if no matching settlement batch is found, zero-match the credit to its corresponding batch or flag as unreconciled for manual tracing.\", \"confidence\":0.42, \"evidence_refs\":[\"txn_5G85f8DjCeUHgo\",\"SBIN0898222542775\",\"setl_SmXOafXaiXTTLF\",\"setl_hAUp7HLDRrVO7a\"], \"human_review_required\":true}"
+}

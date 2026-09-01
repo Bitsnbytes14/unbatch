@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1295,
+  "output_tokens": 151,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark the credit as unrelated to the selected settlement batch and investigate the alternative batches and payments presented by the system.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_k1NK1szKurQQzX\", \"setl_HX9bAw8J4aD4BT\", \"setl_r0qKKHSEAWtNeH\", \"setl_wa5jjhmB1dYK9y\", \"setl_5MYBuPjPrhQbnw\"],\n  \"human_review_required\": true\n}"
+}

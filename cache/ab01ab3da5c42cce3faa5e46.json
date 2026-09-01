@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1291,
+  "output_tokens": 174,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as toleranced-matched and escalate to manual review to select the correct batch among candidates within the tolerance band.\",\n  \"confidence\": 0.45,\n  \"evidence_refs\": [\"txn_hNsqtvXnhuJrgw\",\"setl_x72gGDvUJzGvTf\",\"setl_4uB8WXcIxBk86Q\",\"setl_1VWjx2Ed2WxTLx\",\"pay_oWGrCanV65Uu4w\",\"pay_2f9peb5hezrwAz\",\"pay_z0DkMNd6YIhlXY\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1193,
+  "output_tokens": 142,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Lock the reconciliation to the batch net as the reported credit matches the selected settlement window; investigate and confirm posting date alignment for this credit vs batch; if necessary, adjust future mappings to enforce consistent date alignment.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_jxkExkKfuGxkI4\", \"setl_uu8on04hpIIioA\", \"setl_BB6s1MKZ5p8JJ3\"],\n  \"human_review_required\": true\n}"
+}

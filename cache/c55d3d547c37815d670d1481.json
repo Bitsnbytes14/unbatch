@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1205,
+  "output_tokens": 84,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock the current batch as the matching settlement and flag others as potential matches under review.\",\n  \"confidence\": 0.46,\n  \"evidence_refs\": [\"AXISP148052729376\"],\n  \"human_review_required\": true\n}"
+}

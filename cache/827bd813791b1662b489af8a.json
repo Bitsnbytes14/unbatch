@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1293,
+  "output_tokens": 165,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the candidate settlement batches and payment line compositions to identify which set truly matches the credit, then lock to the single correct batch or escalate for manual reconciliation if ambiguity persists.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP798679966885\", \"setl_GOGmI280Vi1cUt\", \"setl_uRkxMbNyLQTH8O\", \"setl_sfSMsB8eHQqvcB\", \"setl_wcHrztjSOber5h\", \"txn_gYvgsvc90IBcHv\"],\n  \"human_review_required\": true\n}"
+}

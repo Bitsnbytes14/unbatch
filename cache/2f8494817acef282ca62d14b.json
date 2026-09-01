@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1268,
+  "output_tokens": 100,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the case for human review to determine which batch window actually matches and align the posted credit accordingly.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"txn_Que0Mgef7gM8cx\", \"AXISP234587962439\"],\n  \"human_review_required\": true\n}"
+}

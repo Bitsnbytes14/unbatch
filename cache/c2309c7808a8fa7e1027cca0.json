@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1188,
+  "output_tokens": 132,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Review the candidate batches in the tolerance window and lock the batch that uniquely matches the final net within the tolerance; if no unique match, flag for manual reconciliation.\",\n  \"confidence\": 0.38,\n  \"evidence_refs\": [\"txn_eoqjNFT2CfuqdO\", \"setl_GxES8Tpza03gYT\", \"setl_3Gv5C4Z6SWpFIG\"],\n  \"human_review_required\": true\n}"
+}

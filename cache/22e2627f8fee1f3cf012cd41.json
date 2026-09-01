@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1265,
+  "output_tokens": 142,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag as tolerance_ambiguous; no single batch net clearly matches within tolerance; escalate for manual review to determine correct batch alignment.\",\"confidence\":0.45,\"evidence_refs\":[\"txn_Y5o3wdTkVVPqdT\",\"AXISP852143283403\",\"setl_78DnFWtnSUXS5R\",\"setl_YCrRG3C52W7qCx\",\"pay_EPTkfECok9flT3\",\"pay_13kE31isD1KX8R\"],\"human_review_required\":true}"
+}

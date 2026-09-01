@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1331,
+  "output_tokens": 179,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of payment lines that contributed to the 3811668 paise against settlement KKBK0897497015606; adjudicate whether multiple candidate batches or line-ids could fit equally, then lock to a single consistent mapping.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_aOcYFfSqRfiIc1\", \"setl_CCrgCZhrA2PH0e\", \"setl_MFL72pgzNK3LM\", \"setl_IQ1MZs0mgVumPu\", \"setl_SdS2bn3CFZEzMF\"],\n  \"human_review_required\": true\n}"
+}

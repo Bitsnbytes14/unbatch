@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1226,
+  "output_tokens": 124,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Investigate and confirm which batch the credit belongs to; if no matching batch is found, detach the credit from settlement processing and flag for reconciliation follow-up.\",\"confidence\":0.57,\"evidence_refs\":[\"txn_HkYHxfZr8orNR5\",\"setl_a9jZCy4KlGIhLh\",\"setl_sR4t35G2kXm03L\",\"HDFCR437517880075\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1271,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit for manual reconciliation due to multiple candidate batches within tolerance; request human to verify which batch truly matches the settlement window.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_Jx78GiYQHnbD7o\", \"setl_l17bGXF0eZZgbt\", \"setl_zcd1n9xsImAL7P\"],\n  \"human_review_required\": true\n}"
+}

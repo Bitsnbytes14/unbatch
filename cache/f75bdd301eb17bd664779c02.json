@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1279,
+  "output_tokens": 146,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate whether the credit corresponds to a different settlement batch or external credit; map to the correct settlement if found, or flag as unmatched and halt further auto-allocations.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_Xg3K8CRsqcS7zd\", \"setl_2ZInluvpVmPsS6\", \"setl_EVL6j383iJaycU\", \"setl_mch6ByjFmiTsHI\"],\n  \"human_review_required\": true\n}"
+}

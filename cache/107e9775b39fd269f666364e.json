@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1190,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark the credit as settled with the selected batch and investigate why alternate batches appeared, ensuring the net matches; if no discrepancy remains, close reconciliation for this credit.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_ECyOKuQjPyV0Eg\",\"setl_nkIkqVnk2A3PJh\",\"setl_VpIoPmgSBpf1O6\",\"HDFCR306504195866\"],\n  \"human_review_required\": true\n}"
+}

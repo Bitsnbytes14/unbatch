@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1237,
+  "output_tokens": 118,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as not corresponding to any settled batch and investigate the bank transaction for mis-posting or staging elsewhere.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_WC32hgrodLTsp8\", \"setl_OD0s2ERl1ILQui\", \"setl_jE4HREFLJByCZ2\"],\n  \"human_review_required\": true\n}"
+}

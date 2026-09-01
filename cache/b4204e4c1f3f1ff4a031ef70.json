@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1222,
+  "output_tokens": 142,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit against the selected batch for reconciliation review; if no match found after cross-checking, suspend automatic settlement linkage and escalate to human to verify against alternate batches.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_zH1knbhajF9Qxz\", \"setl_bCjx89eqiL4Z5q\", \"setl_nd40PwA7boGDX5\", \"KKBK0803025478540\"],\n  \"human_review_required\": true\n}"
+}

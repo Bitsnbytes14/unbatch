@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1297,
+  "output_tokens": 120,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag the credit as unrelated and investigate matching with the confirmed batch; if investigation confirms no alignment, mark as non-netted and escalate.\",\"confidence\":0.42,\"evidence_refs\":[\"txn_BhRQMm8YmEBide\",\"setl_OKL1UwHdiV9tPM\",\"setl_5W69fk77CdAzkZ\",\"setl_T4DWQEFH27dVre\"],\"human_review_required\":true}"
+}

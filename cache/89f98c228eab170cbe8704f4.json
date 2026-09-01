@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1240,
+  "output_tokens": 99,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as not matching the selected batch and investigate if the credit corresponds to a different settlement batch.\",\n  \"confidence\": 0.46,\n  \"evidence_refs\": [\"txn_U4q1ZmoJPbk5UR\", \"AXISP057449071325\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1172,
+  "output_tokens": 117,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which batch among the candidates falls within the reconciliation tolerance and select the one that aligns with the most corroborating payment IDs; if ambiguity remains, escalate for human confirmation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_eF1LHErsyH6ep6\", \"SBIN0968397642670\"],\n  \"human_review_required\": true\n}"
+}

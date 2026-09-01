@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1345,
+  "output_tokens": 169,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock to the selected batch net (4399467) and flag that multiple candidate batches fall within tolerance; require human review to pick the correct batch or confirm there is no mismatch.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_JsrfwJn2hKDLFa\", \"setl_5XzSxQStZbY3VH\", \"setl_PVuvFf5nKYG4O3\", \"setl_BiEZNpKraAPN1W\", \"setl_miQDF948bf1rJV\"],\n  \"human_review_required\": true\n}"
+}

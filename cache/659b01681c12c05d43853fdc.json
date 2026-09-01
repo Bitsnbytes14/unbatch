@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1303,
+  "output_tokens": 120,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Investigate all candidate batches within tolerance; identify the single batch whose net best matches the credit or escalate for manual reconciliation if ambiguity persists.\",\"confidence\":0.57,\"evidence_refs\":[\"txn_NsYpy6I1CoUASf\",\"AXISP356301017977\",\"setl_viaF1C49ag1RQG\",\"pay_4OazkMokuG9xg0\"],\"human_review_required\":true}"
+}

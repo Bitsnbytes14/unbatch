@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1307,
+  "output_tokens": 175,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the 5174309 paise credit as not matching the selected settlement batch and investigate the alternate batches or separate credits to locate the true settlement alignment.\",\n  \"confidence\": 0.44,\n  \"evidence_refs\": [\"txn_U5yXkWLPfFX0nm\",\"setl_t2qmash6Z57rgX\",\"setl_tRrJCeHH0jFhhv\",\"setl_Z4wRYtDZWHXtVR\",\"pay_EVMlCIUKHMTqHu\",\"pay_pUkBt5VRiBl3MT\",\"pay_9iJgVXTXMR7Ah9\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1304,
+  "output_tokens": 165,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Verify the batch linkage and confirm which set of payments actually produced the observed credit; if the 4 payments listed in the expected batch do not align with the credited UTR, re-map to the correct batch or flag as unmatched until reconciliation is resolved.\",\"confidence\":0.55,\"evidence_refs\":[\"AXISP148620838687\",\"txn_MXZbHjrlGufX0H\",\"setl_GYXnr6Leesv7Ma\",\"setl_MhDVNmxCr7QwBP\",\"setl_IHI9C0ZuR3uKKs\",\"setl_MkIYC19QBd7jUk\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1172,
+  "output_tokens": 132,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity and request a recheck against all candidate batches to identify a single closest net within the tolerance band.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_4ESJo2HkJ1jkNi\",\"SBIN0144808028094\",\"pay_2wP0eUyoVir9zC\",\"setl_vWsifzHGjtM3eN\"],\n  \"human_review_required\": true\n}"
+}

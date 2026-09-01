@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1308,
+  "output_tokens": 153,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate whether the credit corresponds to a non-batch payout or an internal adjustment; confirm the settlement batch AXISP177533457599 matches the credit issuer's records and align or flag for manual reconciliation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_a5jAonGpSzW52W\", \"settlement_utr: AXISP177533457599\", \"window: 2024-01-12 to 2024-01-12\", \"net_paise: 5162892\"],\n  \"human_review_required\": true\n}"
+}

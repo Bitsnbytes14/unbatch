@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1273,
+  "output_tokens": 149,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify that the credit txn_OdooS1KpTKiZGM corresponds to settlement AXISP639345022402; if not, re-associate or reject and flag for manual reconciliation.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_OdooS1KpTKiZGM\", \"setl_LLtaJJCKLv4LQV\", \"setl_GTizJd7nPnhGRd\", \"setl_46yekaRNBRaH9d\"],\n  \"human_review_required\": true\n}"
+}

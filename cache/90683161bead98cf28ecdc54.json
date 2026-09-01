@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1349,
+  "output_tokens": 156,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm which batch net aligns with the credit within tolerance; if ambiguity persists, escalate for human confirmation with the list of candidate batches.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_4b7hw414kjvuKc\", \"setl_WVbKNIkcE8ZRGA\", \"setl_aCPHKz76cySHix\", \"setl_3pDPANisX6Ix8R\", \"setl_wXKNU3Et2KMNTd\"],\n  \"human_review_required\": true\n}"
+}

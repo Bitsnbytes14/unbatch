@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1281,
+  "output_tokens": 112,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Inspect the candidate batches and confirm which one falls within the acceptable tolerance band for the credit; if multiple batches are within tolerance, select the one with the smallest delta or highest confidence and escalate for manual review if still ambiguous.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"ICICR142274410286\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1249,
+  "output_tokens": 150,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Investigate and confirm the correct settlement batch by validating which candidate batch(es) fall within the tolerance band for this credit and select the uniquely matching one; if ambiguity remains, escalate for manual adjudication.\",\"confidence\":0.42,\"evidence_refs\":[\"txn_DhN7CGVfPy5se8\",\"setl_9h1DBLUEG1b9Lt\",\"setl_Mwro5jXho7syTb\",\"setl_uPLCQiREknWdvl\",\"setl_idy8u3OnEP1THu\"],\"human_review_required\":true}"
+}

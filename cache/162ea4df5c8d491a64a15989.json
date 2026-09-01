@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1170,
+  "output_tokens": 142,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm whether the credit txn_UCoH5IdN1EQkPH actually maps to settlement ICICR478123517541; if not, align with the correct batch or mark as unrelated and advise correction.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_UCoH5IdN1EQkPH\", \"setl_Yf6X3n54Q7Lxwq\", \"ICICR478123517541\"],\n  \"human_review_required\": true\n}"
+}

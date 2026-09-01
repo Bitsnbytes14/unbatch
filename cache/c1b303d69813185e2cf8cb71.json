@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1205,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as not matching the settled batch and investigate whether the credit is a misrouted/phantom credit and needs reallocation or reversal.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_mICrWSHPWDtgfK\", \"setl_fMEScrc6i4giCH\", \"setl_zf8aJCTlZX3eex\", \"HDFCR183046882449\"],\n  \"human_review_required\": true\n}"
+}

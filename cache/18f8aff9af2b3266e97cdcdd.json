@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1249,
+  "output_tokens": 125,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance-ambiguous: none of the candidate batches can be ruled out with a single confidence; escalate for human review to reconcile against the most plausible batch(s).\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"txn_LSGJn5NYLbg2R4\", \"AXISP518157566513\", \"KKBK0855132432125\"],\n  \"human_review_required\": true\n}"
+}

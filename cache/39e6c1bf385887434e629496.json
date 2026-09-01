@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1277,
+  "output_tokens": 129,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit against the matching batch AXISP081429411017; if reconciliation fails later, investigate other candidate batches but keep this match as primary.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_OQenVokUseTtS9\", \"setl_gEC3pGQ8Gy6vTx\", \"setl_k2nNHXI64jN19H\"],\n  \"human_review_required\": false\n}"
+}

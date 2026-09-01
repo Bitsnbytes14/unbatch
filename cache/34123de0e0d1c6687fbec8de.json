@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1287,
+  "output_tokens": 157,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify the credited amount against the selected batch and, if no mismatch exists, re-associate the credit with the correct settlement batch or flag as misalignment for reconciliation.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"txn_6ot1TqvpNrqGCj\", \"setl_Nv7PgeXiLA1vuo\", \"setl_cjR3haOXzZ2eaE\", \"setl_4KjPxmjwbbIKw2\", \"ICICR985799294620\"],\n  \"human_review_required\": true\n}"
+}

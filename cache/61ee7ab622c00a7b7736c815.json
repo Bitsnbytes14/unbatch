@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1243,
+  "output_tokens": 121,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity and request human review to confirm the correct batch mapping among near-matching candidates.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"txn_XWiCaYXZNrzaqR\", \"setl_KIoNF3w9JmltRs\", \"setl_Mxt0iTA5Dq5Q8K\"],\n  \"human_review_required\": true\n}"
+}

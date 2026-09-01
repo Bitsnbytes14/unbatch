@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1328,
+  "output_tokens": 152,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag for human reconciliation to verify which candidate batch/net the credit aligns with, initiating a tie-break review among the multiple plausible settlement batches.\",\n  \"confidence\": 0.56,\n  \"evidence_refs\": [\"txn_jWlKtebzcNUTFM\",\"setl_3QHVd1S4KPtFjs\",\"setl_a3tDSq4Q60vk5C\",\"setl_Fh52otKI0J13Kr\",\"setl_ZHOSrpwVuKcx22\"],\n  \"human_review_required\": true\n}"
+}

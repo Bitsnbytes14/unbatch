@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1236,
+  "output_tokens": 123,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate alternative matching batches; confirm which payment set belongs to this credit or re-anchor to the correct batch.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\n    \"txn_wETUZePVMLtwoa\",\n    \"setl_jTEPTukxyNL73L\",\n    \"setl_chXsbwCcu2L23H\"\n  ],\n  \"human_review_required\": true\n}"
+}

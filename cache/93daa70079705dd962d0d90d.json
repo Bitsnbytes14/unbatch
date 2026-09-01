@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1292,
+  "output_tokens": 215,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches; select the batch whose net lies closest to the credit within tolerance and document the tie-break policy; if multiple batches remain, flag for manual review.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_vMbEMszZiCfx2L\",\"ICICR657937053052\",\"setl_uHMYgjWsAO1DEb\",\"setl_JZE1AWxsUkJZVi\",\"setl_vSdNmMmzWe1qDq\",\"setl_wFnQw7BsieT8yc\",\"pay_6GMbR9NBywAKsG\",\"pay_EeyPHZXeiF9J16\",\"pay_VQhY3g3o86VSZ4\",\"pay_5MJWiGEUVQeMs0\"],\n  \"human_review_required\": true\n}"
+}

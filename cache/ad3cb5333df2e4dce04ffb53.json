@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1270,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm which settlement batch net is the correct match within tolerance; involve manual review to select the batch or request clarification from payment set.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_JVgBChNpQFGoVa\",\"setl_Ar8iTdfxqwtBtH\",\"setl_XViFXCg1bMQEWk\"],\n  \"human_review_required\": true\n}"
+}

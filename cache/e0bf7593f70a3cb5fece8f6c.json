@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1209,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch among the candidates actually produced the observed credit within tolerance; retain the current match if no single batch clearly fits, otherwise pick the best-aligned batch and document reasoning.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_AwjjozwaGc6mqY\", \"setl_RpVpVJMRmO7Mmg\", \"setl_N5GzisrBXXYlpS\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1316,
+  "output_tokens": 140,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated credit; investigate mapping of credit to the AXISP079400273486 batch and confirm with settlement team before posting a correction.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_2MU53385QFc6Ds\", \"setl_NHEPWB6XKhIM7n\", \"setl_eAXNfIay93KTCF\", \"setl_hhOLIL5EbkXjXl\"],\n  \"human_review_required\": true\n}"
+}

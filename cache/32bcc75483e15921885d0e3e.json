@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1294,
+  "output_tokens": 130,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Treat the credit as not matching the selected settlement batch and isolate it for separate reconciliation with the bank statement, then investigate the other candidate batches to confirm if any should be used.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_54ZEFbPFv0UWvF\", \"ICICR628296772189\", \"setl_7EoJrNMpvPAdAn\"],\n  \"human_review_required\": true\n}"
+}

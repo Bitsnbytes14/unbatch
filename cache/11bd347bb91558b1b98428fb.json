@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1333,
+  "output_tokens": 150,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity and perform a targeted review of nearby settlement batches to identify the single net that best fits within the tolerance band.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_dtvdt7IFVPVQlu\",\"setl_BPqk56yqRouJGE\",\"setl_1fZ2TvMf0lPkjP\",\"setl_cLBhNOqGkTpXIX\",\"setl_rWgJHbsdvi6Khg\"],\n  \"human_review_required\": true\n}"
+}

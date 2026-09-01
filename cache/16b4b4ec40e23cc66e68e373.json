@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1174,
+  "output_tokens": 120,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock the credit to the single batch whose net lies within the tolerance band and escalate others for mismatch review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_nqjmWBa6jqFw5Y\",\"setl_vWsifzHGjtM3eN\",\"pay_2wP0eUyoVir9zC\"],\n  \"human_review_required\": true\n}"
+}

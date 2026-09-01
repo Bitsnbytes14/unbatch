@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1287,
+  "output_tokens": 179,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Retain the given credit as the correct settlement of 2024-01-03 batch and investigate whether any related postings occurred on the alternate windows; if no match is found, flag as reconciled against the original batch and document the date alignment issue.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_4xZsSgvy3ZgC08\", \"setl_BRgGhkjkuCr1Ag\", \"setl_d7ym9nBNdyq8ZW\", \"setl_9zQKWeuxudnCky\", \"setl_78wH9UMbg48CdW\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1338,
+  "output_tokens": 102,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity and review which settlement batch's net is within tolerance; request confirmation from operations to lock the correct batch or re-run reconciliation with a single designated batch.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"SBIN0096306562364\"],\n  \"human_review_required\": true\n}"
+}

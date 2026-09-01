@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1347,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"rounding_delta\",\n  \"proposed_resolution\": \"Offer to reconcile by adjusting for a 1 paise GST/line-item rounding delta between the batch and the credit and verify per-line rounding rules.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_wmgvZLdAcMhlNZ\", \"setl_VHcg6B5oQdPMtw\", \"setl_ty2aettFU21Hdn\", \"setl_kb4msi0xoLdtrw\", \"setl_u1Lsq0PBK5kojz\"],\n  \"human_review_required\": true\n}"
+}

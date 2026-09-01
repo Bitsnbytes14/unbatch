@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1332,
+  "output_tokens": 145,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Review and confirm the correct settlement batch among candidates; if no single batch is clearly right, flag for investigation and reconcile against all candidate nets within tolerance bands.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_TJfidPqX6GwrxK\", \"setl_zcdbbj1qiVp1cJ\", \"setl_OKVP0zAzLRJX37\", \"setl_Yxphn59Xi8Rj24\"],\n  \"human_review_required\": true\n}"
+}
