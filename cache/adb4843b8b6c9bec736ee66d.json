@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1378,
+  "output_tokens": 137,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as ambiguous with multiple candidate batches within tolerance and escalate to human review to select the correct batch ID.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"setl_u8VdwjHgEtINv3\",\"setl_GeZi2mEgJZOGRp\",\"setl_uj9Bvt9uxVATLI\",\"setl_YfNcYxW5u2A5hV\"],\n  \"human_review_required\": true\n}"
+}

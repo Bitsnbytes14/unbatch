@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1200,
+  "output_tokens": 178,
+  "response_text": "{\"break_reason\":\"ambiguous_composition\",\"proposed_resolution\":\"Investigate and lock the exact settlement line composition that produced the 5489073 net; confirm which two or more payment lines form the batch and ensure the AXISP UTR mapping matches; if multiple valid compositions exist, flag as ambiguous and request explicit confirmation from settlement system.\", \"confidence\":0.52, \"evidence_refs\":[\"AXISP352709577630+HDFCR635024564424\",\"setl_vOpOK4esubuC1J\",\"setl_llXb8oBpKOfD28\",\"pay_0BckOW2kAtyVJE\",\"pay_yxZJbbILofCq0d\",\"txn_qE40fAraVNqTIA\"], \"human_review_required\":true}"
+}

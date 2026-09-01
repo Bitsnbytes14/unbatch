@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1225,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate whether the 25 paise delta falls within the reconciliation tolerance across similar batches; if ambiguity persists, flag for manual review and compare against alternate candidate batches to determine which is most plausible.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_yn9FfcgMXAdx9G\", \"setl_ZwkVRaC6Bnbr5w\", \"HDFCR812343829484\"],\n  \"human_review_required\": true\n}"
+}

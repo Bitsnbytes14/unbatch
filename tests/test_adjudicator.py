@@ -300,13 +300,22 @@ def test_invalid_shape_then_valid_retries_once_and_succeeds(monkeypatch, tmp_pat
 
 def test_malformed_twice_degrades_to_adjudication_failed(monkeypatch, tmp_path: Path) -> None:
     fake = _install_fake_client(
-        monkeypatch, [_text_response(_MALFORMED_JSON), _text_response(_MALFORMED_JSON)]
+        monkeypatch,
+        [
+            _text_response(_MALFORMED_JSON, prompt_tokens=20_000, completion_tokens=8_000),
+            _text_response(_MALFORMED_JSON, prompt_tokens=20_000, completion_tokens=8_000),
+        ],
     )
 
-    with pytest.raises(adjudicator.AdjudicationFailedError):
+    with pytest.raises(adjudicator.AdjudicationFailedError) as exc_info:
         adjudicator.adjudicate(_CREDIT, _BATCH, -775, [], cache_dir=tmp_path)
 
     assert len(fake.calls) == 2
+    # the real cost of BOTH calls, not 0 — discarding it would understate
+    # spend on exactly the credits that cost the most to adjudicate (two
+    # calls, not one). Big token counts here so the assertion actually
+    # exercises the arithmetic, not just its rounding floor.
+    assert exc_info.value.cost_paise > 0
 
 
 def test_degraded_adjudication_never_raises_anything_but_adjudication_failed(

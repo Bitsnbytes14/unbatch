@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1345,
+  "output_tokens": 100,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark this credit as unrelated and quarantine for cross-check; keep the matched batch in place and investigate the alternative batches suggested.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_asnipuaUkxRFZX\", \"SBIN0609841748311\"],\n  \"human_review_required\": true\n}"
+}

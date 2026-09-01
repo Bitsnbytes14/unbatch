@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1312,
+  "output_tokens": 102,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as ambiguous; hold for human review to determine the correct settlement batch among candidates within the tolerance band.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"txn_h1E2JDBld6DYye\",\"AXISP242635395343\"],\n  \"human_review_required\": true\n}"
+}

@@ -287,7 +287,7 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
             result, cost_paise, retried = adjudicator.adjudicate(
                 credit, primary_batch, delta_paise, candidates, cached=ctx.cached
             )
-        except adjudicator.AdjudicationFailedError:
+        except adjudicator.AdjudicationFailedError as exc:
             decisions.append(
                 _decision(
                     ctx,
@@ -299,7 +299,10 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
                     reason=REASON_ADJUDICATION_FAILED,
                     matched_payment_ids=[],
                     rationale=None,
-                    llm_cost_paise=0,
+                    # the real cost of both calls actually made (first
+                    # attempt + retry), not 0 — see
+                    # AdjudicationFailedError's own docstring
+                    llm_cost_paise=exc.cost_paise,
                     # degrading to adjudication_failed only ever happens
                     # after exactly one retry, by construction (see
                     # adjudicator.adjudicate's docstring)

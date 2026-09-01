@@ -192,7 +192,16 @@ after it — matching exactly this shape:
 
 class AdjudicationFailedError(Exception):
     """Raised after a retry still fails to validate; caller (l4_llm) should
-    record an exception decision with reason `adjudication_failed`."""
+    record an exception decision with reason `adjudication_failed`.
+
+    Carries `cost_paise` — the real cost of both calls that were actually
+    made (first attempt + retry) — so the caller can report it honestly.
+    Discarding it and reporting 0 would understate real spend on exactly
+    the credits that cost the most to adjudicate (two calls, not one)."""
+
+    def __init__(self, message: str, *, cost_paise: int) -> None:
+        super().__init__(message)
+        self.cost_paise = cost_paise
 
 
 class CacheMissError(Exception):
@@ -490,4 +499,6 @@ def adjudicate(
             result = _parse_response(_require_text(retry_text), credit, expected_batch, candidates)
             return result, cost_paise, True
         except _MalformedResponseError as second_error:
-            raise AdjudicationFailedError(str(second_error)) from second_error
+            raise AdjudicationFailedError(
+                str(second_error), cost_paise=cost_paise
+            ) from second_error

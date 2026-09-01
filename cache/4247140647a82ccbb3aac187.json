@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1329,
+  "output_tokens": 165,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate the batch ICICR080098557410 alignment to ensure the credit corresponds to this settlement; if no match exists, associate the credit with the correct batch from the candidate list or flag as unlinked and queue for manual reconciliation.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_gVZ2cuVixkZVYk\",\"setl_oOo7i22ZX1eavc\",\"setl_NMMdT2GzEmIvHV\",\"setl_kJJMT27TXOKNoI\",\"ICICR080098557410\"],\n  \"human_review_required\": true\n}"
+}

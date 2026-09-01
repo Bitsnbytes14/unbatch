@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1169,
+  "output_tokens": 121,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate source of bank credit to confirm if it truly maps to AXISP923885778424 or another batch; if unrelated, quarantine credit and notify payer.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_buQzkChMbyIbNi\", \"setl_ipftzkMubdytzu\", \"AXISP923885778424\"],\n  \"human_review_required\": true\n}"
+}

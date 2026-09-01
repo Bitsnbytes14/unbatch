@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1264,
+  "output_tokens": 122,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as within tolerance of multiple candidate nets and route for human reconciliation to select the correct batch.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"AXISP617139656872\", \"AXISP078115114808\", \"AXISP751014580988\", \"KKBK0720907476647\", \"AXISP800785553136\"],\n  \"human_review_required\": true\n}"
+}

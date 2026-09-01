@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1325,
+  "output_tokens": 130,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Ignore this credit for this batch window and re-associate with the correct matching settlement batch.\",\n  \"confidence\": 0.72,\n  \"evidence_refs\": [\"txn_e24HZKjht3X13n\", \"setl_0kvAw1mlcyU3jm\", \"setl_TLl1Mjhyqljbm1\", \"setl_iUhK4OlR5eHvS9\"],\n  \"human_review_required\": false\n}"
+}

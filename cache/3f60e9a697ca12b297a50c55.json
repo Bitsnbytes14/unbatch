@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1066,
+  "output_tokens": 148,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate alternate line compositions that fit the same net and confirm which set corresponds to the actual settlement batch; lock to the verified composition and align the credit accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"pay_7U8WL1gIFkhmwT\", \"pay_yc5jJ88X28z2R2\", \"setl_oXzzC0XwbjaX6f\", \"setl_9rfIGUjbXKoVT9\"],\n  \"human_review_required\": true\n}"
+}

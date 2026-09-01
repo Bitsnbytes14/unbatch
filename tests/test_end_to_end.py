@@ -45,17 +45,6 @@ def test_generate_reproduces_the_committed_fixtures_byte_for_byte(tmp_path: Path
         )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "FAILURES.md 2026-09-01: the new evidence_refs semantic validation "
-        "rejects one seed-42 with-LLM cached response (cites a settlement "
-        "UTR, not a payment_id/settlement_id/txn_id), forcing a retry whose "
-        "prompt was never cached under the old schema-only validation -> "
-        "CacheMissError. Needs a live call or a broader whitelist decision, "
-        "neither made this session."
-    ),
-)
 def test_end_to_end_no_key_reproduces_the_readme_numbers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -113,25 +102,51 @@ def test_end_to_end_no_key_reproduces_the_readme_numbers(
 
     # Arm B — rules + LLM: the match-rate delta over A is exactly zero —
     # the 12 credits reaching L4 are ones rules correctly declined, and the
-    # model correctly declines almost all of them too (see README.md)
+    # model correctly declines almost all of them too (see README.md).
+    #
+    # 2026-09-01 (FAILURES.md): these numbers moved from an earlier
+    # measurement after adjudicator.py gained semantic validation of
+    # evidence_refs (schema-shape validation alone wasn't enough — see the
+    # module's docstring). Re-running with the stricter check found the
+    # model citing a settlement UTR as evidence on several of these 12
+    # credits; live retries were made to get a real (not stale) reading.
+    # Most retries (6 of 7) did not recover a valid classification even on
+    # the second try, which is the real, measured cost of enforcing this
+    # check — not a bug in the check or in these numbers.
     assert b["total_credits"] == 105
     assert b["count_match_rate"] == pytest.approx(93 / 105)
     assert b["false_match_rate"] == 0.0
     assert b["stage_funnel"] == {"l0": 79, "l1": 3, "l2": 9, "l3": 2, "l4": 12}
     assert b["llm_call_count"] == 12
-    assert b["llm_cost_paise"] == 12
-    assert b["break_reason_accuracy"] == pytest.approx(11 / 12)
-    assert b["malformed_json_count"] == 0
-    assert b["retry_count"] == 0
-    assert b["adjudication_failed_count"] == 0
+    assert b["llm_cost_paise"] == 19
+    assert b["break_reason_accuracy"] == pytest.approx(5 / 6)
+    assert b["malformed_json_count"] == 13
+    assert b["retry_count"] == 7
+    assert b["adjudication_failed_count"] == 6
 
-    # Arm C — LLM only: the measured argument for the cascade
+    # Arm C — LLM only: the measured argument for the cascade. Same
+    # 2026-09-01 re-measurement as arm B, at much larger scale (all 105
+    # credits go to the model here, not just the 12 rules leave unresolved):
+    # 33 retries were needed, and one of them landed on a *worse* second
+    # answer than the (semantically rejected) first — a real false match,
+    # not present before this session. See the note below.
     assert c["total_credits"] == 105
-    assert c["count_match_rate"] == pytest.approx(14 / 105)
-    assert c["false_match_rate"] == 0.0
+    assert c["count_match_rate"] == pytest.approx(11 / 105)
+    assert c["false_match_rate"] == pytest.approx(1 / 11)
     assert c["llm_call_count"] == 105
-    assert c["llm_cost_paise"] == 105
-    assert c["break_reason_accuracy"] == pytest.approx(4 / 105)
+    assert c["llm_cost_paise"] == 140
+    assert c["break_reason_accuracy"] == pytest.approx(2 / 80)
 
-    # false-match rate is zero in all three arms — the headline safety claim
-    assert a["false_match_rate"] == b["false_match_rate"] == c["false_match_rate"] == 0.0
+    # The cascade itself (arms A and B) still has zero false matches — the
+    # headline safety claim survives. Arm C (llm-only, the deliberately
+    # worse baseline this ablation exists to measure) does not: one retry,
+    # forced by the new semantic-validation check above, produced a
+    # confident-but-wrong classification where the rejected first response
+    # would not have (see FAILURES.md's 2026-09-01 entry). This is the
+    # measured cost of retrying against an LLM whose second sample is
+    # independent of its first, not a defect in the retry-then-degrade
+    # design — and it is exactly the kind of risk arm A/B's cascade design
+    # (sending only a small, rules-narrowed residual to the model at all)
+    # structurally avoids.
+    assert a["false_match_rate"] == b["false_match_rate"] == 0.0
+    assert c["false_match_rate"] > 0.0

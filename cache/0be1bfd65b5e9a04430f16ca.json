@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1277,
+  "output_tokens": 113,
+  "response_text": "{\"break_reason\": \"tolerance_ambiguous\", \"proposed_resolution\": \"Flag the credit for manual review to determine exact matching batch among candidates within tolerance band.\", \"confidence\": 0.45, \"evidence_refs\": [\"txn_3x8EE5GXTeLYHt\", \"setl_l0xAZf8pWP5T6I\", \"setl_oC8iwS9qx5r97O\"], \"human_review_required\": true}"
+}

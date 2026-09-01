@@ -302,7 +302,10 @@ def test_adjudication_failed_becomes_an_exception_decision(monkeypatch) -> None:
     credit = _credit()
     batch = _batch()
     unresolved = UnresolvedCredit(credit=credit, expected_batches=[batch], candidates=[])
-    _stub_adjudicate(monkeypatch, error=adjudicator.AdjudicationFailedError("still malformed"))
+    _stub_adjudicate(
+        monkeypatch,
+        error=adjudicator.AdjudicationFailedError("still malformed", cost_paise=3),
+    )
 
     decisions = l4_llm.run([unresolved], _ctx())
 
@@ -310,6 +313,10 @@ def test_adjudication_failed_becomes_an_exception_decision(monkeypatch) -> None:
     assert decisions[0].outcome == DecisionOutcome.EXCEPTION
     assert decisions[0].reason == "adjudication_failed"
     assert decisions[0].matched_payment_ids == []
+    # the real cost of both calls made (first attempt + retry), not 0 —
+    # discarding it would understate spend on exactly the credits that cost
+    # the most to adjudicate (see AdjudicationFailedError's docstring)
+    assert decisions[0].llm_cost_paise == 3
     # degrading to adjudication_failed only ever happens after one retry
     assert decisions[0].llm_retried is True
     # no classification was ever produced, so there's nothing to report here
