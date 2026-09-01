@@ -34,15 +34,18 @@ from unbatch.models import (
 )
 
 CONFIDENCE = 0.90
-DATE_WINDOW_DAYS = 3
 
 REASON_MATCH = "single_composition_match"
 REASON_POOL_TOO_LARGE = "pool_too_large"
 REASON_TIMEOUT = "compose_timeout"
 
 
-def _candidates_in_window(unresolved_credit: UnresolvedCredit) -> list[SettlementLine]:
-    window_start = unresolved_credit.credit.value_date - timedelta(days=DATE_WINDOW_DAYS)
+def _candidates_in_window(
+    unresolved_credit: UnresolvedCredit, ctx: RunContext
+) -> list[SettlementLine]:
+    window_start = unresolved_credit.credit.value_date - timedelta(
+        days=ctx.config.date_window_days
+    )
     window_end = unresolved_credit.credit.value_date
     return [
         line
@@ -88,12 +91,16 @@ def run(unresolved: list[UnresolvedCredit], ctx: RunContext) -> list[Decision]:
     decisions: list[Decision] = []
 
     for unresolved_credit in unresolved:
-        pool = _candidates_in_window(unresolved_credit)
+        pool = _candidates_in_window(unresolved_credit, ctx)
         credit = unresolved_credit.credit
 
         try:
             results = compose(
-                credit.credit_paise, pool, max_pool=ctx.max_pool, max_subset=ctx.max_subset
+                credit.credit_paise,
+                pool,
+                max_pool=ctx.config.max_pool,
+                max_subset=ctx.config.max_subset,
+                timeout_s=ctx.config.compose_timeout_s,
             )
         except PoolTooLargeError:
             decisions.append(

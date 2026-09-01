@@ -27,8 +27,8 @@ def test_bench_scale_writes_timing_and_counts(tmp_path: Path) -> None:
     assert payload["total_seconds"] > 0
     assert set(payload["stage_seconds"]) == {"l0", "l1", "l2", "l3"}
     assert set(payload["stage_resolved_counts"]) == {"l0", "l1", "l2", "l3"}
-    assert payload["max_pool"] == 48
-    assert payload["max_subset"] == 25
+    assert payload["config"]["max_pool"] == 48
+    assert payload["config"]["max_subset"] == 25
 
 
 def test_bench_scale_stage_seconds_sum_close_to_total(tmp_path: Path) -> None:
@@ -48,8 +48,8 @@ def test_bench_scale_does_not_raise_the_composition_caps(tmp_path: Path) -> None
     runner.invoke(app, ["bench", "--scale", "60", "--scale-out", str(out_path)])
 
     payload = json.loads(out_path.read_text(encoding="utf-8"))
-    assert payload["max_pool"] == 48
-    assert payload["max_subset"] == 25
+    assert payload["config"]["max_pool"] == 48
+    assert payload["config"]["max_subset"] == 25
 
 
 def test_bench_scale_does_not_touch_committed_data_dir(tmp_path: Path) -> None:

@@ -1,5 +1,15 @@
 {
   "seed": 42,
+  "config": {
+    "max_pool": 48,
+    "max_subset": 25,
+    "compose_timeout_s": 5.0,
+    "date_window_days": 3,
+    "tolerance_rate": 0.006,
+    "tolerance_floor_paise": 50,
+    "confidence_auto_accept": 0.85,
+    "confidence_human_review": 0.6
+  },
   "rules_only": {
     "run_id": "run_42_no_llm_8f7289f59f1d",
     "total_credits": 105,

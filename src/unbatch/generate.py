@@ -42,6 +42,7 @@ from unbatch.fees import (
 from unbatch.models import (
     BankStatementRecord,
     BreakType,
+    CascadeConfig,
     GroundTruth,
     GroundTruthCredit,
     GroundTruthOrphanSettlement,
@@ -52,8 +53,6 @@ from unbatch.models import (
     SettlementLineType,
 )
 from unbatch.money import format_paise_to_rupees, parse_rupees_to_paise
-from unbatch.stages.l3_tolerance import TOLERANCE_FLOOR_PAISE as _ADV_TOLERANCE_FLOOR_PAISE
-from unbatch.stages.l3_tolerance import TOLERANCE_RATE as _ADV_TOLERANCE_RATE
 
 DEFAULT_OUT_DIR = Path("data")
 
@@ -1301,15 +1300,21 @@ ADVERSARIAL_CLEAN_FILLER_COUNT = 82
 # never lingers in any pool, so it doesn't need the same isolation.
 ADVERSARIAL_WINDOW_DAYS = 90
 
+_ADV_TOLERANCE_CONFIG = CascadeConfig()
+
+
 def _adv_tolerance_for(credit_paise: int) -> int:
     """The tolerance-collision scenario needs to know exactly where L3's
     own accept/decline boundary sits, so it can place a decoy just inside
     it — the whole point of an adversarial fixture is to hit the real
-    threshold on purpose rather than approximate it. Reuses l3_tolerance's
-    own constants (imported at module level below — not the function; this
-    is data construction, not a cascade call) so the two can't drift
-    apart if the band is ever re-derived."""
-    return max(_ADV_TOLERANCE_FLOOR_PAISE, round(credit_paise * _ADV_TOLERANCE_RATE))
+    threshold on purpose rather than approximate it. Reuses CascadeConfig's
+    default tolerance values (this is data construction, not a cascade
+    call, so there is no RunContext here) so the two can't drift apart if
+    the band is ever re-derived."""
+    return max(
+        _ADV_TOLERANCE_CONFIG.tolerance_floor_paise,
+        round(credit_paise * _ADV_TOLERANCE_CONFIG.tolerance_rate),
+    )
 
 
 def _adv_line(

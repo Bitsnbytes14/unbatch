@@ -42,6 +42,7 @@ from unbatch import metrics as metrics_module
 from unbatch import report as report_module
 from unbatch.models import (
     BankStatementRecord,
+    CascadeConfig,
     Decision,
     DecisionOutcome,
     ExpectedBatch,
@@ -721,7 +722,13 @@ def _bench_seeds(seeds: str, out: Path) -> None:
             "stdev": statistics.stdev(values) if len(values) > 1 else 0.0,
         }
 
-    payload = {"seeds": seed_list, "arm": "no_llm", "per_seed": per_seed, "summary": summary}
+    payload = {
+        "seeds": seed_list,
+        "arm": "no_llm",
+        "config": CascadeConfig().model_dump(),
+        "per_seed": per_seed,
+        "summary": summary,
+    }
     out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="")
 
     typer.echo(f"seeds: {seed_list}")
@@ -778,6 +785,7 @@ def _bench_noise(noise_levels: str, out: Path) -> None:
     payload = {
         "seed": _BENCH_NOISE_SEED,
         "arm": "no_llm",
+        "config": CascadeConfig().model_dump(),
         "noise_levels": levels,
         "per_level": per_level,
     }
@@ -834,8 +842,7 @@ def _bench_scale(scale: int, out: Path) -> None:
         "stage_resolved_counts": counts,
         "exception_count": len(exceptions),
         "exception_reason_counts": exception_reason_counts,
-        "max_pool": ctx.max_pool,
-        "max_subset": ctx.max_subset,
+        "config": ctx.config.model_dump(),
     }
     out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="")
 
@@ -930,6 +937,7 @@ def _bench_adversarial(out: Path) -> None:
 
     payload = {
         "seed": seed,
+        "config": CascadeConfig().model_dump(),
         "rules_only": json.loads(no_llm_report.model_dump_json()),
         "rules_only_exception_reason_counts": exception_reason_counts,
         "with_llm_cached": (
@@ -1359,6 +1367,7 @@ def _regenerate_bench_noise_seeds(seeds: tuple[int, ...], noise_levels: list[flo
         "seeds": list(seeds),
         "noise_levels": noise_levels,
         "arm": "no_llm",
+        "config": CascadeConfig().model_dump(),
         "per_seed": per_seed,
     }
 
@@ -1465,6 +1474,7 @@ def _regenerate_bench_adjudication() -> dict:
         }
 
     return {
+        "config": CascadeConfig().model_dump(),
         "organic": organic,
         "adversarial": adversarial,
         "total_new_live_call_cost_paise": 0,
@@ -1523,6 +1533,7 @@ def _regenerate_bench_ablation_seeds() -> dict:
 
     return {
         "seeds": list(_ABLATION_SEEDS),
+        "config": CascadeConfig().model_dump(),
         "per_seed": per_seed,
         "pooled": pooled,
         "new_live_call_cost_paise": {"with_llm": 0, "llm_only": 0, "total": 0},
