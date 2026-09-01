@@ -1,3 +1,4 @@
 data/** text eol=lf
 cache/** text eol=lf
 baseline_rules_only.json text eol=lf
+.github/** text eol=lf

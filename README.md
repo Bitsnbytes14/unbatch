@@ -1,5 +1,7 @@
 # unbatch
 
+[![CI](https://github.com/Bitsnbytes14/unbatch/actions/workflows/ci.yml/badge.svg)](https://github.com/Bitsnbytes14/unbatch/actions/workflows/ci.yml)
+
 Settlement reconciliation agent — matches bank credit lines to expected settlement batches.
 
 Built for the Razorpay AI Buildathon, Track 04 (AI Finance Controller).

@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Test
+        run: uv run pytest -q
+
+      # `unbatch verify` deliberately does NOT run here: it regenerates nine
+      # artifacts (~50s) to catch drift against *committed benchmark files*,
+      # which is a different concern from this job. It doesn't touch the
+      # keyless with-LLM claim this step exists to prove, and pytest -q above
+      # (via tests/test_end_to_end.py) already exercises the same cascade
+      # in-process — running verify too would spend CI time re-checking
+      # numbers this job already checks, for no new signal.
+      #
+      # This step is kept separate and explicit anyway, using the real CLI a
+      # user would type, on a runner that has never had an API key set —
+      # the strongest available proof of README.md's keyless-reproduction
+      # claim (CLAUDE.md invariant 6).
+      - name: Keyless reproduction (seed 42, with-LLM arm, --cached)
+        run: |
+          uv run unbatch generate --seed 42
+          uv run unbatch run --seed 42 --cached
+          uv run unbatch metrics --seed 42 --arm with_llm > /tmp/metrics_with_llm.json
+          cat /tmp/metrics_with_llm.json
+          python3 - <<'PYEOF'
+          import json
+
+          with open("/tmp/metrics_with_llm.json") as f:
+              m = json.load(f)
+
+          def approx(actual: float, expected: float, tol: float = 1e-9) -> bool:
+              return abs(actual - expected) < tol
+
+          checks = [
+              m["total_credits"] == 105,
+              approx(m["count_match_rate"], 93 / 105),
+              m["false_match_rate"] == 0.0,
+              m["stage_funnel"] == {"l0": 79, "l1": 3, "l2": 9, "l3": 2, "l4": 12},
+              m["llm_call_count"] == 12,
+              m["llm_cost_paise"] == 12,
+              approx(m["break_reason_accuracy"], 11 / 12),
+              m["malformed_json_count"] == 0,
+              m["retry_count"] == 0,
+              m["adjudication_failed_count"] == 0,
+          ]
+
+          if not all(checks):
+              raise SystemExit(
+                  f"keyless reproduction: committed numbers did not reproduce "
+                  f"exactly (checks={checks}, got={m})"
+              )
+
+          print("keyless reproduction: all committed with-LLM numbers reproduced, no API key present")
+          PYEOF
