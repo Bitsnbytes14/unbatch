@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1332,
+  "output_tokens": 148,
+  "response_text": "{\"break_reason\":\"date_skew\",\"proposed_resolution\":\"Investigate posting date alignment for the batch HDFCR321230713758; confirm the window and settlement IDs correspond to 2024-01-08; if correct, record as date skew and update reconciliation notes.\", \"confidence\":0.62, \"evidence_refs\":[\"settlement_id:setl_rHWvxp5yKmvYsN\",\"settlement_id:setl_x0uLUVrqatM23Z\",\"settlement_id:setl_G9RGILZUawoFIV\",\"settlement_utr:HDFCR321230713758\"], \"human_review_required\":true}"
+}

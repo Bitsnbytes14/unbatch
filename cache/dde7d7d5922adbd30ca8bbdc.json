@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1384,
+  "output_tokens": 113,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify the credited amount against the settled batch with UTR ICICR931160790534; if mismatch persists, escalate to confirm whether another batch contributed to the credit.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_tDjdg3vSFkpBBG\", \"ICICR931160790534\"],\n  \"human_review_required\": true\n}"
+}

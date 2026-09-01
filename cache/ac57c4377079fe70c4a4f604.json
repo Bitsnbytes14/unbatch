@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1273,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as ambiguous; review all candidate batches that fall within tolerance and select the most plausible based on internal criteria, then annotate the decision path for audit.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"setl_J56WwF8hEsfUEx\", \"setl_y53z6Cni0DlkIu\", \"HDFCR341018375124\"],\n  \"human_review_required\": true\n}"
+}

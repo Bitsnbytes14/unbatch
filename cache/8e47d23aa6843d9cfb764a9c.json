@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1233,
+  "output_tokens": 126,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit for manual review to determine which batch net it belongs to within the tolerance band; verify sources and lock a single settlement batch after human verification.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_tHioRRdzHzmA4K\", \"setl_yIW2KN9Q6TzkFE\", \"ICICR756202235126\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1185,
+  "output_tokens": 110,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact settlement line composition for the batch; identify which candidate combination matches the bank credit and lock the canonical set or request clarification from the processor.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_C99enq522wjZRL\", \"AXISP352709577630\"],\n  \"human_review_required\": true\n}"
+}

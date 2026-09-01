@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1125,
+  "output_tokens": 103,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag the credit as ambiguous composition; request human reconciliation to confirm the exact line-item mapping across the candidate batch sets.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_e24HZKjht3X13n\", \"HDFCR626609238109\"],\n  \"human_review_required\": true\n}"
+}

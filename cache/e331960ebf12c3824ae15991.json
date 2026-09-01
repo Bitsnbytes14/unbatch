@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1346,
+  "output_tokens": 142,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate and confirm which settlement batch aligns with the credit by comparing the candidate batches within tolerance; select the batch that most closely matches the payment composition and date, or escalate for manual reconciliation if ambiguity persists.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_eVmn1uj3a1iipk\", \"setl_Mlnv24LJ3R2ljY\", \"setl_JGyHmtBm6AAfbg\"],\n  \"human_review_required\": true\n}"
+}
