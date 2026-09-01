@@ -10,10 +10,12 @@ from datetime import UTC, datetime
 import pytest
 
 from unbatch.compose import (
+    DEFAULT_TIMEOUT_S,
     MAX_POOL,
     MAX_SUBSET,
     ComposeTimeoutError,
     PoolTooLargeError,
+    _enumerate_subset_sums,
     compose,
 )
 from unbatch.models import SettlementLine, SettlementLineType
@@ -107,3 +109,134 @@ def test_timeout_raises_rather_than_hangs() -> None:
     candidates = [_line(i + 1, str(i)) for i in range(10)]
     with pytest.raises(ComposeTimeoutError):
         compose(sum(c.net_paise for c in candidates), candidates, timeout_s=-1.0)
+
+
+# --- Mutation testing follow-ups (see bench_mutation.json) ---
+#
+# These pin down constants and internal contracts that the tests above don't
+# touch directly, because cosmic-ray found real gaps: mutating them didn't
+# change the outcome of any existing test.
+
+
+def test_max_pool_is_48() -> None:
+    assert MAX_POOL == 48
+
+
+def test_max_subset_is_25() -> None:
+    assert MAX_SUBSET == 25
+
+
+def test_default_timeout_is_5_seconds() -> None:
+    assert DEFAULT_TIMEOUT_S == 5.0
+
+
+def test_max_pool_etc_must_be_passed_by_keyword() -> None:
+    """The `*,` marker enforces this — a positional 3rd argument is almost
+    certainly a caller confusing max_pool with something else; TypeError
+    should catch that immediately rather than silently accepting it."""
+    with pytest.raises(TypeError):
+        compose(300, [], 6)  # type: ignore[misc]
+
+
+def test_enumerate_subset_sums_never_exceeds_max_subset() -> None:
+    """compose()'s own oversized-subset filter happens to mask this helper's
+    internal pruning at the whole-function level (see the equivalent-mutant
+    note in bench_mutation.json), so the pruning contract itself needs a
+    direct test of the helper."""
+    items = [_line(1, str(i)) for i in range(5)]
+    results = _enumerate_subset_sums(items, max_subset=2, deadline=time.monotonic() + 10)
+
+    assert all(len(idxs) <= 2 for _, idxs in results)
+    assert any(len(idxs) == 2 for _, idxs in results)  # the boundary is actually reached
+
+
+def test_enumerate_subset_sums_raises_on_an_already_past_deadline() -> None:
+    items = [_line(1, "a")]
+    with pytest.raises(ComposeTimeoutError):
+        _enumerate_subset_sums(items, max_subset=MAX_SUBSET, deadline=time.monotonic() - 1)
+
+
+def test_enumerate_subset_sums_does_not_raise_exactly_at_the_deadline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The check is `>`, not `>=` — being exactly at the deadline (not yet
+    past it) must not raise. An already-past deadline doesn't discriminate
+    these (both are true), so this pins real-time equality via a mocked
+    clock instead."""
+    monkeypatch.setattr("unbatch.compose.time.monotonic", lambda: 100.0)
+    result = _enumerate_subset_sums([_line(1, "a")], max_subset=MAX_SUBSET, deadline=100.0)
+    assert result  # completed without raising
+
+
+def test_compose_checks_timeout_before_merging_even_with_no_candidates() -> None:
+    """Isolates the merge loop's own timeout check from the one inside
+    _enumerate_subset_sums: an empty candidate list means enumeration does
+    zero iterations on either half (the deadline check lives inside the
+    per-item loop, never reached), so only the merge loop's own check can
+    catch an already-expired deadline here."""
+    with pytest.raises(ComposeTimeoutError):
+        compose(0, [], timeout_s=-1.0)
+
+
+def test_compose_merge_loop_does_not_raise_exactly_at_the_deadline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Same `>` vs `>=` boundary as the enumeration check above, isolated to
+    the merge loop's own separate check via an already-past-vs-exact clock."""
+    monkeypatch.setattr("unbatch.compose.time.monotonic", lambda: 100.0)
+    assert compose(0, [], timeout_s=0.0) == []  # deadline == 100.0, exactly now
+
+
+def test_deadline_is_computed_by_adding_timeout_not_another_operator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Pins deadline = now + timeout_s against **/* mutants. Real wall-clock
+    values don't discriminate these (an already-large monotonic() reading
+    swamps any plausible timeout_s under every one of +, **, and * alike),
+    so this scripts the clock instead of relying on real timing."""
+    calls = {"n": 0}
+
+    def fake_monotonic() -> float:
+        calls["n"] += 1
+        return 100.0 if calls["n"] == 1 else 111.0
+
+    monkeypatch.setattr("unbatch.compose.time.monotonic", fake_monotonic)
+
+    with pytest.raises(ComposeTimeoutError):
+        compose(999, [_line(1, "a")], timeout_s=10.0)
+
+
+def test_target_zero_never_returns_the_empty_subset() -> None:
+    """compose()'s contract is subsets that compose the target, never the
+    trivial empty one — a credit is never literally zero, but the function
+    itself must still refuse to report "the empty set matches" for target 0."""
+    assert compose(0, [_line(1, "a"), _line(2, "b")]) == []
+
+
+def test_empty_subset_skip_does_not_abort_the_rest_of_the_merge_bucket() -> None:
+    """continue, not break: skipping the (structurally always-first) empty
+    combination in a sum bucket must not also skip every real composition
+    still in that bucket — e.g. two lines whose net cancels to zero."""
+    q = _line(50, "q")
+    payment = _line(100, "p")
+    refund = _line(-100, "r")
+
+    result = compose(0, [q, payment, refund])
+
+    assert len(result) == 1
+    assert {line.payment_id for line in result[0]} == {"pay_p", "pay_r"}
+
+
+def test_oversized_subset_skip_does_not_abort_the_rest_of_the_merge_bucket() -> None:
+    """continue, not break: an over-max_subset combination sharing a sum
+    bucket with a valid, in-budget one must not shadow the valid one."""
+    l0 = _line(1, "l0")
+    l1 = _line(12_345, "l1")
+    r0 = _line(30, "r0")
+    r1 = _line(20, "r1")
+    r2 = _line(50, "r2")
+
+    result = compose(51, [l0, l1, r0, r1, r2], max_subset=2)
+
+    assert len(result) == 1
+    assert {line.payment_id for line in result[0]} == {"pay_l0", "pay_r2"}

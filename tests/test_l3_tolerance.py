@@ -185,6 +185,85 @@ def test_matching_line_outside_the_date_window_does_not_block_the_match() -> Non
     assert decision.outcome == DecisionOutcome.MATCHED
 
 
+def test_tolerance_floor_is_50_paise() -> None:
+    assert TOLERANCE_FLOOR_PAISE == 50
+
+
+def test_delta_exactly_at_the_tolerance_boundary_still_resolves() -> None:
+    """The band is `<= tolerance`, not `< tolerance` — exactly at the floor
+    must still resolve."""
+    batch = _batch(net=950)
+    u = _unresolved(_credit(1_000), [batch])  # |delta| == 50 == the floor
+
+    [decision] = l3_tolerance.run([u], CTX)
+    assert decision.delta_paise == 50
+
+
+def test_guard_does_not_block_when_the_delta_exceeds_every_line_in_the_pool() -> None:
+    """A delta strictly larger than any single line's magnitude is not
+    explained by a missing line — only an EXACT magnitude match should ever
+    block the resolution (the 2026-08-31 false-accept guard)."""
+    batch = _batch(net=1_045)  # delta = 1000 - 1045 = -45
+    smaller_line = _line(net=30)  # present, but strictly smaller than |delta|
+    u = _unresolved(_credit(1_000), [batch], candidate_lines=[smaller_line])
+
+    [decision] = l3_tolerance.run([u], CTX)
+    assert decision.delta_paise == -45
+
+
+def test_guard_uses_value_equality_not_identity_for_large_amounts() -> None:
+    """abs(delta) and abs(line.net_paise) are independently-computed ints;
+    outside CPython's small-int cache, equal-valued ints aren't reliably the
+    same object, so the guard must compare by value, never identity."""
+    batch = _batch(net=9_950_000)  # delta = 10_000_000 - 9_950_000 = 50_000
+    missing_line = _line(net=50_000)
+    u = _unresolved(_credit(10_000_000), [batch], candidate_lines=[missing_line])
+
+    assert l3_tolerance.run([u], CTX) == []
+
+
+def test_candidate_line_exactly_at_window_start_is_included() -> None:
+    """The false-accept guard's own date window is `[D-3, D]` — a line
+    landing exactly on the start boundary must still count, ruling out a
+    mutant that requires it strictly after."""
+    batch = _batch(net=1_030)
+    boundary_line = _line(net=30, day=date(2024, 1, 2))  # exactly D-3
+    u = _unresolved(_credit(1_000, date(2024, 1, 5)), [batch], candidate_lines=[boundary_line])
+
+    assert l3_tolerance.run([u], CTX) == []
+
+
+def test_candidate_line_strictly_inside_the_window_is_included() -> None:
+    batch = _batch(net=1_030)
+    inside_line = _line(net=30, day=date(2024, 1, 3))
+    u = _unresolved(_credit(1_000, date(2024, 1, 5)), [batch], candidate_lines=[inside_line])
+
+    assert l3_tolerance.run([u], CTX) == []
+
+
+def test_candidate_line_after_window_end_is_excluded() -> None:
+    """A line dated after D is out of the guard's pool even if its net
+    would otherwise exactly explain the delta."""
+    batch = _batch(net=1_030)
+    after_window_line = _line(net=30, day=date(2024, 1, 6))  # one day after D
+    u = _unresolved(_credit(1_000, date(2024, 1, 5)), [batch], candidate_lines=[after_window_line])
+
+    [decision] = l3_tolerance.run([u], CTX)
+    assert decision.outcome == DecisionOutcome.MATCHED
+
+
+def test_the_false_accept_guard_does_not_stop_later_credits_from_being_tried() -> None:
+    """continue, not break: one credit's guard-triggered fallthrough must
+    not swallow every credit processed after it in the same batch."""
+    guarded = _unresolved(_credit(1_000), [_batch(net=1_030)], candidate_lines=[_line(net=30)])
+    resolvable = _unresolved(_credit(100), [_batch(net=100, payment_ids=["pay_x"])])
+
+    decisions = l3_tolerance.run([guarded, resolvable], CTX)
+
+    assert len(decisions) == 1
+    assert decisions[0].matched_payment_ids == ["pay_x"]
+
+
 def test_delta_matches_a_negative_net_line_via_absolute_value() -> None:
     """net_paise is negative for a REFUND/CHARGEBACK line (fees.py) — the
     guard compares magnitudes so it still catches this shape."""

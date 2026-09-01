@@ -111,6 +111,7 @@ def test_pool_too_large_becomes_an_immediate_exception() -> None:
     assert decision.outcome == DecisionOutcome.EXCEPTION
     assert decision.reason == "pool_too_large"
     assert decision.stage == Stage.L2
+    assert decision.confidence == 0.0
 
 
 def test_compose_timeout_becomes_an_immediate_exception(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -126,6 +127,50 @@ def test_compose_timeout_becomes_an_immediate_exception(monkeypatch: pytest.Monk
 
     assert decision.outcome == DecisionOutcome.EXCEPTION
     assert decision.reason == "compose_timeout"
+    assert decision.confidence == 0.0
+
+
+def test_a_pool_too_large_exception_does_not_stop_later_credits_from_being_tried() -> None:
+    """continue, not break: one credit's pool refusal must not swallow
+    every credit processed after it in the same batch."""
+    too_large_lines = [_line(1, str(i), date(2024, 1, 5)) for i in range(CTX.max_pool + 1)]
+    too_large = _unresolved(
+        _credit(sum(line_.net_paise for line_ in too_large_lines), date(2024, 1, 5)),
+        too_large_lines,
+    )
+    resolvable = _unresolved(_credit(100, date(2024, 1, 5)), [_line(100, "z", date(2024, 1, 5))])
+
+    decisions = l2_compose.run([too_large, resolvable], CTX)
+
+    assert len(decisions) == 2
+    assert decisions[1].outcome == DecisionOutcome.MATCHED
+
+
+def test_a_compose_timeout_does_not_stop_later_credits_from_being_tried(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """continue, not break: same property as the pool_too_large case above,
+    for the timeout exception path."""
+    real_compose = l2_compose.compose
+    calls = {"n": 0}
+
+    def _raise_once_then_delegate(*args: object, **kwargs: object):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise ComposeTimeoutError("simulated")
+        return real_compose(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(l2_compose, "compose", _raise_once_then_delegate)
+
+    timeout_credit = _unresolved(
+        _credit(100, date(2024, 1, 5)), [_line(100, "a", date(2024, 1, 5))]
+    )
+    resolvable = _unresolved(_credit(100, date(2024, 1, 5)), [_line(100, "z", date(2024, 1, 5))])
+
+    decisions = l2_compose.run([timeout_credit, resolvable], CTX)
+
+    assert len(decisions) == 2
+    assert decisions[1].outcome == DecisionOutcome.MATCHED
 
 
 def test_only_unmatched_credits_are_absent_from_the_result() -> None:

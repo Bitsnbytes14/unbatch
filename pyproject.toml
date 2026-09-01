@@ -23,6 +23,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "cosmic-ray>=8.7.0",
     "pytest>=9.1.1",
     "ruff>=0.16.5",
 ]

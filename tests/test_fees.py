@@ -45,6 +45,15 @@ def test_tax_rounding_boundary_rounds_half_up() -> None:
     assert compute_tax_paise(25) == 5
 
 
+def test_batch_tax_is_gst_on_the_batch_fee() -> None:
+    """compute_batch_fee_and_tax_paise's own tax figure, not just its fee —
+    test_per_line_vs_per_batch_rounding_diverges only ever checks batch_fee
+    and discards the tax half of the tuple."""
+    fee, tax = compute_batch_fee_and_tax_paise([5_000], PaymentMethod.CARD)
+    assert fee == 100  # 5000 * 2% = 100 exactly
+    assert tax == 18  # 100 * 18% = 18 exactly
+
+
 def test_per_line_vs_per_batch_rounding_diverges() -> None:
     """This is the exact mechanism rounding_delta exploits: three lines each
     sitting on a half-paise boundary round up individually, but the same

@@ -17,6 +17,14 @@ def test_round_trip(rupees: str) -> None:
     assert format_paise_to_rupees(parse_rupees_to_paise(rupees)) == rupees
 
 
+def test_fewer_than_two_decimal_places_is_still_valid() -> None:
+    """Every parametrized round-trip case has exactly 2 decimal places; the
+    boundary check is `< -2`, not `!= -2` or `is not -2`, so 0 and 1 decimal
+    place must be accepted too, not just >2 rejected."""
+    assert parse_rupees_to_paise("5") == 500
+    assert parse_rupees_to_paise("5.5") == 550
+
+
 def test_negative_amounts() -> None:
     assert parse_rupees_to_paise("-12.50") == -1250
     assert format_paise_to_rupees(-1250) == "-12.50"
