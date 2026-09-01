@@ -25,8 +25,16 @@ DEFAULT_DATA_DIR = Path("data")
 
 _INPUT_FILENAMES = ("order_ledger.csv", "settlement_report.csv", "bank_statement.csv")
 
-_CREATE_TABLE_SQL = """
-CREATE TABLE IF NOT EXISTS decisions (
+# Bumped whenever the table's own constraints change in a way SQLite can't
+# apply via ALTER TABLE (e.g. adding a CHECK) — see _migrate_schema, which
+# rebuilds the table under PRAGMA user_version < _SCHEMA_VERSION rather than
+# assuming every existing out/audit.db already has the current constraints.
+_SCHEMA_VERSION = 1
+
+
+def _create_table_sql(table_name: str) -> str:
+    return f"""
+CREATE TABLE IF NOT EXISTS {table_name} (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT NOT NULL,
     seed INTEGER NOT NULL,
@@ -34,7 +42,7 @@ CREATE TABLE IF NOT EXISTS decisions (
     credit_id TEXT NOT NULL,
     matched_payment_ids TEXT NOT NULL,
     outcome TEXT NOT NULL,
-    confidence REAL NOT NULL,
+    confidence REAL NOT NULL CHECK (confidence BETWEEN 0 AND 1),
     delta_paise INTEGER NOT NULL,
     reason TEXT NOT NULL,
     rationale TEXT,
@@ -47,7 +55,19 @@ CREATE TABLE IF NOT EXISTS decisions (
 )
 """
 
+
+_CREATE_TABLE_SQL = _create_table_sql("decisions")
+
 _CREATE_RUN_ID_INDEX_SQL = "CREATE INDEX IF NOT EXISTS idx_decisions_run_id ON decisions(run_id)"
+
+# A stage returns at most one Decision per credit it processes (documented
+# convention, CLAUDE.md § Conventions), so within one run a given
+# (run_id, stage, credit_id) triple must be unique — this index makes that a
+# schema guarantee instead of an assumption about every stage's own loop.
+_CREATE_UNIQUE_CREDIT_INDEX_SQL = (
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_decisions_run_stage_credit "
+    "ON decisions(run_id, stage, credit_id)"
+)
 
 # Columns added after the table's first release — CREATE TABLE IF NOT EXISTS
 # only creates a fresh table, so a pre-existing local out/audit.db (gitignored,
@@ -74,17 +94,62 @@ def _ensure_columns(conn: sqlite3.Connection) -> None:
             conn.execute(f"ALTER TABLE decisions ADD COLUMN {name} {sql_type}")
 
 
+def _table_exists(conn: sqlite3.Connection, name: str) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)
+    ).fetchone()
+    return row is not None
+
+
+def _migrate_schema(conn: sqlite3.Connection) -> None:
+    """Bring a pre-existing decisions table up to _SCHEMA_VERSION.
+
+    SQLite has no `ALTER TABLE ... ADD CONSTRAINT`, so adding the confidence
+    CHECK to a table that predates it needs the standard SQLite rebuild
+    dance: create a new table with the current schema, copy every row across
+    by name (so a table that also predates evidence_refs/human_review_required
+    still works, since _ensure_columns has already backfilled those before
+    this runs), drop the old table, rename the new one into place. Wrapped in
+    one transaction so a failure partway through leaves the original table
+    untouched rather than half-migrated.
+    """
+    version = conn.execute("PRAGMA user_version").fetchone()[0]
+    if version >= _SCHEMA_VERSION:
+        return
+    columns = ", ".join(row[1] for row in conn.execute("PRAGMA table_info(decisions)"))
+    conn.execute("BEGIN")
+    try:
+        conn.execute(_create_table_sql("decisions_new"))
+        conn.execute(f"INSERT INTO decisions_new ({columns}) SELECT {columns} FROM decisions")
+        conn.execute("DROP TABLE decisions")
+        conn.execute("ALTER TABLE decisions_new RENAME TO decisions")
+        conn.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
 def connect(db_path: Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
     """Open (creating if needed) the audit database and ensure the decisions
-    table exists. Idempotent: safe to call on every run, including against
-    an existing database — CREATE TABLE/INDEX IF NOT EXISTS never wipes
-    prior rows, and `_ensure_columns` adds any column introduced after that
-    database was first created rather than erroring on the next insert."""
+    table exists with the current constraints. Idempotent: safe to call on
+    every run, including against an existing database — CREATE TABLE/INDEX
+    IF NOT EXISTS never wipes prior rows, `_ensure_columns` adds any column
+    introduced after that database was first created, and `_migrate_schema`
+    rebuilds the table in place (preserving every row) if it predates a
+    constraint that can't be added via ALTER TABLE, such as the confidence
+    CHECK."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(db_path)
+    table_existed = _table_exists(conn, "decisions")
     conn.execute(_CREATE_TABLE_SQL)
-    conn.execute(_CREATE_RUN_ID_INDEX_SQL)
     _ensure_columns(conn)
+    if table_existed:
+        _migrate_schema(conn)
+    else:
+        conn.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
+    conn.execute(_CREATE_RUN_ID_INDEX_SQL)
+    conn.execute(_CREATE_UNIQUE_CREDIT_INDEX_SQL)
     conn.commit()
     return conn
 

@@ -245,6 +245,145 @@ def test_record_many_rolls_back_the_whole_batch_on_failure(
     assert audit.fetch_decisions(conn, "run_42_abc123") == []
 
 
+def test_confidence_above_one_is_rejected_at_the_schema_level(tmp_path: Path) -> None:
+    """Defense in depth: nothing upstream should ever produce this, but the
+    schema itself must refuse it rather than trust every caller forever."""
+    conn = audit.connect(tmp_path / "audit.db")
+    params = list(audit._decision_to_params(_decision(confidence=0.5)))
+    params[6] = 1.5  # confidence column, bypassing the Decision model entirely
+
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(audit._INSERT_SQL, params)
+
+
+def test_confidence_below_zero_is_rejected_at_the_schema_level(tmp_path: Path) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    params = list(audit._decision_to_params(_decision(confidence=0.5)))
+    params[6] = -0.01
+
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(audit._INSERT_SQL, params)
+
+
+def test_confidence_exactly_zero_and_one_are_both_accepted(tmp_path: Path) -> None:
+    """BETWEEN is inclusive — L0 writes exactly 1.00 and the --no-llm
+    terminal exception writes exactly 0.0; neither may be rejected."""
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(conn, _decision(credit_id="txn_low", confidence=0.0))
+    audit.record(conn, _decision(credit_id="txn_high", confidence=1.0))
+
+    fetched = {d.credit_id: d.confidence for d in audit.fetch_decisions(conn, "run_42_abc123")}
+    assert fetched == {"txn_low": 0.0, "txn_high": 1.0}
+
+
+def test_a_required_field_set_to_null_is_rejected_at_the_schema_level(tmp_path: Path) -> None:
+    """run_id is NOT NULL on the table, independent of Decision's own typing —
+    this checks the column constraint itself, not the pydantic model."""
+    conn = audit.connect(tmp_path / "audit.db")
+    params = list(audit._decision_to_params(_decision()))
+    params[0] = None  # run_id
+
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(audit._INSERT_SQL, params)
+
+
+def test_two_decisions_for_the_same_credit_in_the_same_stage_and_run_is_rejected(
+    tmp_path: Path,
+) -> None:
+    """A stage returns at most one Decision per credit it processes
+    (CLAUDE.md § Conventions) — the unique index turns that into a schema
+    guarantee rather than trusting every stage's own loop forever."""
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(conn, _decision(credit_id="txn_1", stage=Stage.L0))
+
+    with pytest.raises(sqlite3.IntegrityError):
+        audit.record(
+            conn,
+            _decision(credit_id="txn_1", stage=Stage.L0, outcome=DecisionOutcome.EXCEPTION),
+        )
+
+
+def test_same_credit_may_appear_once_per_stage_across_the_cascade(tmp_path: Path) -> None:
+    """The unique index is scoped to (run_id, stage, credit_id) — the same
+    credit legitimately gets no more than one Decision per stage, but a
+    fresh run or a different stage is a different key entirely."""
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(conn, _decision(credit_id="txn_1", stage=Stage.L0, run_id="run_a"))
+    # same credit, different stage, same run: allowed
+    audit.record(conn, _decision(credit_id="txn_1", stage=Stage.L1, run_id="run_a"))
+    # same credit, same stage, different run: allowed
+    audit.record(conn, _decision(credit_id="txn_1", stage=Stage.L0, run_id="run_b"))
+
+    assert len(audit.fetch_decisions(conn, "run_a")) == 2
+    assert len(audit.fetch_decisions(conn, "run_b")) == 1
+
+
+def test_connect_adds_the_confidence_check_to_a_pre_existing_database_without_losing_rows(
+    tmp_path: Path,
+) -> None:
+    """A database created before the CHECK constraint existed must migrate in
+    place on the next connect() — SQLite can't ALTER TABLE ADD CONSTRAINT, so
+    this exercises the rebuild-and-copy path end to end, including that a
+    row already in the table survives the rebuild."""
+    db_path = tmp_path / "audit.db"
+    old_conn = sqlite3.connect(db_path)
+    old_conn.execute(
+        """
+        CREATE TABLE decisions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            run_id TEXT NOT NULL,
+            seed INTEGER NOT NULL,
+            stage TEXT NOT NULL,
+            credit_id TEXT NOT NULL,
+            matched_payment_ids TEXT NOT NULL,
+            outcome TEXT NOT NULL,
+            confidence REAL NOT NULL,
+            delta_paise INTEGER NOT NULL,
+            reason TEXT NOT NULL,
+            rationale TEXT,
+            llm_model TEXT,
+            llm_cost_paise INTEGER,
+            llm_retried INTEGER NOT NULL DEFAULT 0,
+            evidence_refs TEXT,
+            human_review_required INTEGER,
+            created_at TEXT NOT NULL
+        )
+        """
+    )
+    old_conn.execute(
+        audit._INSERT_SQL,
+        audit._decision_to_params(_decision(credit_id="txn_preexisting")),
+    )
+    old_conn.commit()
+    old_conn.close()
+
+    conn = audit.connect(db_path)
+
+    # the pre-existing row must have survived the rebuild untouched
+    [fetched] = audit.fetch_decisions(conn, "run_42_abc123")
+    assert fetched.credit_id == "txn_preexisting"
+
+    # and the new constraints must now be live
+    params = list(audit._decision_to_params(_decision(credit_id="txn_bad")))
+    params[6] = 2.0
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(audit._INSERT_SQL, params)
+
+
+def test_migrate_schema_is_a_no_op_once_already_at_current_version(tmp_path: Path) -> None:
+    """Idempotence: connecting twice must not rebuild the table a second
+    time (and must not error doing nothing)."""
+    db_path = tmp_path / "audit.db"
+    conn = audit.connect(db_path)
+    audit.record(conn, _decision(credit_id="txn_1"))
+    conn.close()
+
+    reconnected = audit.connect(db_path)
+    assert len(audit.fetch_decisions(reconnected, "run_42_abc123")) == 1
+    version = reconnected.execute("PRAGMA user_version").fetchone()[0]
+    assert version == audit._SCHEMA_VERSION
+
+
 def test_rerunning_the_same_run_id_does_not_duplicate_rows(tmp_path: Path) -> None:
     """Regression: re-running the same seed against the same data derives
     the same run_id (audit.derive_run_id), so without clearing first, a
