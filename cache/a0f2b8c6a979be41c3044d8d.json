@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1325,
+  "output_tokens": 149,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as within tolerance with multiple candidate nets; investigate batch logistics and align posting across related batches; select the most probable batch and document rationale.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_2trAbSfLdAp6sw\", \"SBIN0760344614391\", \"setl_sdzzRzK8CJCWYc\", \"setl_ICFYlsz88hJZ3E\", \"setl_MGzdOHcEvWRaQD\"],\n  \"human_review_required\": true\n}"
+}

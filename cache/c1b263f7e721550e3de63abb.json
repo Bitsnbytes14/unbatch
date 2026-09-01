@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1102,
+  "output_tokens": 172,
+  "response_text": "{\n  \"break_reason\": \"settlement_split\",\n  \"proposed_resolution\": \"Confirm that the payout was split across multiple settlement lines within the same batch window and reconcile by aggregating both lines to the credited amount, updating the batch association accordingly.\",\n  \"confidence\": 0.65,\n  \"evidence_refs\": [\"settlement_id:setl_hDEdoubkciHJNW\", \"settlement_id:setl_ta54xtwqmfbZSM\", \"txn_id:txn_58HgG4mproYHfF\", \"payment_id:pay_NAlQyA8jvLJDJ7\", \"payment_id:pay_1fKoISGK0NYacJ\"],\n  \"human_review_required\": true\n}"
+}

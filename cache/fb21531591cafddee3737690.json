@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1397,
+  "output_tokens": 161,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Validate that the credit corresponds to the selected batch using the settlement UTR; if not, mark as unrelated_credit and route for manual investigation or map to the correct batch.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_RUFMPnVKEyyzaG\", \"setl_Etc6rGYxetvvZb\", \"setl_AR7HjzWtp9NJux\", \"setl_zyT8x82E33JhhL\", \"setl_ZrXtOt3v8mvk9P\"],\n  \"human_review_required\": true\n}"
+}

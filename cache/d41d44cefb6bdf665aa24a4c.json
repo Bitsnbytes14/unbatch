@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1301,
+  "output_tokens": 99,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify the batch mappings and remove this credit from settlement reconciliation, marking it as unrelated_credit for downstream processing.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_j24ClBPWe3jzn9\", \"SBIN0087006615475\"],\n  \"human_review_required\": true\n}"
+}

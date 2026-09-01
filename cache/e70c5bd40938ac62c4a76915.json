@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1322,
+  "output_tokens": 94,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Verify that the credited amount maps to a settlement batch; if not, flag as unrelated_credit and investigate potential misattribution or duplicate credits.\",\"confidence\":0.56,\"evidence_refs\":[\"txn_rjv7JPg3JzkbBu\",\"ICICR054622243307\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1204,
+  "output_tokens": 129,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Verify the bank credit against the shown batch; since delta is zero with the primary batch but alternative candidate batches exist, confirm which batch matches the settlement flow and reclassify accordingly; if no match, flag as unrelated and halt auto-reconciliation.\", \"confidence\":0.42, \"evidence_refs\":[\"txn_kMXTTzS4MjZcas\",\"setl_0qKpDbruxkLWNt\",\"ICICR998118401220\"], \"human_review_required\":true}"
+}

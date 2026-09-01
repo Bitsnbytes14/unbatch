@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1125,
+  "output_tokens": 114,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Validate exact settlement line composition by matching the credited lines to the batch and lock the definitive payment line set for this credit or flag for manual review if multiple equally valid compositions exist.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"txn_Wcgse2PYOnrLXM\", \"SBIN0780602786154\"],\n  \"human_review_required\": true\n}"
+}

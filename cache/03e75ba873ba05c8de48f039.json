@@ -1,0 +1,5 @@
+{
+  "input_tokens": 989,
+  "output_tokens": 125,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"No reconciliation action needed as the delta is zero; consult historical mapping to ensure the batch IDs are linked to this credit in the system.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_LAJW4Ji8XDF7dN\", \"setl_vcddEd65pak25r\", \"setl_hM6gAxk7IIrGPD\"],\n  \"human_review_required\": false\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1058,
+  "output_tokens": 114,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Flag as ambiguous due to multiple valid line-compositions yielding the same net; request human reconciliation to enumerate exact line items and settle on a single matching batch composition.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_XzM0PCKmBZEbYj\", \"SBIN0526537098071\"],\n  \"human_review_required\": true\n}"
+}

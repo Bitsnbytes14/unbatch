@@ -1,0 +1,5 @@
+{
+  "input_tokens": 995,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the alternative composition and confirm which payment line(s) actually map to the batch; retain the batch as authoritative and re-derive the correct mapping or escalate for manual validation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"pay_oreogrNwwmq6OL\", \"AXISP022768040250\", \"txn_0LYTH8xIZM1JRc\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1063,
+  "output_tokens": 143,
+  "response_text": "{\"break_reason\":\"ambiguous_composition\",\"proposed_resolution\":\"Investigate all candidate line compositions that sum to the credit and select the most plausible with human input; if multiple remain equally plausible, escalate for review.\",\"confidence\":0.48,\"evidence_refs\":[\"setl_7YwC1Zqq8iR5Kx\",\"setl_eI7ji8xePo4xEM\",\"pay_46eRmut6HQveTi\",\"pay_9ngZ04T2fQ0uWS\",\"txn_KfuTd8U4PD4GQh\"],\"human_review_required\":true}"
+}

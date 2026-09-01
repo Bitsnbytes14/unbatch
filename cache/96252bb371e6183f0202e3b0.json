@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1384,
+  "output_tokens": 143,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch net aligns with the credit within tolerance; verify post-date and line-item group to select the correct batch.\",\n  \"confidence\": 0.48,\n  \"evidence_refs\": [\"setl_pqI8tc9V0Jkh32\", \"setl_7fFF6Qd7xJYQNe\", \"setl_lD766pcUkGkDiz\", \"setl_vb3juFAKbciNNf\"],\n  \"human_review_required\": true\n}"
+}

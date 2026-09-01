@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1195,
+  "output_tokens": 142,
+  "response_text": "{\"break_reason\":\"ambiguous_composition\",\"proposed_resolution\":\"Choose the most likely exact-sum composition among the candidate lineups or flag for manual confirmation; since multiple 2-line compositions fit the same net, request detailed line-level matching from the processing system and lock a single composition to finalize reconciliation.\",\"confidence\":0.46,\"evidence_refs\":[\"setl_pay_kBRIg6QjcwIAcw\",\"setl_pay_58cwQPvI28U5ok\",\"setl_pay_Xkzl5WzPTpjRxc\",\"ICICR262498042076\"],\"human_review_required\":true}"
+}

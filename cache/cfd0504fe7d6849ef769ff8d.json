@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1417,
+  "output_tokens": 193,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock to the provided matching batch net (net_paise 5414379) and flag for human review to confirm the correct batch selection among near-equal candidates.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"settlement_utr: KKBK0328500076177\", \"window: 2024-01-04 to 2024-01-04\", \"net_paise: 5414379\", \"payment_ids: ['pay_NRa7tcNJDsVDIg', 'pay_U2Epvp5kvuIzcO', 'pay_G9a5NsN9mI8bDs', 'pay_H9mVCvqlIIdPQc']\"],\n  \"human_review_required\": true\n}"
+}

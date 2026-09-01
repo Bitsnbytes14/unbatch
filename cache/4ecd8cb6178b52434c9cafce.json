@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1391,
+  "output_tokens": 128,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Mark as unrelated_credit and route for manual reconciliation against the matching batch set; if no batch matches, escalate.\",\"confidence\":0.58,\"evidence_refs\":[\"txn_a5jAonGpSzW52W\",\"settlement_utr: AXISP177533457599\",\"setl_B6Pz5PtSmpAYgx\",\"setl_WqVv5rEJLOnhuW\",\"setl_djAOdbvdSpNan4\"],\"human_review_required\":true}"
+}

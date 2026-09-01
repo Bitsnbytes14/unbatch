@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1363,
+  "output_tokens": 156,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity and request human review to select the correct batch among candidates within tolerance band.\",\n  \"confidence\": 0.45,\n  \"evidence_refs\": [\"setl_e6dvxq7JjTTWVB\",\"setl_9KFGu78CussM0G\",\"setl_ROWBedw87QJbal\",\"setl_4Wr6So6kcSqQ3s\",\"SBIN0441195788688\",\"txn_PBIMarpIOxmYyS\",\"2024-01-02\"],\n  \"human_review_required\": true\n}"
+}

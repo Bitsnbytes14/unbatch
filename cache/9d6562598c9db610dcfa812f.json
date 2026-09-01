@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1388,
+  "output_tokens": 109,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Verify if the bank credit corresponds to any settlement batch; none of the candidate batches exactly match SBIN0096306562364's UTR reference; if no match, mark as unrelated and route for reconciliation or contact bank for clarification.\",\"confidence\":0.58,\"evidence_refs\":[\"txn_XjyOzkeohv81BY\",\"SBIN0096306562364\"],\"human_review_required\":true}"
+}

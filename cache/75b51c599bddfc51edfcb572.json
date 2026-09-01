@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1388,
+  "output_tokens": 126,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag as tolerance ambiguity; no single batch net clearly matches within tolerance, escalate for reconciliation review to identify correct batch or adjust tolerance rules.\",\"confidence\":0.58,\"evidence_refs\":[\"setl_zHCNxJePtKFpBl\",\"setl_mKeYkqOqrdYPMz\",\"setl_5yphzTKXjD6Tym\",\"setl_238POO2kYrvRSR\"],\"human_review_required\":true}"
+}

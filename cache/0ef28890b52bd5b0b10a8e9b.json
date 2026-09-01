@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1243,
+  "output_tokens": 165,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which settlement batch is the true match by comparing all within-tolerance nets and choose the one with the smallest delta; escalate if ambiguity persists.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_s3Gg1K5QfMW3uG\",\"setl_uu8on04hpIIioA\",\"setl_BB6s1MKZ5p8JJ3\",\"ICICR846895035023\",\"pay_QVwvrC5NcVzvL1\",\"pay_Yhfg0EctHhREKd\"],\n  \"human_review_required\": true\n}"
+}

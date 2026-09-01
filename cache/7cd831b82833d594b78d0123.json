@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1336,
+  "output_tokens": 87,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches with nets within tolerance and identify the uniquely correct batch or request human confirmation.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP853002738582\"],\n  \"human_review_required\": true\n}"
+}

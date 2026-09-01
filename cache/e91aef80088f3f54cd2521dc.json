@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1053,
+  "output_tokens": 135,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact subset of payment lines that reconciles the batch net; lock the correct composition for future reference.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_6tWujd9lHES8Pv\", \"setl_QedpqVGAGHEUdE\", \"pay_bS909MQ1psr8Hz\", \"pay_CWO2NbMHgOMIf6\"],\n  \"human_review_required\": true\n}"
+}

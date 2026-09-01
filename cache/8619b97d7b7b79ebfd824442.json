@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1230,
+  "output_tokens": 104,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag the credit as unrelated to the listed settlements and investigate the source of the NEFT credit; do not post to batch  AXISP395245336340 and search for matching batch or correction.\", \"confidence\":0.58, \"evidence_refs\":[\"txn_NtEfthDuxb9naK\",\"AXISP395245336340\"], \"human_review_required\":true}"
+}

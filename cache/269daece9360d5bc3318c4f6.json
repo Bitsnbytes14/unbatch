@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1296,
+  "output_tokens": 113,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag as unrelated credit and hold for manual reconciliation against incoming settlement batches.\",\n  \"confidence\": 0.65,\n  \"evidence_refs\": [\"txn_2zVjS4UaHQYI4Z\", \"setl_Xwp9Mn4CkkHE90\", \"setl_QA2exROSWvyFFj\"],\n  \"human_review_required\": true\n}"
+}

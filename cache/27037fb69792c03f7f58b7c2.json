@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1210,
+  "output_tokens": 118,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate all candidate batches within tolerance and determine the most plausible posting date alignment or payment linkage; select the batch with the closest date and provenance or request a manual match if ambiguity persists.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"setl_aOP7fS185DfBBC\", \"KKBK0369272136435\"],\n  \"human_review_required\": true\n}"
+}

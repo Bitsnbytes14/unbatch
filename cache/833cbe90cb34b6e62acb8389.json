@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1058,
+  "output_tokens": 141,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the two candidate line compositions and confirm which settlement batch lines actually correspond to the credit; align posting by validating the actual UTRs and line items.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_V6BBM0R9ifh6se\", \"setl_zAUxxaiXzSbOGz\", \"setl_shRFXh7k9pbxFj\", \"SBIN0298540437955\"],\n  \"human_review_required\": true\n}"
+}

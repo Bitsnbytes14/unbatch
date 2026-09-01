@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1266,
+  "output_tokens": 95,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate which batch net aligns most closely within tolerance bands and, if needed, consult batch-level tolerance rules to select the correct settlement batch.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP220278818990\"],\n  \"human_review_required\": true\n}"
+}

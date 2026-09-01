@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1305,
+  "output_tokens": 122,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Preserve the currently selected batch and flag the case for human review due to multiple batches within tolerance.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"setl_g8N5kDpJPK8JX2\",\"setl_YbhCeH5FYc4TUe\",\"setl_S6zhtSuTpmZVhC\"],\n  \"human_review_required\": true\n}"
+}

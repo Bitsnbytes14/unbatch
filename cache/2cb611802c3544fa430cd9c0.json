@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1384,
+  "output_tokens": 131,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag the credit as tolerance-ambiguous; require human review to confirm which settlement batch within tolerance aligns with the credit, possibly by rechecking timestamps and batch nets.\",\"confidence\":0.52,\"evidence_refs\":[\"txn_aOcYFfSqRfiIc1\",\"setl_CCrgCZhrA2PH0e\",\"setl_IQ1MZs0mgVumPu\",\"setl_SdS2bn3CFZEzMF\"],\"human_review_required\":true}"
+}

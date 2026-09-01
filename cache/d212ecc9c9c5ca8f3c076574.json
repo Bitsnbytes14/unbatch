@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1057,
+  "output_tokens": 140,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate line compositions that sum to the net and determine which set aligns with the real settlement records; select the composition that matches the known payment_ids and settlement_ids, or flag for manual reconciliation if multiple remain viable.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP792680312919\", \"setl_fxMYFkkfFYvqeN\", \"setl_yyWvQjK4ONkGXN\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1222,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as borderline: multiple settlement batches lie within the tolerance band; investigate batch-level tolerances and broaden matching window or lock to the most probable batch after human review.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"pay_2wP0eUyoVir9zC\",\"setl_vWsifzHGjtM3eN\",\"SBIN0144808028094\"],\n  \"human_review_required\": true\n}"
+}

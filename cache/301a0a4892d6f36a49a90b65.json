@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1199,
+  "output_tokens": 110,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag the credit as unrelated to the selected batch and continue investigation linking to alternative candidate batches if any; no automatic Netting should occur for this credit until mapping is resolved.\",\"confidence\":0.55,\"evidence_refs\":[\"txn_MhlNZMsOqaqQMl\",\"setl_EZJQTOeRjnDh8V\",\"AXISP668891249176\"],\"human_review_required\":true}"
+}

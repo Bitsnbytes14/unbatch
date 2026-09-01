@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1202,
+  "output_tokens": 123,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate and confirm the posting date alignment; consolidate matching batch to the credit if the net aligns, or flag for manual reconciliation if multiple batches could fit.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_2lsyiIaoWN2rdH\", \"setl_MoEczLawch0CdW\", \"SBIN0104306751231\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1071,
+  "output_tokens": 163,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate alternative line compositions matching the same net and select the most plausible batch composition; request a reconciliation note detailing the chosen lines if a unique match cannot be established.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"pay_yZjhFPkxTrNIS6\",\"pay_P4gXgjFGalSPqL\",\"setl_Vn5VdJNaRI6LUn\",\"setl_dyIKAiYbEPvFXX\",\"txn_c3ZlMm1zdNf35M\",\"ICICR261327654542\"],\n  \"human_review_required\": true\n}"
+}

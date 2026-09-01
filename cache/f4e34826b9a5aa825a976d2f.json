@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1242,
+  "output_tokens": 145,
+  "response_text": "{\n  \"break_reason\": \"date_skew\",\n  \"proposed_resolution\": \"Investigate and confirm the posting date alignment between the bank credit and settlement batch; if the net amounts align but the UTR/date differ, standardize on the batch with matching value_date and settle_date and document the date discrepancy for reconciliation.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_eo6MTPtfJLyu9F\",\"setl_0yQKWGaX4XdLaa\",\"setl_EHYDHcsw1B5HK0\"],\n  \"human_review_required\": true\n}"
+}

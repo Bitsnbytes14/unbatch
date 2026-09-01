@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1275,
+  "output_tokens": 174,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate candidate batches for the same credit; determine the exact lines contributing to the settled net and reconcile to the single matching batch, or escalate if multiple batches could fit.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"AXISP126302182861\",\"AXISP478443383807\",\"AXISP875575468709\",\"ICICR180046556351\",\"setl_gBf29AxnxWSO4G\",\"setl_HvTRwxu1uG2qQ7\",\"setl_Z5lIiwiTXDObXa\",\"setl_Eby2JUHSHmh5sl\"],\n  \"human_review_required\": true\n}"
+}

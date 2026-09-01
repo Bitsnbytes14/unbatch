@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1256,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as related to the selected batch and investigate the alternative candidate batches for potential misalignment, ensuring the net matches the intended settlement and updating mappings as needed.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_0WZtXHXpc63kLT\", \"setl_qfqvWefU5hpTiC\", \"ICICR187471936296\"],\n  \"human_review_required\": true\n}"
+}

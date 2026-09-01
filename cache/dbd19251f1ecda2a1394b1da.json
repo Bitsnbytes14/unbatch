@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1069,
+  "output_tokens": 181,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate the exact line-item composition for the settlement batch to determine which exact set of payment lines contributed to the net; reconcile by auditing line items in the matching batch and, if multiple valid compositions exist, select the composition that aligns with the actual payment_ids referenced in the credit and update records accordingly.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"setl_Hahp7vT2GyqY2C\",\"setl_O5jjuKiN37Z8hw\",\"setl_h1LB0OIxetxIU0\",\"HDFCR548229483542\",\"txn_4ESJo2HkJ1jkNi\"],\n  \"human_review_required\": true\n}"
+}

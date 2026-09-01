@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1214,
+  "output_tokens": 106,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as unrelated to the settled batch; hold pending human confirmation and align future processing to exclude this credit from batch nets.\",\n  \"confidence\": 0.72,\n  \"evidence_refs\": [\"txn_tLkQ9uQj9dpzVH\", \"AXISP162659612374\"],\n  \"human_review_required\": true\n}"
+}

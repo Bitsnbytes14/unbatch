@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1210,
+  "output_tokens": 170,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate why the bank credit txn_id txn_7m3N3c0U0ruOvH, with value_date 2024-01-25 and 199292 paise, does not map to any candidate settlement batch; verify with bank statements and mapping rules, and re-run reconciliation to locate a matching batch or flag as mis-posted.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_7m3N3c0U0ruOvH\", \"setl_qXq6rgJP7wls6a\", \"HDFCR573858918680\"],\n  \"human_review_required\": true\n}"
+}

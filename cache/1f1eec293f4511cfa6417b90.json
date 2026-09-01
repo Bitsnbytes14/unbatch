@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1217,
+  "output_tokens": 115,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag the credit as unrelated and isolate for investigation, matching it to the most plausible alternate batch candidates or request bank confirmation, since the current batch net cannot account for the credit.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_gveu2lsVmhpLSP\", \"setl_aOP7fS185DfBBC\"],\n  \"human_review_required\": true\n}"
+}

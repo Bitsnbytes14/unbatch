@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1130,
+  "output_tokens": 97,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as ambiguous due to multiple settlement batches landing within tolerance; escalate for manual reconciliation to confirm correct matching lines.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP904012472150\", \"AXISP302856050840\"],\n  \"human_review_required\": true\n}"
+}

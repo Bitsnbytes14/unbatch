@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1296,
+  "output_tokens": 141,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as not matching any settled batch and investigate the payment IDs and batch IDs for misattribution; escalate to manual reconciliation to map or correct mappings.\",\n  \"confidence\": 0.62,\n  \"evidence_refs\": [\"txn_Rcn2IPmBxM3nWu\", \"AXISP462878302322\", \"setl_vawC0N6ayWJ8MG\", \"setl_vZ1GS7mnyM1iB9\"],\n  \"human_review_required\": true\n}"
+}

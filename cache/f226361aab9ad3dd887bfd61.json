@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1261,
+  "output_tokens": 118,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm the credit corresponds to the AXISP442254414821 batch; if misalignment persists, flag as unmatched and loop in reconciliation to map to the correct batch or mark as unassigned.\",\n  \"confidence\": 0.60,\n  \"evidence_refs\": [\"txn_HDt7Yaj539rDYo\", \"AXISP442254414821\"],\n  \"human_review_required\": true\n}"
+}

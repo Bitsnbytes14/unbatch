@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1059,
+  "output_tokens": 142,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the actual line-level composition for the settlement, and select the exact batch lines that map to the credit or adjust the reconciliation if multiple valid compositions exist.\",\n  \"confidence\": 0.46,\n  \"evidence_refs\": [\"SBIN0377504311972\", \"pay_AaBXAOiI9NVzP8\", \"pay_7Z6VBs269vi2nL\", \"pay_POTVdCNo9xek93\"],\n  \"human_review_required\": true\n}"
+}

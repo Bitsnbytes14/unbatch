@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1294,
+  "output_tokens": 92,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Investigate the batch mismatch and confirm which settlement batch aligns with the bank credit; if no exact match, mark as unrelated and flag for reconciliation review.\",\"confidence\":0.62,\"evidence_refs\":[\"txn_cBiHWzNmwoKUio\",\"ICICR291358714637\"],\"human_review_required\":true}"
+}

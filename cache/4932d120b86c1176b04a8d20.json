@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1392,
+  "output_tokens": 119,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag this credit as unrelated to any settled batch; continue mencari the correct batch by aligning with settlement_utr AXISP598281572603 or its alternative if a re-match exists, and escalate for manual review if ambiguity persists.\",\"confidence\":0.55,\"evidence_refs\":[\"txn_G8Cs63IngEsp1w\",\"AXISP598281572603\",\"setl_CmuYZsUjTmbbtx\"],\"human_review_required\":true}"
+}

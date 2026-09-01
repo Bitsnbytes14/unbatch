@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1356,
+  "output_tokens": 115,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm the credit's linkage; if it does not map to the selected batch, file a reconciliation note and re-scan for the matching batch with the correct settlement UTR.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_jTbSPmHRtMrZ7o\",\"AXISP214221581873\"],\n  \"human_review_required\": true\n}"
+}

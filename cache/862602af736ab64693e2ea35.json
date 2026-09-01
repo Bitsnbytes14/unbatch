@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1343,
+  "output_tokens": 126,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact set of payment lines composing the batch ICICR324893868909; if multiple candidate subsets fit, request batch-level reconciliation from the payment gateway and align on a single canonical composition.\",\n  \"confidence\": 0.54,\n  \"evidence_refs\": [\"settlement_ICICR324893868909\",\"txn_txn_53geDC8cEl3AR2\"],\n  \"human_review_required\": true\n}"
+}

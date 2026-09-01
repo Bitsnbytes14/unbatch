@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1378,
+  "output_tokens": 173,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Investigate the four alternative batches; since multiple batches fall within the tolerance band for this credit, select the batch with the closest net and document the tie-break rule or obtain missing confirmation from operations.\",\n  \"confidence\": 0.38,\n  \"evidence_refs\": [\"txn_c3ZlMm1zdNf35M\",\"setl_1SvTevYxPwvCfT\",\"setl_8UPINVCY0GDD9L\",\"setl_nEV5y7WCqwhegS\",\"setl_4TamzH977bzN4J\",\"SBIN0240332156102\"],\n  \"human_review_required\": true\n}"
+}

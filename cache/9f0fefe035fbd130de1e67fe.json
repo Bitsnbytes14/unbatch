@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1070,
+  "output_tokens": 170,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate line compositions that sum to the batch net and determine a single deterministic mapping; if multiple compositions remain equally valid, flag tolerance_ambiguous or request batch-level clarification from operations.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_ylrnOU2i9QqPMv\",\"ICICR927639923612\",\"pay_GKqNGIm5YsL9RE\",\"pay_kQzYGQTbJzrCWK\",\"setl_1zqYrz0un28Zij\",\"setl_GHeU18oIhWtiv0\"],\n  \"human_review_required\": true\n}"
+}

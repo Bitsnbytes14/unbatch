@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1329,
+  "output_tokens": 127,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify batch linkage and confirm which settlement batch actually produced the observed credit; select the matching batch (AXISP022971424919) as intended, and re-run reconciliation to ensure the payoff aligns.\",\n  \"confidence\": 0.55,\n  \"evidence_refs\": [\"txn_qQMK3xuprCDJyc\",\"setl_yynqDK887nW8AG\",\"AXISP022971424919\"],\n  \"human_review_required\": true\n}"
+}

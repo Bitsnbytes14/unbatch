@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1327,
+  "output_tokens": 90,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag the credit as unrelated to any valid batch and route for investigation; do not auto-close without human validation of matching across banks.\",\"confidence\":0.58,\"evidence_refs\":[\"txn_xzqBaSKQLP4NzQ\",\"SBIN0923556659753\"],\"human_review_required\":true}"
+}

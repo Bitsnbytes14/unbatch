@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1420,
+  "output_tokens": 108,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Flag this credit as unrelated to the selected settlement batch and quarantine for investigation; verify bank credit corresponds to a known batch or cancel/reverse as appropriate.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_XOlqUMKPjRFsmf\", \"ICICR105324421405\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1284,
+  "output_tokens": 142,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as ambiguous between the identified settlement batch and the alternative candidates; escalate for human judgment to select the correct batch or confirm no match within tolerance.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_WoZO7r8WcqhuK8\",\"setl_sdzzRzK8CJCWYc\",\"setl_ICFYlsz88hJZ3E\",\"setl_MGzdOHcEvWRaQD\"],\n  \"human_review_required\": true\n}"
+}

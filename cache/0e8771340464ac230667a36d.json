@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1355,
+  "output_tokens": 154,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Lock the correct settlement batch by validating against the window and batch net; if multiple candidates still fit within tolerance, escalate for human review to select the correct batch.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"ICICR138693114531\", \"setl_edxvO5e80gKrv3\", \"setl_VjQ8mfSWutUPzv\", \"setl_leSTRLBhS5ZiMo\", \"txn_7VjVsZE25QXZnc\"],\n  \"human_review_required\": true\n}"
+}

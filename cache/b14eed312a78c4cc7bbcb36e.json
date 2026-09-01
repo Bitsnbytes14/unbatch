@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1319,
+  "output_tokens": 114,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Verify the settlement batch for HDFCR856484212862 and confirm it is the correct match; if not, flag as unrelated and reassess against the correct batch set.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_fyckz6lzeiaZ46\", \"HDFCR856484212862\"],\n  \"human_review_required\": true\n}"
+}

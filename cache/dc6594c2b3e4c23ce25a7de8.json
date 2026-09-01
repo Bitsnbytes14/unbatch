@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1388,
+  "output_tokens": 139,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag as unrelated credit; investigate the matching batch and verify if the credit corresponds to SBIN0489678202415 or a different batch before reassigning.\", \"confidence\":0.58, \"evidence_refs\":[\"txn_pOwanm3o2PiXF6\",\"setl_BExx68Um12ABsQ\",\"setl_UmOPQmwh4GOT1V\",\"setl_HHvsx4MWWppsdi\",\"setl_lgiaEOrWYkmYTZ\"], \"human_review_required\":true}"
+}

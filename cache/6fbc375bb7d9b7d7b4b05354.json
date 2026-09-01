@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1394,
+  "output_tokens": 121,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Confirm the batch with settlement_utr ICICR920294456050 and the given net_paise; if matches, map credit to this batch; if not, mark as unrelated and investigate.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_GQ5mvos1GlCB55\", \"settlement_utr_ICICR920294456050\"],\n  \"human_review_required\": true\n}"
+}

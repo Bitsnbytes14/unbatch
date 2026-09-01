@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1052,
+  "output_tokens": 120,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate and confirm the exact line-level composition for the settlement; if multiple valid line sets exist that fit the same net, contact operations to confirm which composition is correct and adjust downstream mapping accordingly.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"txn_SVtL4dSEoLa2LM\", \"SBIN0248373079683\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1385,
+  "output_tokens": 153,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Review the candidate batches whose nets fall within the tolerance band and determine the most probable original batch, then reclassify to that batch and adjust posting if needed.\",\"confidence\":0.52,\"evidence_refs\":[\"HDFCR900223625581\",\"setl_beluWze8GUa5PF\",\"setl_LJiaS0fKFs3n0R\",\"setl_7MRgNv3H4BVsEZ\",\"setl_sjU8MG2ZRtPM0y\",\"txn_Bh6wdEcNQVnmS9\"],\"human_review_required\":true}"
+}

@@ -28,19 +28,19 @@
         },
         "llm_call_count": 12,
         "llm_call_rate": 0.11428571428571428,
-        "llm_cost_paise": 12,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.9166666666666666,
+        "llm_cost_paise": 19,
+        "cost_paise_per_adjudicated_credit": 1.5833333333333333,
+        "cost_paise_per_exception": 1.5833333333333333,
+        "malformed_json_count": 13,
+        "retry_count": 7,
+        "adjudication_failed_count": 6,
+        "break_reason_accuracy": 0.8333333333333334,
         "break_reason_confusion": {
           "ambiguous_composition": {
-            "ambiguous_composition": 7
+            "ambiguous_composition": 3
           },
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 3,
+            "tolerance_ambiguous": 1,
             "unrelated_credit": 1
           },
           "unrelated_credit": {
@@ -72,22 +72,19 @@
         },
         "llm_call_count": 12,
         "llm_call_rate": 0.11428571428571428,
-        "llm_cost_paise": 12,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.9166666666666666,
+        "llm_cost_paise": 21,
+        "cost_paise_per_adjudicated_credit": 1.75,
+        "cost_paise_per_exception": 1.75,
+        "malformed_json_count": 16,
+        "retry_count": 9,
+        "adjudication_failed_count": 7,
+        "break_reason_accuracy": 0.8,
         "break_reason_confusion": {
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 4
+            "tolerance_ambiguous": 2
           },
           "ambiguous_composition": {
-            "ambiguous_composition": 6,
-            "unrelated_credit": 1
-          },
-          "unrelated_credit": {
+            "ambiguous_composition": 2,
             "unrelated_credit": 1
           }
         },
@@ -116,24 +113,19 @@
         },
         "llm_call_count": 11,
         "llm_call_rate": 0.10476190476190476,
-        "llm_cost_paise": 11,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.8181818181818182,
+        "llm_cost_paise": 17,
+        "cost_paise_per_adjudicated_credit": 1.5454545454545454,
+        "cost_paise_per_exception": 1.5454545454545454,
+        "malformed_json_count": 11,
+        "retry_count": 6,
+        "adjudication_failed_count": 5,
+        "break_reason_accuracy": 1.0,
         "break_reason_confusion": {
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 2,
-            "date_skew": 1,
-            "unrelated_credit": 1
+            "tolerance_ambiguous": 2
           },
           "ambiguous_composition": {
-            "ambiguous_composition": 6
-          },
-          "unrelated_credit": {
-            "unrelated_credit": 1
+            "ambiguous_composition": 4
           }
         },
         "exception_break_type_counts": {
@@ -161,22 +153,22 @@
         },
         "llm_call_count": 12,
         "llm_call_rate": 0.11428571428571428,
-        "llm_cost_paise": 12,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0909090909090908,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.9166666666666666,
+        "llm_cost_paise": 20,
+        "cost_paise_per_adjudicated_credit": 1.6666666666666667,
+        "cost_paise_per_exception": 1.8181818181818181,
+        "malformed_json_count": 14,
+        "retry_count": 8,
+        "adjudication_failed_count": 6,
+        "break_reason_accuracy": 0.8333333333333334,
         "break_reason_confusion": {
           "ambiguous_composition": {
-            "ambiguous_composition": 6
+            "ambiguous_composition": 2
           },
           "duplicate_utr": {
             "unrelated_credit": 1
           },
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 4
+            "tolerance_ambiguous": 2
           },
           "unrelated_credit": {
             "unrelated_credit": 1
@@ -191,12 +183,12 @@
       "46": {
         "run_id": "run_46_with_llm_c6783ebe1eb9",
         "total_credits": 105,
-        "count_match_rate": 0.9047619047619048,
-        "value_weighted_match_rate": 0.9514724042397852,
-        "false_match_rate": 0.021052631578947368,
-        "exception_rate": 0.09523809523809523,
-        "precision": 0.9789473684210527,
-        "recall": 0.8942307692307693,
+        "count_match_rate": 0.9142857142857143,
+        "value_weighted_match_rate": 0.9519886838063011,
+        "false_match_rate": 0.020833333333333332,
+        "exception_rate": 0.08571428571428572,
+        "precision": 0.9791666666666666,
+        "recall": 0.9038461538461539,
         "correctly_rejected": 8,
         "stage_funnel": {
           "l0": 79,
@@ -207,30 +199,30 @@
         },
         "llm_call_count": 10,
         "llm_call_rate": 0.09523809523809523,
-        "llm_cost_paise": 10,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.8,
+        "llm_cost_paise": 15,
+        "cost_paise_per_adjudicated_credit": 1.5,
+        "cost_paise_per_exception": 1.6666666666666667,
+        "malformed_json_count": 7,
+        "retry_count": 5,
+        "adjudication_failed_count": 2,
+        "break_reason_accuracy": 0.75,
         "break_reason_confusion": {
           "ambiguous_composition": {
             "ambiguous_composition": 4,
             "unrelated_credit": 1
           },
-          "tolerance_ambiguous": {
-            "unrelated_credit": 1,
-            "tolerance_ambiguous": 3
-          },
           "unrelated_credit": {
             "unrelated_credit": 1
+          },
+          "tolerance_ambiguous": {
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 1
           }
         },
         "exception_break_type_counts": {
           "ambiguous_composition": 5,
           "unrelated_credit": 1,
-          "tolerance_ambiguous": 4
+          "tolerance_ambiguous": 3
         }
       },
       "47": {
@@ -252,22 +244,19 @@
         },
         "llm_call_count": 12,
         "llm_call_rate": 0.11428571428571428,
-        "llm_cost_paise": 12,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
+        "llm_cost_paise": 22,
+        "cost_paise_per_adjudicated_credit": 1.8333333333333333,
+        "cost_paise_per_exception": 1.8333333333333333,
+        "malformed_json_count": 18,
+        "retry_count": 10,
+        "adjudication_failed_count": 8,
         "break_reason_accuracy": 1.0,
         "break_reason_confusion": {
           "ambiguous_composition": {
-            "ambiguous_composition": 7
+            "ambiguous_composition": 3
           },
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 4
-          },
-          "unrelated_credit": {
-            "unrelated_credit": 1
+            "tolerance_ambiguous": 1
           }
         },
         "exception_break_type_counts": {
@@ -281,115 +270,107 @@
       "42": {
         "run_id": "run_42_llm_only_ede0cdd884be",
         "total_credits": 105,
-        "count_match_rate": 0.13333333333333333,
-        "value_weighted_match_rate": 0.11466983567119658,
-        "false_match_rate": 0.0,
-        "exception_rate": 0.8666666666666667,
-        "precision": 1.0,
-        "recall": 0.1346153846153846,
+        "count_match_rate": 0.10476190476190476,
+        "value_weighted_match_rate": 0.09179098558813095,
+        "false_match_rate": 0.09090909090909091,
+        "exception_rate": 0.8952380952380953,
+        "precision": 0.9090909090909091,
+        "recall": 0.09615384615384616,
         "correctly_rejected": 8,
         "stage_funnel": {
           "l4": 105
         },
         "llm_call_count": 105,
         "llm_call_rate": 1.0,
-        "llm_cost_paise": 105,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.1538461538461537,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.0380952380952381,
+        "llm_cost_paise": 140,
+        "cost_paise_per_adjudicated_credit": 1.3333333333333333,
+        "cost_paise_per_exception": 1.4893617021276595,
+        "malformed_json_count": 60,
+        "retry_count": 35,
+        "adjudication_failed_count": 25,
+        "break_reason_accuracy": 0.025,
         "break_reason_confusion": {
-          "refund_in_window": {
-            "tolerance_ambiguous": 1
-          },
           "ambiguous_composition": {
-            "tolerance_ambiguous": 6,
-            "date_skew": 1
+            "tolerance_ambiguous": 5,
+            "unrelated_credit": 1
           },
           "clean": {
-            "date_skew": 7,
-            "tolerance_ambiguous": 32,
-            "unrelated_credit": 35,
-            "ambiguous_composition": 5
+            "date_skew": 4,
+            "tolerance_ambiguous": 29,
+            "unrelated_credit": 26,
+            "ambiguous_composition": 4
           },
           "fee_tier_change": {
             "tolerance_ambiguous": 1
           },
           "settlement_split": {
-            "tolerance_ambiguous": 3,
-            "unrelated_credit": 1
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 1
           },
           "narration_mangled": {
-            "unrelated_credit": 2,
-            "tolerance_ambiguous": 1
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 2
           },
           "rounding_delta": {
             "tolerance_ambiguous": 1
           },
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 3,
+            "tolerance_ambiguous": 1,
             "unrelated_credit": 1
           },
           "unrelated_credit": {
             "unrelated_credit": 1
           },
-          "date_skew": {
-            "unrelated_credit": 1
-          },
-          "chargeback_deduction": {
-            "tolerance_ambiguous": 1
-          },
           "duplicate_utr": {
-            "tolerance_ambiguous": 2
+            "tolerance_ambiguous": 1
           }
         },
         "exception_break_type_counts": {
           "settlement_split": 4,
-          "clean": 67,
+          "clean": 70,
           "duplicate_utr": 2,
           "tolerance_ambiguous": 4,
-          "ambiguous_composition": 7,
+          "ambiguous_composition": 6,
           "unrelated_credit": 1,
           "narration_mangled": 2,
           "rounding_delta": 1,
           "refund_in_window": 1,
           "fee_tier_change": 1,
-          "chargeback_deduction": 1
+          "chargeback_deduction": 1,
+          "date_skew": 1
         }
       },
       "43": {
         "run_id": "run_43_llm_only_f25f89260fb0",
         "total_credits": 105,
-        "count_match_rate": 0.06666666666666667,
-        "value_weighted_match_rate": 0.0586123438083996,
+        "count_match_rate": 0.09523809523809523,
+        "value_weighted_match_rate": 0.08980268482252747,
         "false_match_rate": 0.0,
-        "exception_rate": 0.9333333333333333,
+        "exception_rate": 0.9047619047619048,
         "precision": 1.0,
-        "recall": 0.0673076923076923,
+        "recall": 0.09615384615384616,
         "correctly_rejected": 8,
         "stage_funnel": {
           "l4": 105
         },
         "llm_call_count": 105,
         "llm_call_rate": 1.0,
-        "llm_cost_paise": 105,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0714285714285714,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.05714285714285714,
+        "llm_cost_paise": 150,
+        "cost_paise_per_adjudicated_credit": 1.4285714285714286,
+        "cost_paise_per_exception": 1.5789473684210527,
+        "malformed_json_count": 75,
+        "retry_count": 45,
+        "adjudication_failed_count": 30,
+        "break_reason_accuracy": 0.04,
         "break_reason_confusion": {
           "clean": {
-            "unrelated_credit": 30,
-            "ambiguous_composition": 6,
-            "tolerance_ambiguous": 35,
-            "date_skew": 8
+            "ambiguous_composition": 4,
+            "unrelated_credit": 19,
+            "tolerance_ambiguous": 28,
+            "date_skew": 9
           },
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 4
+            "tolerance_ambiguous": 2
           },
           "rounding_delta": {
             "tolerance_ambiguous": 1
@@ -398,25 +379,18 @@
             "date_skew": 1
           },
           "narration_mangled": {
-            "tolerance_ambiguous": 1,
-            "ambiguous_composition": 2
+            "ambiguous_composition": 1,
+            "tolerance_ambiguous": 1
           },
           "ambiguous_composition": {
-            "tolerance_ambiguous": 7
+            "tolerance_ambiguous": 3
           },
           "duplicate_utr": {
-            "tolerance_ambiguous": 2
-          },
-          "unrelated_credit": {
-            "unrelated_credit": 1
+            "tolerance_ambiguous": 1
           },
           "settlement_split": {
             "tolerance_ambiguous": 2,
-            "unrelated_credit": 1,
             "date_skew": 1
-          },
-          "refund_in_window": {
-            "tolerance_ambiguous": 1
           },
           "chargeback_deduction": {
             "date_skew": 1
@@ -426,7 +400,7 @@
           }
         },
         "exception_break_type_counts": {
-          "clean": 72,
+          "clean": 69,
           "ambiguous_composition": 7,
           "settlement_split": 4,
           "narration_mangled": 3,
@@ -443,42 +417,40 @@
       "44": {
         "run_id": "run_44_llm_only_da8f7b943e90",
         "total_credits": 105,
-        "count_match_rate": 0.05714285714285714,
-        "value_weighted_match_rate": 0.03984280178100786,
+        "count_match_rate": 0.06666666666666667,
+        "value_weighted_match_rate": 0.043655201338340846,
         "false_match_rate": 0.0,
-        "exception_rate": 0.9428571428571428,
+        "exception_rate": 0.9333333333333333,
         "precision": 1.0,
-        "recall": 0.057692307692307696,
+        "recall": 0.0673076923076923,
         "correctly_rejected": 8,
         "stage_funnel": {
           "l4": 105
         },
         "llm_call_count": 105,
         "llm_call_rate": 1.0,
-        "llm_cost_paise": 105,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0606060606060606,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.047619047619047616,
+        "llm_cost_paise": 152,
+        "cost_paise_per_adjudicated_credit": 1.4476190476190476,
+        "cost_paise_per_exception": 1.5510204081632653,
+        "malformed_json_count": 84,
+        "retry_count": 47,
+        "adjudication_failed_count": 37,
+        "break_reason_accuracy": 0.058823529411764705,
         "break_reason_confusion": {
           "clean": {
-            "ambiguous_composition": 4,
-            "unrelated_credit": 31,
-            "tolerance_ambiguous": 35,
-            "date_skew": 9
+            "ambiguous_composition": 2,
+            "unrelated_credit": 21,
+            "tolerance_ambiguous": 25,
+            "date_skew": 4
           },
           "date_skew": {
             "date_skew": 1
           },
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 2,
-            "date_skew": 1,
-            "unrelated_credit": 1
+            "tolerance_ambiguous": 2
           },
           "narration_mangled": {
-            "tolerance_ambiguous": 2,
+            "tolerance_ambiguous": 1,
             "unrelated_credit": 1
           },
           "duplicate_utr": {
@@ -486,23 +458,13 @@
             "date_skew": 1
           },
           "settlement_split": {
-            "unrelated_credit": 2,
-            "tolerance_ambiguous": 2
-          },
-          "fee_tier_change": {
             "date_skew": 1
           },
           "ambiguous_composition": {
-            "tolerance_ambiguous": 5,
+            "tolerance_ambiguous": 4,
             "unrelated_credit": 2
           },
-          "unrelated_credit": {
-            "unrelated_credit": 1
-          },
           "refund_in_window": {
-            "tolerance_ambiguous": 1
-          },
-          "chargeback_deduction": {
             "tolerance_ambiguous": 1
           },
           "rounding_delta": {
@@ -511,7 +473,7 @@
         },
         "exception_break_type_counts": {
           "tolerance_ambiguous": 4,
-          "clean": 73,
+          "clean": 72,
           "ambiguous_composition": 7,
           "settlement_split": 4,
           "narration_mangled": 3,
@@ -527,60 +489,56 @@
       "45": {
         "run_id": "run_45_llm_only_016e1755fd71",
         "total_credits": 105,
-        "count_match_rate": 0.10476190476190476,
-        "value_weighted_match_rate": 0.07893828025573112,
+        "count_match_rate": 0.09523809523809523,
+        "value_weighted_match_rate": 0.07112195570887378,
         "false_match_rate": 0.0,
-        "exception_rate": 0.8952380952380953,
+        "exception_rate": 0.9047619047619048,
         "precision": 1.0,
-        "recall": 0.10576923076923077,
+        "recall": 0.09615384615384616,
         "correctly_rejected": 8,
         "stage_funnel": {
           "l4": 105
         },
         "llm_call_count": 105,
         "llm_call_rate": 1.0,
-        "llm_cost_paise": 105,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.1170212765957446,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.047619047619047616,
+        "llm_cost_paise": 149,
+        "cost_paise_per_adjudicated_credit": 1.4190476190476191,
+        "cost_paise_per_exception": 1.568421052631579,
+        "malformed_json_count": 79,
+        "retry_count": 44,
+        "adjudication_failed_count": 35,
+        "break_reason_accuracy": 0.04285714285714286,
         "break_reason_confusion": {
           "settlement_split": {
-            "tolerance_ambiguous": 4
+            "tolerance_ambiguous": 2
           },
           "clean": {
-            "tolerance_ambiguous": 36,
-            "unrelated_credit": 33,
-            "ambiguous_composition": 5,
-            "date_skew": 5
+            "tolerance_ambiguous": 25,
+            "unrelated_credit": 23,
+            "date_skew": 4,
+            "ambiguous_composition": 1
           },
           "date_skew": {
             "tolerance_ambiguous": 1
           },
           "ambiguous_composition": {
-            "tolerance_ambiguous": 5,
-            "unrelated_credit": 2
+            "tolerance_ambiguous": 5
           },
           "rounding_delta": {
             "tolerance_ambiguous": 1
           },
           "duplicate_utr": {
-            "tolerance_ambiguous": 2
-          },
-          "tolerance_ambiguous": {
-            "tolerance_ambiguous": 4
+            "tolerance_ambiguous": 1
           },
           "chargeback_deduction": {
             "tolerance_ambiguous": 1
           },
           "narration_mangled": {
             "unrelated_credit": 1,
-            "tolerance_ambiguous": 2
-          },
-          "refund_in_window": {
             "tolerance_ambiguous": 1
+          },
+          "tolerance_ambiguous": {
+            "tolerance_ambiguous": 2
           },
           "fee_tier_change": {
             "tolerance_ambiguous": 1
@@ -590,7 +548,7 @@
           }
         },
         "exception_break_type_counts": {
-          "clean": 68,
+          "clean": 69,
           "refund_in_window": 1,
           "ambiguous_composition": 7,
           "narration_mangled": 3,
@@ -607,58 +565,45 @@
       "46": {
         "run_id": "run_46_llm_only_4066c9ed7302",
         "total_credits": 105,
-        "count_match_rate": 0.13333333333333333,
-        "value_weighted_match_rate": 0.11568825070308016,
-        "false_match_rate": 0.07142857142857142,
-        "exception_rate": 0.8666666666666667,
-        "precision": 0.9285714285714286,
-        "recall": 0.125,
+        "count_match_rate": 0.10476190476190476,
+        "value_weighted_match_rate": 0.09134789558566764,
+        "false_match_rate": 0.09090909090909091,
+        "exception_rate": 0.8952380952380953,
+        "precision": 0.9090909090909091,
+        "recall": 0.09615384615384616,
         "correctly_rejected": 8,
         "stage_funnel": {
           "l4": 105
         },
         "llm_call_count": 105,
         "llm_call_rate": 1.0,
-        "llm_cost_paise": 105,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.1538461538461537,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.0380952380952381,
+        "llm_cost_paise": 151,
+        "cost_paise_per_adjudicated_credit": 1.438095238095238,
+        "cost_paise_per_exception": 1.6063829787234043,
+        "malformed_json_count": 78,
+        "retry_count": 46,
+        "adjudication_failed_count": 32,
+        "break_reason_accuracy": 0.0273972602739726,
         "break_reason_confusion": {
-          "narration_mangled": {
-            "ambiguous_composition": 2,
-            "unrelated_credit": 1
-          },
           "chargeback_deduction": {
             "tolerance_ambiguous": 1
           },
           "clean": {
-            "tolerance_ambiguous": 39,
-            "ambiguous_composition": 4,
-            "unrelated_credit": 30,
-            "date_skew": 6
+            "tolerance_ambiguous": 28,
+            "ambiguous_composition": 3,
+            "unrelated_credit": 23,
+            "date_skew": 3
           },
           "ambiguous_composition": {
-            "tolerance_ambiguous": 4,
-            "date_skew": 2,
-            "unrelated_credit": 1
-          },
-          "duplicate_utr": {
             "unrelated_credit": 1,
+            "date_skew": 2,
             "tolerance_ambiguous": 1
           },
           "settlement_split": {
-            "tolerance_ambiguous": 3,
-            "unrelated_credit": 1
+            "tolerance_ambiguous": 2
           },
           "refund_in_window": {
             "unrelated_credit": 1
-          },
-          "tolerance_ambiguous": {
-            "unrelated_credit": 1,
-            "tolerance_ambiguous": 3
           },
           "unrelated_credit": {
             "unrelated_credit": 1
@@ -667,75 +612,79 @@
             "unrelated_credit": 1
           },
           "rounding_delta": {
-            "date_skew": 1
+            "tolerance_ambiguous": 1
           },
-          "fee_tier_change": {
+          "narration_mangled": {
+            "ambiguous_composition": 1,
             "unrelated_credit": 1
+          },
+          "duplicate_utr": {
+            "tolerance_ambiguous": 1
+          },
+          "tolerance_ambiguous": {
+            "unrelated_credit": 1,
+            "tolerance_ambiguous": 1
           }
         },
         "exception_break_type_counts": {
-          "clean": 68,
+          "clean": 70,
           "settlement_split": 4,
           "date_skew": 1,
-          "ambiguous_composition": 7,
+          "ambiguous_composition": 6,
           "unrelated_credit": 1,
-          "narration_mangled": 2,
+          "narration_mangled": 3,
           "duplicate_utr": 2,
-          "tolerance_ambiguous": 4,
+          "tolerance_ambiguous": 3,
+          "refund_in_window": 1,
           "rounding_delta": 1,
+          "fee_tier_change": 1,
           "chargeback_deduction": 1
         }
       },
       "47": {
         "run_id": "run_47_llm_only_1817d09efd5c",
         "total_credits": 105,
-        "count_match_rate": 0.0761904761904762,
-        "value_weighted_match_rate": 0.055607358379450716,
+        "count_match_rate": 0.05714285714285714,
+        "value_weighted_match_rate": 0.05046416623742028,
         "false_match_rate": 0.0,
-        "exception_rate": 0.9238095238095239,
+        "exception_rate": 0.9428571428571428,
         "precision": 1.0,
-        "recall": 0.07692307692307693,
+        "recall": 0.057692307692307696,
         "correctly_rejected": 8,
         "stage_funnel": {
           "l4": 105
         },
         "llm_call_count": 105,
         "llm_call_rate": 1.0,
-        "llm_cost_paise": 105,
-        "cost_paise_per_adjudicated_credit": 1.0,
-        "cost_paise_per_exception": 1.0824742268041236,
-        "malformed_json_count": 0,
-        "retry_count": 0,
-        "adjudication_failed_count": 0,
-        "break_reason_accuracy": 0.047619047619047616,
+        "llm_cost_paise": 154,
+        "cost_paise_per_adjudicated_credit": 1.4666666666666666,
+        "cost_paise_per_exception": 1.5555555555555556,
+        "malformed_json_count": 83,
+        "retry_count": 49,
+        "adjudication_failed_count": 34,
+        "break_reason_accuracy": 0.014084507042253521,
         "break_reason_confusion": {
-          "narration_mangled": {
-            "tolerance_ambiguous": 3
-          },
           "ambiguous_composition": {
-            "tolerance_ambiguous": 5,
-            "unrelated_credit": 1,
-            "date_skew": 1
+            "tolerance_ambiguous": 5
           },
           "duplicate_utr": {
             "tolerance_ambiguous": 2
           },
           "clean": {
-            "tolerance_ambiguous": 41,
-            "unrelated_credit": 25,
-            "date_skew": 7,
-            "ambiguous_composition": 6
+            "tolerance_ambiguous": 24,
+            "unrelated_credit": 23,
+            "date_skew": 5,
+            "ambiguous_composition": 2
           },
           "tolerance_ambiguous": {
-            "tolerance_ambiguous": 4
+            "tolerance_ambiguous": 1
           },
           "settlement_split": {
             "tolerance_ambiguous": 2,
-            "date_skew": 1,
             "unrelated_credit": 1
           },
-          "fee_tier_change": {
-            "tolerance_ambiguous": 1
+          "narration_mangled": {
+            "tolerance_ambiguous": 2
           },
           "refund_in_window": {
             "tolerance_ambiguous": 1
@@ -746,16 +695,13 @@
           "rounding_delta": {
             "tolerance_ambiguous": 1
           },
-          "unrelated_credit": {
-            "unrelated_credit": 1
-          },
           "chargeback_deduction": {
             "tolerance_ambiguous": 1
           }
         },
         "exception_break_type_counts": {
           "settlement_split": 4,
-          "clean": 71,
+          "clean": 73,
           "ambiguous_composition": 7,
           "rounding_delta": 1,
           "duplicate_utr": 2,
@@ -773,22 +719,22 @@
   "pooled": {
     "with_llm": {
       "total_credits": 630,
-      "pooled_count_match_rate": 0.8920634920634921,
-      "pooled_false_match_rate": 0.008896797153024912,
-      "total_llm_cost_paise": 69,
+      "pooled_count_match_rate": 0.8936507936507937,
+      "pooled_false_match_rate": 0.008880994671403197,
+      "total_llm_cost_paise": 114,
       "total_llm_call_count": 69
     },
     "llm_only": {
       "total_credits": 630,
-      "pooled_count_match_rate": 0.09523809523809523,
-      "pooled_false_match_rate": 0.016666666666666666,
-      "total_llm_cost_paise": 630,
+      "pooled_count_match_rate": 0.0873015873015873,
+      "pooled_false_match_rate": 0.03636363636363636,
+      "total_llm_cost_paise": 896,
       "total_llm_call_count": 630
     }
   },
   "new_live_call_cost_paise": {
-    "with_llm": 69,
-    "llm_only": 630,
-    "total": 699
+    "with_llm": 0,
+    "llm_only": 0,
+    "total": 0
   }
 }

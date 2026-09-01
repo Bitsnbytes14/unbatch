@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1202,
+  "output_tokens": 118,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag as tolerance_ambiguous; verify which settlement batch most closely matches within tolerance band and surface for human confirmation.\",\"confidence\":0.42,\"evidence_refs\":[\"settlement_setl_qXq6rgJP7wls6a\",\"pay_WnlyQHhMwrNYpf\",\"txn_b1OGrslMd6gMJw\",\"HDFCR573858918680\"],\"human_review_required\":true}"
+}

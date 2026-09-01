@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1276,
+  "output_tokens": 128,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Investigate and confirm the credit corresponds to the selected settlement batch; if not, flag as orphaned credit and route for investigation or matching to an alternative batch.\",\n  \"confidence\": 0.58,\n  \"evidence_refs\": [\"txn_jrU9HuQ8bmiJ0u\", \"setl_LQhdOFVCgrJuOu\", \"setl_WWisO9UvqtqEj\"],\n  \"human_review_required\": true\n}"
+}

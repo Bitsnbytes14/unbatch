@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1341,
+  "output_tokens": 104,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Flag the credit as not matching any settled batch and surface for manual review with all candidate batches for reconciliation.\",\"confidence\":0.62,\"evidence_refs\":[\"txn_T4mrjtrgRjPnUl\",\"setl_6q16xrquJAkowU\",\"setl_0Ft8wwP4vsdZl\"],\"human_review_required\":true}"
+}

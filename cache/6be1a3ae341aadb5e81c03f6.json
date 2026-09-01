@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1357,
+  "output_tokens": 138,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag the credit as tolerantly matched across multiple batches and ask for human review to select the correct batch or confirm orphan credit.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"txn_BCEkUz2YCwkOIo\", \"setl_UYxzmNLA6tr0yK\", \"setl_opVUlBcKLGegC1\", \"setl_tV3iVPz5gc0Ql\"],\n  \"human_review_required\": true\n}"
+}

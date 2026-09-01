@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1211,
+  "output_tokens": 197,
+  "response_text": "{\n  \"break_reason\": \"tolerance_ambiguous\",\n  \"proposed_resolution\": \"Flag as tolerance ambiguity; surface all candidate nets and request human reconciliation to select the correct batch or adjust tolerance.\",\n  \"confidence\": 0.52,\n  \"evidence_refs\": [\"ICICR660585001769\",\"pay_jYsaHuZnzLIudw\",\"pay_46eRmut6HQveTi\",\"pay_9ngZ04T2fQ0uWS\",\"pay_Apl9ddLC4QMhnL\",\"pay_xU6JciNlSLr2vH\",\"pay_nskeNkbEiRxaua\",\"pay_Poa9kqLHvZPEVN\",\"pay_44uuYYvYxs2pNH\",\"setl_4LGkZlkPrFXyM5\"],\n  \"human_review_required\": true\n}"
+}

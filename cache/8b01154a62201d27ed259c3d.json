@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1159,
+  "output_tokens": 108,
+  "response_text": "{\"break_reason\":\"unrelated_credit\",\"proposed_resolution\":\"Investigate and reconcile: confirm the credit is not tied to the selected settlement batch; verify the correct batch and potential duplicate or alternative batch; if no match, mark as unrelated and remove from settlement in ledger until cleared.\",\"confidence\":0.52,\"evidence_refs\":[\"txn_TxHpxR2ZF0sMr3\",\"AXISP136317335866\"],\"human_review_required\":true}"
+}

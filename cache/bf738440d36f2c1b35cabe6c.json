@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1182,
+  "output_tokens": 146,
+  "response_text": "{\n  \"break_reason\": \"ambiguous_composition\",\n  \"proposed_resolution\": \"Investigate all candidate line compositions for AXISP352709577630 to identify a single reproducible batch composition; if multiple equally valid, escalate as ambiguity and request input from operations.\",\n  \"confidence\": 0.42,\n  \"evidence_refs\": [\"AXISP352709577630\", \"setl_pay_MPh3FPuRIlPxUk\", \"setl_pay_JzZsnWLtBPFX7T\", \"setl_pay_OrPMf7otYjc9LV\"],\n  \"human_review_required\": true\n}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1346,
+  "output_tokens": 144,
+  "response_text": "{\"break_reason\":\"tolerance_ambiguous\",\"proposed_resolution\":\"Flag as tolerance_ambiguous and review nearby settlement batches to determine if one batch net falls within the credit's tolerance band; if none is clearly right, escalate.\",\"confidence\":0.58,\"evidence_refs\":[\"settlement_utr: KKBK0187862335927\",\"txn_id: txn_Xx7UQBnQTatHni\",\"window: 2024-01-10 to 2024-01-10\",\"net_paise: 3100078\",\"credit_paise: 3105978\"],\"human_review_required\":true}"
+}

@@ -1,0 +1,5 @@
+{
+  "input_tokens": 1357,
+  "output_tokens": 91,
+  "response_text": "{\n  \"break_reason\": \"unrelated_credit\",\n  \"proposed_resolution\": \"Mark the credit as unrelated to any settled batch and investigate the source before reclassifying or retrying settlement.\",\n  \"confidence\": 0.72,\n  \"evidence_refs\": [\"txn_JoGw7cxQLIVo04\"],\n  \"human_review_required\": true\n}"
+}
