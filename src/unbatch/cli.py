@@ -19,7 +19,9 @@ one place rather than trusted to every stage individually.
 
 from __future__ import annotations
 
+import contextlib
 import csv
+import io
 import json
 import random
 import sqlite3
@@ -27,6 +29,7 @@ import statistics
 import tempfile
 import time
 from collections import defaultdict
+from collections.abc import Iterator
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
@@ -734,13 +737,15 @@ _BENCH_NOISE_SEED = 42
 
 
 def _score_rules_only_for_noise(
-    noise: float, data_dir: Path, db_path: Path
+    noise: float, data_dir: Path, db_path: Path, *, seed: int = _BENCH_NOISE_SEED
 ) -> metrics_module.MetricsReport:
     """Same one-unit-of-work shape as `_score_rules_only_for_seed`, but
-    holds the seed fixed at `_BENCH_NOISE_SEED` and varies narration noise
-    instead — measures how the rules-only cascade degrades as bank
-    narrations get messier, not across independent random datasets."""
-    seed = _BENCH_NOISE_SEED
+    varies narration noise instead of the underlying dataset — measures how
+    the rules-only cascade degrades as bank narrations get messier, not
+    across independent random datasets. `seed` defaults to
+    `_BENCH_NOISE_SEED` (42, what `bench --noise` itself always uses);
+    `unbatch verify` passes other seeds to reproduce bench_noise_seeds.json,
+    E12's noise-sweep re-run on seeds 44 and 46."""
     generate_module.generate(seed, out_dir=data_dir, noise=noise)
     _orders, settlements, bank_records = load_input_data(data_dir)
     expected_batches = compute_expected_batches(settlements)
@@ -1232,6 +1237,437 @@ def bench(
     else:
         assert forecast is not None
         _bench_forecast(forecast, forecast_horizon, forecast_out)
+
+
+# The permanent fix for the bench_adversarial.json / bench_adjudication.json
+# contradiction (see FAILURES.md): a committed artifact drifting from what
+# the pipeline actually produces now, silently, because nothing regenerated
+# and diffed it. Fields here are exempt from comparison only because they
+# record something genuinely not reproducible by re-running the pipeline —
+# wall-clock timing, or the historical cost of live calls made when a file
+# was first produced (a fresh, fully-cached regeneration correctly reports 0
+# new spend, which isn't "wrong", just not the same historical fact) — never
+# a blanket "ignore numeric noise".
+_VERIFY_IGNORE_KEYS: dict[str, frozenset[str]] = {
+    "bench_scale.json": frozenset({"total_seconds", "stage_seconds"}),
+    "bench_adjudication.json": frozenset(
+        {"new_live_call_cost_paise", "total_new_live_call_cost_paise"}
+    ),
+    "bench_ablation_seeds.json": frozenset({"new_live_call_cost_paise"}),
+}
+
+# Not covered, with why — printed every run rather than silently omitted.
+_VERIFY_SKIPPED_ARTIFACTS: dict[str, str] = {
+    "bench_mutation.json": (
+        "cosmic-ray report, not a pipeline artifact — regenerating it takes "
+        "a ~10 minute mutation-testing run, not a bench/metrics call"
+    ),
+}
+
+
+@contextlib.contextmanager
+def _quiet() -> Iterator[None]:
+    """Suppresses the progress echoes each bench/score helper prints to
+    stdout while `verify` regenerates artifacts — its own output is the
+    per-artifact PASS/DRIFT summary, not each regeneration's own console
+    output."""
+    with contextlib.redirect_stdout(io.StringIO()):
+        yield
+
+
+def _load_json(path: Path) -> object:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _diff_json(
+    committed: object, regenerated: object, ignore_keys: frozenset[str], path: str = "$"
+) -> list[str]:
+    """Recursively diff two JSON-decoded values. `ignore_keys` is checked
+    against dict keys at any depth — bench_scale.json's per-stage timing
+    dict is itself skipped by name, so nothing inside it needs comparing
+    either."""
+    if isinstance(committed, dict) and isinstance(regenerated, dict):
+        mismatches: list[str] = []
+        for key in sorted(set(committed) | set(regenerated)):
+            if key in ignore_keys:
+                continue
+            child_path = f"{path}.{key}"
+            if key not in committed:
+                mismatches.append(f"{child_path}: missing from committed file")
+            elif key not in regenerated:
+                mismatches.append(f"{child_path}: missing from regenerated output")
+            else:
+                mismatches.extend(
+                    _diff_json(committed[key], regenerated[key], ignore_keys, child_path)
+                )
+        return mismatches
+    if isinstance(committed, list) and isinstance(regenerated, list):
+        if len(committed) != len(regenerated):
+            return [f"{path}: length {len(committed)} != {len(regenerated)}"]
+        mismatches = []
+        for i, (c, r) in enumerate(zip(committed, regenerated, strict=True)):
+            mismatches.extend(_diff_json(c, r, ignore_keys, f"{path}[{i}]"))
+        return mismatches
+    if committed != regenerated:
+        return [f"{path}: committed={committed!r} regenerated={regenerated!r}"]
+    return []
+
+
+def _regenerate_baseline_rules_only() -> dict:
+    """Reproduces baseline_rules_only.json against the committed data/
+    fixtures for seed 42. Never regenerates data/ itself — that is checked-in
+    fixture data, not a benchmark artifact, and must not be touched here."""
+    data_dir = generate_module.DEFAULT_OUT_DIR
+    seed = 42
+    _orders, settlements, bank_records = load_input_data(data_dir)
+    expected_batches = compute_expected_batches(settlements)
+    unresolved = build_unresolved_credits(bank_records, expected_batches)
+    run_id = audit.derive_run_id(seed, data_dir, arm="no_llm")
+    ctx = RunContext(run_id=run_id, seed=seed, no_llm=True)
+    with tempfile.TemporaryDirectory(prefix="unbatch-verify-baseline-") as tmp:
+        conn = audit.connect(Path(tmp) / "audit.db")
+        try:
+            audit.clear_run(conn, run_id)
+            run_cascade(
+                ctx, unresolved, conn, settlements=settlements, stage_sequence=STAGE_SEQUENCE
+            )
+            report = metrics_module.score(conn, run_id, data_dir=data_dir)
+        finally:
+            conn.close()
+    return json.loads(report.model_dump_json())
+
+
+def _regenerate_bench_noise_seeds(seeds: tuple[int, ...], noise_levels: list[float]) -> dict:
+    """Reproduces bench_noise_seeds.json: E12's noise-sweep re-run on seeds
+    other than 42. Rules-only, so this needs no cache and no API key."""
+    per_seed: dict[str, dict] = {}
+    with tempfile.TemporaryDirectory(prefix="unbatch-verify-noise-seeds-") as tmp:
+        tmp_root = Path(tmp)
+        for seed in seeds:
+            per_level: dict[str, dict] = {}
+            for level in noise_levels:
+                level_dir = tmp_root / f"seed_{seed}_noise_{level}"
+                data_dir = level_dir / "data"
+                data_dir.mkdir(parents=True, exist_ok=True)
+                report = _score_rules_only_for_noise(
+                    level, data_dir, level_dir / "audit.db", seed=seed
+                )
+                per_level[str(level)] = json.loads(report.model_dump_json())
+            per_seed[str(seed)] = {"per_level": per_level}
+
+    return {
+        "seeds": list(seeds),
+        "noise_levels": noise_levels,
+        "arm": "no_llm",
+        "per_seed": per_seed,
+    }
+
+
+_ADJUDICATION_SEEDS = (42, 43, 44, 45, 46, 47)
+_ADJUDICATION_METRICS_FIELDS = (
+    "llm_call_count",
+    "llm_cost_paise",
+    "break_reason_accuracy",
+    "break_reason_confusion",
+    "malformed_json_count",
+    "retry_count",
+    "adjudication_failed_count",
+)
+
+
+def _score_with_llm_cached_for_seed(
+    seed: int, data_dir: Path, db_path: Path, *, llm_only: bool
+) -> metrics_module.MetricsReport:
+    """One seed's with-LLM (or LLM-only) cached score — the unit of work
+    bench_adjudication.json's and bench_ablation_seeds.json's regeneration
+    both repeat per seed. Every prompt these seeds generate must already be
+    in cache/ (E13/E13b committed them); a miss raises
+    adjudicator.CacheMissError exactly as `run --cached` would."""
+    generate_module.generate(seed, out_dir=data_dir)
+    _orders, settlements, bank_records = load_input_data(data_dir)
+    expected_batches = compute_expected_batches(settlements)
+    unresolved = build_unresolved_credits(bank_records, expected_batches)
+
+    arm = "llm_only" if llm_only else "with_llm"
+    run_id = audit.derive_run_id(seed, data_dir, arm=arm)
+    ctx = RunContext(run_id=run_id, seed=seed, cached=True, llm_only=llm_only)
+    stage_sequence = LLM_ONLY_STAGE_SEQUENCE if llm_only else FULL_STAGE_SEQUENCE
+    conn = audit.connect(db_path)
+    try:
+        audit.clear_run(conn, run_id)
+        run_cascade(ctx, unresolved, conn, settlements=settlements, stage_sequence=stage_sequence)
+        return metrics_module.score(conn, run_id, data_dir=data_dir)
+    finally:
+        conn.close()
+
+
+def _regenerate_bench_adjudication() -> dict:
+    """Reproduces bench_adjudication.json's organic (pooled across seeds
+    42-47) and adversarial break-reason accuracy — entirely cache-driven, no
+    live calls, since every seed's with-LLM prompts are already committed to
+    cache/ (E13/E13b). new_live_call_cost_paise records what the original
+    measurement spent, not a reproducible property of the data, so it's
+    allowlisted (_VERIFY_IGNORE_KEYS) rather than recomputed."""
+    per_seed: dict[str, dict] = {}
+    with tempfile.TemporaryDirectory(prefix="unbatch-verify-adjudication-") as tmp:
+        tmp_root = Path(tmp)
+        for seed in _ADJUDICATION_SEEDS:
+            seed_dir = tmp_root / f"seed_{seed}"
+            data_dir = seed_dir / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            report = _score_with_llm_cached_for_seed(
+                seed, data_dir, seed_dir / "audit.db", llm_only=False
+            )
+            report_dict = json.loads(report.model_dump_json())
+            per_seed[str(seed)] = {
+                field: report_dict[field] for field in _ADJUDICATION_METRICS_FIELDS
+            }
+
+    classified_total = 0
+    correct_total = 0
+    pooled_confusion: dict[str, dict[str, int]] = {}
+    for seed_data in per_seed.values():
+        for actual, predicted_counts in seed_data["break_reason_confusion"].items():
+            bucket = pooled_confusion.setdefault(actual, {})
+            for predicted, count in predicted_counts.items():
+                bucket[predicted] = bucket.get(predicted, 0) + count
+                classified_total += count
+                if predicted == actual:
+                    correct_total += count
+
+    organic = {
+        "seeds": list(_ADJUDICATION_SEEDS),
+        "per_seed": per_seed,
+        "pooled": {
+            "classified_total": classified_total,
+            "correct_total": correct_total,
+            "break_reason_accuracy": (
+                correct_total / classified_total if classified_total else 0.0
+            ),
+            "break_reason_confusion": pooled_confusion,
+        },
+        "new_live_call_cost_paise": 0,
+    }
+
+    with tempfile.TemporaryDirectory(prefix="unbatch-verify-adjudication-adv-") as tmp:
+        adv_out = Path(tmp) / "bench_adversarial.json"
+        _bench_adversarial(adv_out)
+        adv_payload = _load_json(adv_out)
+    assert isinstance(adv_payload, dict)
+    with_llm_cached = adv_payload["with_llm_cached"]
+    adversarial = None
+    if with_llm_cached is not None:
+        adversarial = {
+            "seed": adv_payload["seed"],
+            **{field: with_llm_cached[field] for field in _ADJUDICATION_METRICS_FIELDS},
+            "count_match_rate": with_llm_cached["count_match_rate"],
+            "false_match_rate": with_llm_cached["false_match_rate"],
+        }
+
+    return {
+        "organic": organic,
+        "adversarial": adversarial,
+        "total_new_live_call_cost_paise": 0,
+    }
+
+
+_ABLATION_SEEDS = (42, 43, 44, 45, 46, 47)
+
+
+def _regenerate_bench_ablation_seeds() -> dict:
+    """Reproduces bench_ablation_seeds.json's per-seed reports and pooled
+    match/false-match rates for arms B (with_llm) and C (llm_only) across
+    all six seeds — cache-driven, no live calls. Pooled rates are
+    reconstructed from each seed's own rate and total_credits (an exact
+    round-trip: these are small integer ratios), not recomputed from raw
+    decisions, since MetricsReport itself doesn't expose the raw counts."""
+    per_seed: dict[str, dict[str, dict]] = {"with_llm": {}, "llm_only": {}}
+    with tempfile.TemporaryDirectory(prefix="unbatch-verify-ablation-") as tmp:
+        tmp_root = Path(tmp)
+        for seed in _ABLATION_SEEDS:
+            for arm_name, llm_only in (("with_llm", False), ("llm_only", True)):
+                seed_dir = tmp_root / f"seed_{seed}_{arm_name}"
+                data_dir = seed_dir / "data"
+                data_dir.mkdir(parents=True, exist_ok=True)
+                report = _score_with_llm_cached_for_seed(
+                    seed, data_dir, seed_dir / "audit.db", llm_only=llm_only
+                )
+                per_seed[arm_name][str(seed)] = json.loads(report.model_dump_json())
+
+    pooled: dict[str, dict] = {}
+    for arm_name in ("with_llm", "llm_only"):
+        total_credits = 0
+        resolved_total = 0
+        false_matched_total = 0
+        llm_cost_total = 0
+        llm_calls_total = 0
+        for seed in _ABLATION_SEEDS:
+            r = per_seed[arm_name][str(seed)]
+            total_credits += r["total_credits"]
+            resolved = round(r["count_match_rate"] * r["total_credits"])
+            resolved_total += resolved
+            false_matched_total += round(r["false_match_rate"] * resolved)
+            llm_cost_total += r["llm_cost_paise"]
+            llm_calls_total += r["llm_call_count"]
+        pooled[arm_name] = {
+            "total_credits": total_credits,
+            "pooled_count_match_rate": (
+                resolved_total / total_credits if total_credits else 0.0
+            ),
+            "pooled_false_match_rate": (
+                false_matched_total / resolved_total if resolved_total else 0.0
+            ),
+            "total_llm_cost_paise": llm_cost_total,
+            "total_llm_call_count": llm_calls_total,
+        }
+
+    return {
+        "seeds": list(_ABLATION_SEEDS),
+        "per_seed": per_seed,
+        "pooled": pooled,
+        "new_live_call_cost_paise": {"with_llm": 0, "llm_only": 0, "total": 0},
+    }
+
+
+@app.command()
+def verify() -> None:
+    """Regenerate every committed benchmark/report artifact into a temp
+    directory and diff against what's committed, exiting non-zero on any
+    mismatch — the permanent fix for the bench_adversarial.json /
+    bench_adjudication.json contradiction found and hand-fixed once already
+    (FAILURES.md): a committed artifact silently drifting from what the
+    pipeline actually produces, because nothing regenerated and diffed it.
+
+    Each committed file's own recorded parameters (seeds, noise levels,
+    scale) are read back out of it and fed to the same code path that
+    produced it, so this can never drift from what `bench` itself accepts.
+    Every check here is cache-driven or rules-only — no live API calls are
+    ever made. Only a small, explicit set of fields that record something
+    genuinely non-reproducible (wall-clock timing; the historical cost of
+    live calls made when a file was first produced) are exempt, via
+    _VERIFY_IGNORE_KEYS, never a blanket ignore.
+
+    Not covered — see _VERIFY_SKIPPED_ARTIFACTS, printed every run with its
+    reason rather than silently omitted.
+    """
+    checks: list[tuple[str, object, object]] = []
+
+    with tempfile.TemporaryDirectory(prefix="unbatch-verify-") as tmp, _quiet():
+        tmp_root = Path(tmp)
+
+        baseline_path = _BASELINE_RULES_ONLY_PATH
+        if baseline_path.exists():
+            checks.append(
+                (
+                    str(baseline_path),
+                    _load_json(baseline_path),
+                    _regenerate_baseline_rules_only(),
+                )
+            )
+
+        multiseed_path = Path("bench_multiseed.json")
+        if multiseed_path.exists():
+            committed = _load_json(multiseed_path)
+            assert isinstance(committed, dict)
+            seeds_str = ",".join(str(s) for s in committed["seeds"])
+            out_path = tmp_root / "bench_multiseed.json"
+            _bench_seeds(seeds_str, out_path)
+            checks.append((str(multiseed_path), committed, _load_json(out_path)))
+
+        noise_path = Path("bench_noise.json")
+        if noise_path.exists():
+            committed = _load_json(noise_path)
+            assert isinstance(committed, dict)
+            levels_str = ",".join(str(v) for v in committed["noise_levels"])
+            out_path = tmp_root / "bench_noise.json"
+            _bench_noise(levels_str, out_path)
+            checks.append((str(noise_path), committed, _load_json(out_path)))
+
+        scale_path = Path("bench_scale.json")
+        if scale_path.exists():
+            committed = _load_json(scale_path)
+            assert isinstance(committed, dict)
+            out_path = tmp_root / "bench_scale.json"
+            _bench_scale(committed["target_credits"], out_path)
+            checks.append((str(scale_path), committed, _load_json(out_path)))
+
+        adversarial_path = Path("bench_adversarial.json")
+        if adversarial_path.exists():
+            committed = _load_json(adversarial_path)
+            out_path = tmp_root / "bench_adversarial.json"
+            _bench_adversarial(out_path)
+            checks.append((str(adversarial_path), committed, _load_json(out_path)))
+
+        forecast_path = Path("bench_forecast.json")
+        if forecast_path.exists():
+            committed = _load_json(forecast_path)
+            assert isinstance(committed, dict)
+            seeds_str = ",".join(str(s) for s in committed["seeds"])
+            out_path = tmp_root / "bench_forecast.json"
+            _bench_forecast(seeds_str, committed["horizon_days"], out_path)
+            checks.append((str(forecast_path), committed, _load_json(out_path)))
+
+        noise_seeds_path = Path("bench_noise_seeds.json")
+        if noise_seeds_path.exists():
+            committed = _load_json(noise_seeds_path)
+            assert isinstance(committed, dict)
+            seeds = tuple(committed["seeds"])
+            levels = committed["noise_levels"]
+            checks.append(
+                (
+                    str(noise_seeds_path),
+                    committed,
+                    _regenerate_bench_noise_seeds(seeds, levels),
+                )
+            )
+
+        adjudication_path = Path("bench_adjudication.json")
+        if adjudication_path.exists():
+            checks.append(
+                (
+                    str(adjudication_path),
+                    _load_json(adjudication_path),
+                    _regenerate_bench_adjudication(),
+                )
+            )
+
+        ablation_path = Path("bench_ablation_seeds.json")
+        if ablation_path.exists():
+            checks.append(
+                (
+                    str(ablation_path),
+                    _load_json(ablation_path),
+                    _regenerate_bench_ablation_seeds(),
+                )
+            )
+
+    failures: dict[str, list[str]] = {}
+    for path_str, committed_value, regenerated_value in checks:
+        diff = _diff_json(
+            committed_value,
+            regenerated_value,
+            ignore_keys=_VERIFY_IGNORE_KEYS.get(path_str, frozenset()),
+        )
+        if diff:
+            failures[path_str] = diff
+            typer.echo(f"DRIFT  {path_str}")
+        else:
+            typer.echo(f"PASS   {path_str}")
+
+    if _VERIFY_SKIPPED_ARTIFACTS:
+        typer.echo("not covered:")
+        for name, reason in _VERIFY_SKIPPED_ARTIFACTS.items():
+            typer.echo(f"  {name}: {reason}")
+
+    if failures:
+        typer.echo("")
+        for path_str, diffs in failures.items():
+            typer.echo(f"DRIFT in {path_str}:", err=True)
+            for d in diffs:
+                typer.echo(f"  {d}", err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo(f"verify: all {len(checks)} covered artifacts match freshly regenerated output")
 
 
 if __name__ == "__main__":

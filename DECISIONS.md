@@ -163,3 +163,45 @@ Format:
 **What we did instead:** reported honestly as a measured, documented cost of the durability guarantee (FAILURES.md, ARCHITECTURE.md's Audit trail and Scale sections). At production scale (105 credits) it is invisible; it only matters at a synthetic scale this project doesn't operate at day to day.
 
 **Would revisit if:** this ran as a genuinely high-throughput service rather than a per-run batch job. Durability-per-decision is the right default until volume makes the crash-window risk worth trading against.
+
+**Revisited (2026-09-01):** the crash-window objection above assumed batching meant one commit for the whole run. `audit.record_many` batches one commit *per stage* instead, wrapped in try/rollback — a failure partway through a stage's writes rolls the whole stage back rather than leaving it half-written, so "every decision writes an audit row" still holds at the same granularity `run_cascade` already reasons in (one stage's decisions, all at once). That's a narrower, safer version of the batching this entry rejected, not the one it was rejecting. `bench --scale 5000`: 11.45s -> 3.47s.
+
+## A layered domain/application/infrastructure restructure
+
+**Considered because:** the module boundaries here (stages, compose, audit, adjudicator) aren't organized into the classic layered folders a longer-lived service would use, and a reviewer used to that shape might read the flat `src/unbatch/` layout as under-designed.
+
+**Rejected because:** a full refactor of a 110-commit project days before submission would end the history with one enormous restructure commit, which reads worse than incremental discipline — exactly the history a reviewer is told to read (README.md's own pointer to the git log). The boundaries that matter already hold without the folder ceremony: the adjudicator isolates the LLM, stages are pure functions with an enforced signature, and metrics.py alone reads ground truth. Renaming that into `domain/`, `application/`, `infrastructure/` would move code without changing any of those actual guarantees.
+
+**What we did instead:** kept the flat layout and let the existing module boundaries (documented in CLAUDE.md's Conventions section and enforced by the stage protocol) carry the separation a layered structure would otherwise be buying.
+
+**Would revisit if:** the project grew past this scale into something with multiple bounded contexts genuinely competing for the same module — nothing here suggests that need yet.
+
+## Separating the matcher from the decision policy
+
+**Considered because:** L2/L3/L4's confidence thresholds and match/exception decisions are currently embedded in each stage's `run()`, rather than a matcher returning candidates for a separate policy layer to adjudicate.
+
+**Rejected because:** same reasoning as the restructure above — this is a real architectural pattern, but not one this codebase is missing the benefit of. The confidence bands (ARCHITECTURE.md's § Confidence bands) already function as the policy layer: each stage's threshold for resolving vs. falling through *is* the policy, just expressed as a constant and a comparison rather than a separate object. Extracting that into its own layer this week would touch every stage for a separation the confidence-band design already provides.
+
+**What we did instead:** left the policy where it's legible — next to the match logic it governs, documented in ARCHITECTURE.md rather than abstracted into its own module.
+
+**Would revisit if:** a policy needed to vary independently of the matching logic (e.g., a per-merchant confidence threshold) — right now there is exactly one policy, so there is nothing yet for a separate layer to parameterize.
+
+## A structured Evidence object replacing reason strings
+
+**Considered because:** `Decision.reason` and `Decision.rationale` are free-form strings; a structured object (the specific fields that justified a match — which comparison passed, which line matched, by how much) would be more queryable and harder to leave vague.
+
+**Rejected because:** this is a real improvement, wrong week — it touches every decision write in every stage, `audit.py`'s schema, `metrics.py`'s scoring, and `report.py`'s rendering all at once, for a benefit (structured querying over reasons) nothing in this submission's judging criteria currently needs. `unbatch exceptions` and the HTML report already read reason strings as the unit of explanation; nothing downstream is blocked on them being unstructured.
+
+**What we did instead:** kept `reason` as a fixed enum-like string per stage (each stage has exactly one constant reason value, e.g. `l3_tolerance.REASON_MATCH`) and `rationale` as free text for L4's LLM explanation — structured enough for the report and exception query to group by, without a new schema migration.
+
+**Would revisit if:** a downstream consumer needed to query on *why* structurally (e.g., "every decision where the matched line's date was more than N days off") rather than by the stage/reason-string pair already available.
+
+## Dependency injection for the adjudicator
+
+**Considered because:** `adjudicator.py` calls the OpenAI SDK directly; an injected client/provider interface would make swapping models or providers a constructor argument instead of an edit.
+
+**Rejected because:** the boundary this would formalize already exists in practice, not just in principle — D0.5's provider swap from Anthropic to OpenAI (see `adjudicator.py`'s module docstring) touched exactly one module and nothing else, because every other stage only ever sees `adjudicator`'s pydantic-validated return type, never the provider SDK. Adding a formal injection seam now would be building an abstraction to prove a property the swap itself already demonstrated.
+
+**What we did instead:** kept `adjudicator.py` as the single, already-isolated module every LLM call passes through — cache lookup, prompt construction, schema validation, and retry/degrade all live there, and nothing outside it imports the provider SDK.
+
+**Would revisit if:** a second provider needed to run side by side (e.g., an A/B comparison), rather than one provider swapped for another — that is a genuinely different requirement DI would serve, which hasn't come up.
