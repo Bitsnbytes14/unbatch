@@ -23,10 +23,10 @@ from unbatch.generate import (
     inject_breaks,
     write_ground_truth_json,
 )
-from unbatch.models import BreakType
-from unbatch.stages.l3_tolerance import TOLERANCE_FLOOR_PAISE, TOLERANCE_RATE
+from unbatch.models import BreakType, CascadeConfig
 
 SEED = 42
+_TOLERANCE = CascadeConfig()
 
 
 def _full_pipeline(seed: int = SEED):
@@ -258,7 +258,9 @@ def test_tolerance_ambiguous_has_two_batches_within_band_of_one_credit() -> None
         p_net = sum(line.net_paise for line in p_batch.lines)
         q_net = sum(line.net_paise for line in q_batch.lines)
         record = next(r for r in bank_statement if r.txn_id == credit.txn_id)
-        tolerance = max(TOLERANCE_FLOOR_PAISE, round(record.credit_paise * TOLERANCE_RATE))
+        tolerance = max(
+            _TOLERANCE.tolerance_floor_paise, round(record.credit_paise * _TOLERANCE.tolerance_rate)
+        )
 
         assert abs(record.credit_paise - p_net) <= tolerance
         assert abs(record.credit_paise - q_net) <= tolerance

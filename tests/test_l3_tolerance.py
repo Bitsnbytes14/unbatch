@@ -18,7 +18,7 @@ from unbatch.models import (
     UnresolvedCredit,
 )
 from unbatch.stages import l3_tolerance
-from unbatch.stages.l3_tolerance import TOLERANCE_FLOOR_PAISE, TOLERANCE_RATE, _tolerance_for
+from unbatch.stages.l3_tolerance import _tolerance_for
 
 CTX = RunContext(run_id="run_test", seed=1)
 
@@ -83,11 +83,12 @@ def _unresolved(
 
 
 def test_tolerance_for_uses_the_floor_for_small_credits() -> None:
-    assert _tolerance_for(1_000) == TOLERANCE_FLOOR_PAISE  # 0.6% of 1000 = 6, below the floor
+    # 0.6% of 1000 = 6, below the floor
+    assert _tolerance_for(1_000, CTX) == CTX.config.tolerance_floor_paise
 
 
 def test_tolerance_for_uses_the_rate_for_larger_credits() -> None:
-    assert _tolerance_for(10_000_000) == round(10_000_000 * TOLERANCE_RATE)
+    assert _tolerance_for(10_000_000, CTX) == round(10_000_000 * CTX.config.tolerance_rate)
 
 
 def test_resolves_a_batch_within_tolerance_and_records_the_delta() -> None:
@@ -186,7 +187,7 @@ def test_matching_line_outside_the_date_window_does_not_block_the_match() -> Non
 
 
 def test_tolerance_floor_is_50_paise() -> None:
-    assert TOLERANCE_FLOOR_PAISE == 50
+    assert CTX.config.tolerance_floor_paise == 50
 
 
 def test_delta_exactly_at_the_tolerance_boundary_still_resolves() -> None:

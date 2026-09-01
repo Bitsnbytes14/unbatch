@@ -103,7 +103,7 @@ def test_date_window_includes_lines_exactly_3_days_before() -> None:
 
 
 def test_pool_too_large_becomes_an_immediate_exception() -> None:
-    lines = [_line(1, str(i), date(2024, 1, 5)) for i in range(CTX.max_pool + 1)]
+    lines = [_line(1, str(i), date(2024, 1, 5)) for i in range(CTX.config.max_pool + 1)]
     u = _unresolved(_credit(sum(line_.net_paise for line_ in lines), date(2024, 1, 5)), lines)
 
     [decision] = l2_compose.run([u], CTX)
@@ -133,7 +133,7 @@ def test_compose_timeout_becomes_an_immediate_exception(monkeypatch: pytest.Monk
 def test_a_pool_too_large_exception_does_not_stop_later_credits_from_being_tried() -> None:
     """continue, not break: one credit's pool refusal must not swallow
     every credit processed after it in the same batch."""
-    too_large_lines = [_line(1, str(i), date(2024, 1, 5)) for i in range(CTX.max_pool + 1)]
+    too_large_lines = [_line(1, str(i), date(2024, 1, 5)) for i in range(CTX.config.max_pool + 1)]
     too_large = _unresolved(
         _credit(sum(line_.net_paise for line_ in too_large_lines), date(2024, 1, 5)),
         too_large_lines,
