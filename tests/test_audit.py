@@ -7,6 +7,8 @@ import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+
 from unbatch import audit
 from unbatch.models import Decision, DecisionOutcome, Stage
 
@@ -194,6 +196,53 @@ def test_clear_run_removes_only_that_runs_rows(tmp_path: Path) -> None:
 
     assert audit.fetch_decisions(conn, "run_a") == []
     assert [d.credit_id for d in audit.fetch_decisions(conn, "run_b")] == ["txn_b"]
+
+
+def test_record_many_writes_every_decision_in_one_transaction(tmp_path: Path) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    decisions = [_decision(credit_id="txn_1"), _decision(credit_id="txn_2")]
+
+    audit.record_many(conn, decisions)
+
+    fetched = audit.fetch_decisions(conn, "run_42_abc123")
+    assert {d.credit_id for d in fetched} == {"txn_1", "txn_2"}
+
+
+def test_record_many_with_an_empty_list_is_a_no_op(tmp_path: Path) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record_many(conn, [])
+    assert audit.fetch_decisions(conn, "run_42_abc123") == []
+
+
+def test_record_many_rolls_back_the_whole_batch_on_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Exception-safety: a failure partway through the batch must not leave
+    some of its rows committed and others not — the stage's rows are
+    all-or-nothing, same as record() is for a single row."""
+    conn = audit.connect(tmp_path / "audit.db")
+    good = _decision(credit_id="txn_1")
+    also_good = _decision(credit_id="txn_2")
+
+    real_params = audit._decision_to_params
+    calls = {"n": 0}
+
+    def _flaky_params(decision: Decision) -> tuple[object, ...]:
+        calls["n"] += 1
+        if calls["n"] == 2:
+            params = list(real_params(decision))
+            params[0] = None  # run_id is NOT NULL — forces the 2nd insert to fail
+            return tuple(params)
+        return real_params(decision)
+
+    monkeypatch.setattr(audit, "_decision_to_params", _flaky_params)
+
+    with pytest.raises(sqlite3.IntegrityError):
+        audit.record_many(conn, [good, also_good])
+
+    # the first row must not remain committed just because it came before
+    # the one that failed
+    assert audit.fetch_decisions(conn, "run_42_abc123") == []
 
 
 def test_rerunning_the_same_run_id_does_not_duplicate_rows(tmp_path: Path) -> None:
