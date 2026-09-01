@@ -203,33 +203,33 @@ def run_cascade(
 
         decisions = stage_fn(remaining, ctx)
         resolved_ids = {decision.credit_id for decision in decisions}
+        audit.record_many(conn, decisions)
         for decision in decisions:
-            audit.record(conn, decision)
             consumed_payment_ids.update(decision.matched_payment_ids)
         counts[stage.value] = len(decisions)
         remaining = [u for u in remaining if u.credit.txn_id not in resolved_ids]
 
     if ctx.no_llm:
         now = datetime.now(UTC)
-        for u in remaining:
-            audit.record(
-                conn,
-                Decision(
-                    run_id=ctx.run_id,
-                    seed=ctx.seed,
-                    stage=Stage.L4,
-                    credit_id=u.credit.txn_id,
-                    matched_payment_ids=[],
-                    outcome=DecisionOutcome.EXCEPTION,
-                    confidence=0.0,
-                    delta_paise=0,
-                    reason="no_llm_unresolved",
-                    rationale=None,
-                    llm_model=None,
-                    llm_cost_paise=None,
-                    created_at=now,
-                ),
+        terminal_decisions = [
+            Decision(
+                run_id=ctx.run_id,
+                seed=ctx.seed,
+                stage=Stage.L4,
+                credit_id=u.credit.txn_id,
+                matched_payment_ids=[],
+                outcome=DecisionOutcome.EXCEPTION,
+                confidence=0.0,
+                delta_paise=0,
+                reason="no_llm_unresolved",
+                rationale=None,
+                llm_model=None,
+                llm_cost_paise=None,
+                created_at=now,
             )
+            for u in remaining
+        ]
+        audit.record_many(conn, terminal_decisions)
         counts["terminal_exception"] = len(remaining)
 
     return counts
@@ -685,8 +685,8 @@ def _run_rules_only_cascade_timed(
 
         decisions = stage_fn(remaining, ctx)
         resolved_ids = {decision.credit_id for decision in decisions}
+        audit.record_many(conn, decisions)
         for decision in decisions:
-            audit.record(conn, decision)
             consumed_payment_ids.update(decision.matched_payment_ids)
         counts[stage.value] = len(decisions)
         remaining = [u for u in remaining if u.credit.txn_id not in resolved_ids]

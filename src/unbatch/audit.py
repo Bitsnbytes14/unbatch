@@ -101,29 +101,48 @@ def clear_run(conn: sqlite3.Connection, run_id: str) -> None:
     conn.commit()
 
 
-def record(conn: sqlite3.Connection, decision: Decision) -> None:
-    """Write one Decision row."""
-    conn.execute(
-        _INSERT_SQL,
-        (
-            decision.run_id,
-            decision.seed,
-            decision.stage.value,
-            decision.credit_id,
-            json.dumps(decision.matched_payment_ids),
-            decision.outcome.value,
-            decision.confidence,
-            decision.delta_paise,
-            decision.reason,
-            decision.rationale,
-            decision.llm_model,
-            decision.llm_cost_paise,
-            int(decision.llm_retried),
-            None if decision.evidence_refs is None else json.dumps(decision.evidence_refs),
-            None if decision.human_review_required is None else int(decision.human_review_required),
-            decision.created_at.isoformat(),
-        ),
+def _decision_to_params(decision: Decision) -> tuple[object, ...]:
+    return (
+        decision.run_id,
+        decision.seed,
+        decision.stage.value,
+        decision.credit_id,
+        json.dumps(decision.matched_payment_ids),
+        decision.outcome.value,
+        decision.confidence,
+        decision.delta_paise,
+        decision.reason,
+        decision.rationale,
+        decision.llm_model,
+        decision.llm_cost_paise,
+        int(decision.llm_retried),
+        None if decision.evidence_refs is None else json.dumps(decision.evidence_refs),
+        None if decision.human_review_required is None else int(decision.human_review_required),
+        decision.created_at.isoformat(),
     )
+
+
+def record(conn: sqlite3.Connection, decision: Decision) -> None:
+    """Write one Decision row, committing immediately."""
+    conn.execute(_INSERT_SQL, _decision_to_params(decision))
+    conn.commit()
+
+
+def record_many(conn: sqlite3.Connection, decisions: list[Decision]) -> None:
+    """Write every Decision in one transaction: a single executemany plus one
+    commit, rather than one execute-and-commit per row via `record`.
+    `bench --scale 5000` found per-decision commits dominating wall-clock
+    (10.49s of 11.45s total) — this is the fix, used by the cascade runner
+    in place of calling `record` once per decision within a stage. A
+    failure partway through rolls back so the stage's rows are all-or-
+    nothing, never half-written."""
+    if not decisions:
+        return
+    try:
+        conn.executemany(_INSERT_SQL, [_decision_to_params(d) for d in decisions])
+    except Exception:
+        conn.rollback()
+        raise
     conn.commit()
 
 
