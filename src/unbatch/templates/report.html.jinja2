@@ -377,6 +377,49 @@
   </section>
   {% endfor %}
 
+  <!-- ============ FORWARD CASH FORECAST ============ -->
+  {% if forecast %}
+  <section class="card">
+    <h2>Forward cash forecast <span class="pill pill-neutral">unbatch forecast --horizon {{ forecast.horizon_days }}</span></h2>
+    <p class="section-note">A separate loop from reconciliation above, over the same settlement report — see forecast.py's module docstring. Pure arithmetic, no LLM: fits a settlement-lag mode and a fee-schedule deviation stdev on data settled on or before <code>{{ forecast.as_of }}</code> ({{ forecast.historical_payment_count }} historical payments), then projects every order captured by then but still unsettled ({{ forecast.unsettled_payment_count }} of them) onto its expected settlement day.</p>
+
+    <div class="callout callout-bad">
+      <strong>Measured limitation, not a bug:</strong> with this gateway's 1-2 day settlement lag, an order that is still unsettled as of <code>{{ forecast.as_of }}</code> is either on schedule to settle the very next day or already overdue — there is no way for an already-captured order to honestly project onto day 3, day 7, or day 14. The six-seed backtest (bench_forecast.json) found this population accounts for roughly <strong>10% of actual 14-day inflow</strong> on average; the rest comes from orders not yet captured as of the forecast date, which no projection over settlement data alone can see. Reported plainly rather than dressed up — see ARCHITECTURE.md's forecasting operating envelope.
+    </div>
+
+    <table>
+      <thead><tr><th>&nbsp;</th><th>Expected</th><th>Low</th><th>High</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="metric-name">Total over {{ forecast.horizon_days }} days</td>
+          <td>{{ forecast.total_expected_rupees }}</td>
+          <td>{{ forecast.total_low_rupees }}</td>
+          <td>{{ forecast.total_high_rupees }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Daily breakdown</h3>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Date</th><th>Expected</th><th>Low</th><th>High</th><th>Payments</th></tr></thead>
+      <tbody>
+        {% for day in forecast.daily %}
+        <tr>
+          <td>{{ day.date }}</td>
+          <td>{{ day.expected_rupees }}</td>
+          <td>{{ day.low_rupees }}</td>
+          <td>{{ day.high_rupees }}</td>
+          <td>{{ day.payment_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="section-note">Band width comes from the observed deviation between actual settled nets and what fees.py's own fee schedule would compute (stdev {{ (forecast.historical_deviation_stdev * 100) | round(3) }}% of gross on this fit window) — narrow, because the fee schedule is deterministic and only genuine drift (a fee-tier change, a refund/chargeback risk) shows up here at all.</p>
+  </section>
+  {% endif %}
+
   <footer>unbatch — Razorpay AI Buildathon, Track 04. Generated from out/audit.db; every figure traces to a line in metrics.py.</footer>
 
 </div>

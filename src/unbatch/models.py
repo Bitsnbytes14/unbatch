@@ -267,3 +267,34 @@ class GroundTruth(BaseModel):
 
     credits: list[GroundTruthCredit]
     orphan_settlements: list[GroundTruthOrphanSettlement]
+
+
+class DailyForecast(BaseModel):
+    """One day's projected settlement inflow within a forecast horizon —
+    see forecast.py's module docstring. `low_paise`/`high_paise` bound the
+    observed drift between a settlement's actual net and what fees.py's own
+    fee schedule would compute for it; `payment_count` is how many
+    unsettled orders were projected onto this date."""
+
+    date: date
+    expected_paise: Paise
+    low_paise: Paise
+    high_paise: Paise
+    payment_count: int
+
+
+class ForecastReport(BaseModel):
+    """Output of `unbatch forecast` — a projection over the existing
+    settlement report, not a new data source. Pure arithmetic (CLAUDE.md
+    invariant 2); never touches the adjudicator."""
+
+    as_of: date
+    horizon_days: int
+    daily: list[DailyForecast]
+    total_expected_paise: Paise
+    total_low_paise: Paise
+    total_high_paise: Paise
+    unsettled_payment_count: int
+    historical_payment_count: int
+    historical_lag_distribution: dict[str, int]
+    historical_deviation_stdev: float

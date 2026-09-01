@@ -4,7 +4,7 @@ Context for Claude Code. Read this before any task. Keep it under 200 lines — 
 
 ## What this is
 
-`unbatch` — settlement reconciliation agent. Matches **bank credit lines** against **expected settlement batches** derived from an **order ledger**. Many-to-one: one bank credit = many payments, minus fees, tax, refunds, chargebacks.
+`unbatch` — settlement reconciliation agent. Matches **bank credit lines** against **expected settlement batches** derived from an **order ledger**. Many-to-one: one bank credit = many payments, minus fees, tax, refunds, chargebacks. A second, separate loop (`forecast.py`, E14) projects forward cash inflow from the same settlement data — arithmetic only, no LLM.
 
 Built for the Razorpay AI Buildathon, Track 04 (AI Finance Controller). Judged on: problem taste, build quality, AI judgment, failure recovery. Deadline is hard.
 
@@ -43,6 +43,8 @@ uv run unbatch bench --scale 5000  # rules-only cascade throughput at scale
 uv run unbatch bench --noise 0.0,0.1,0.25,0.5,0.75,1.0  # degradation curve under narration noise
 uv run unbatch generate --adversarial  # write a same-scale, deliberately hostile dataset
 uv run unbatch bench --adversarial     # measure and publish the worst case on it
+uv run unbatch forecast --horizon 14   # project settlement inflows, no LLM (forecast.py)
+uv run unbatch bench --forecast 42,43,44,45,46,47  # backtest the forecaster across seeds
 uv run pytest -q
 ```
 
@@ -59,6 +61,7 @@ src/unbatch/
   adjudicator.py   LLM boundary: prompt, cache, validate, degrade
   audit.py         SQLite decision log
   metrics.py       scoring vs ground truth — ONLY file that reads it
+  forecast.py      forward cash forecast — arithmetic only, no adjudicator
   report.py        jinja2 -> out/report.html
   templates/       report.html.jinja2
   cli.py           typer entrypoints
