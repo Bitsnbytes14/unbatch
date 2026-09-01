@@ -23,16 +23,20 @@ at the report layer (CLAUDE.md invariant 1) — every other layer keeps paise.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import timedelta
 from pathlib import Path
 
 import jinja2
 
 from unbatch import audit
+from unbatch import forecast as forecast_module
 from unbatch import generate as generate_module
 from unbatch import metrics as metrics_module
 from unbatch.metrics import MetricsReport
-from unbatch.models import Decision
+from unbatch.models import Decision, SettlementLineType
 from unbatch.money import format_paise_to_rupees
+
+DEFAULT_FORECAST_HORIZON_DAYS = 14
 
 DEFAULT_OUT_PATH = Path("out/report.html")
 TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -186,6 +190,80 @@ def _ambiguity_framing(report: MetricsReport) -> AmbiguityFraming:
     )
 
 
+@dataclass
+class ForecastDayView:
+    """One day of the forecast table, rupee-formatted for display."""
+
+    date: str
+    expected_rupees: str
+    low_rupees: str
+    high_rupees: str
+    payment_count: int
+
+
+@dataclass
+class ForecastView:
+    """The forward cash forecast — a separate loop from reconciliation,
+    over the same settlement report. See forecast.py's module docstring
+    for the method and bench_forecast.json for the measured backtest this
+    section's caveat text quotes."""
+
+    as_of: str
+    horizon_days: int
+    daily: list[ForecastDayView]
+    total_expected_rupees: str
+    total_low_rupees: str
+    total_high_rupees: str
+    unsettled_payment_count: int
+    historical_payment_count: int
+    historical_deviation_stdev: float
+
+
+def build_forecast_view(
+    data_dir: Path, *, horizon_days: int = DEFAULT_FORECAST_HORIZON_DAYS
+) -> ForecastView | None:
+    """Run the forecaster against `data_dir`'s own settlement report, same
+    default `as_of` as `unbatch forecast` itself (last settled date minus
+    the horizon). Returns None only if there's no settled payment at all
+    to forecast from — an empty data_dir, not a normal outcome."""
+    orders = generate_module.read_order_ledger_csv(data_dir / "order_ledger.csv")
+    settlements = generate_module.read_settlement_report_csv(data_dir / "settlement_report.csv")
+    last_settled = max(
+        (
+            line.settled_at.date()
+            for line in settlements
+            if line.type == SettlementLineType.PAYMENT
+        ),
+        default=None,
+    )
+    if last_settled is None:
+        return None
+    as_of = last_settled - timedelta(days=horizon_days)
+    forecast_report = forecast_module.forecast(
+        orders, settlements, as_of=as_of, horizon_days=horizon_days
+    )
+    return ForecastView(
+        as_of=forecast_report.as_of.isoformat(),
+        horizon_days=forecast_report.horizon_days,
+        daily=[
+            ForecastDayView(
+                date=day.date.isoformat(),
+                expected_rupees=format_paise_to_rupees(day.expected_paise),
+                low_rupees=format_paise_to_rupees(day.low_paise),
+                high_rupees=format_paise_to_rupees(day.high_paise),
+                payment_count=day.payment_count,
+            )
+            for day in forecast_report.daily
+        ],
+        total_expected_rupees=format_paise_to_rupees(forecast_report.total_expected_paise),
+        total_low_rupees=format_paise_to_rupees(forecast_report.total_low_paise),
+        total_high_rupees=format_paise_to_rupees(forecast_report.total_high_paise),
+        unsettled_payment_count=forecast_report.unsettled_payment_count,
+        historical_payment_count=forecast_report.historical_payment_count,
+        historical_deviation_stdev=forecast_report.historical_deviation_stdev,
+    )
+
+
 def build_arm_views(
     seed: int, data_dir: Path, db: Path
 ) -> dict[str, ArmView]:
@@ -234,6 +312,7 @@ def render(
     """Render out/report.html (or `out_path`) from whichever arms have been
     run against `data_dir`'s seed-42 fixtures. Returns the path written."""
     arms = build_arm_views(seed, data_dir, db)
+    forecast_view = build_forecast_view(data_dir)
 
     framing = None
     if arms["no_llm"].ran and arms["no_llm"].metrics is not None:
@@ -258,6 +337,7 @@ def render(
         arms=arms,
         framing=framing,
         delta_b_minus_a=delta_b_minus_a,
+        forecast=forecast_view,
     )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
