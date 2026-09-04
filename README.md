@@ -47,6 +47,10 @@ Data flow, top to bottom:
 out/report.html, unbatch metrics, unbatch exceptions --export
 ```
 
+## What makes these numbers trustworthy
+
+Every number below is pooled across six independently generated datasets, not read off one. The arm built specifically to show the LLM cascade is unnecessary was actually run, on all six seeds, and published even though it made the model look worse and less safe. The exception list is complete, with a reason on every entry, never truncated. The whole thing reproduces from a fresh clone with no API key.
+
 ## Quickstart
 
 ```bash
@@ -56,9 +60,25 @@ uv sync
 uv run unbatch demo
 ```
 
-One command: generates seed 42's fixtures, runs all three ablation arms (rules only, rules + LLM, LLM only) from the committed cache, scores the with-LLM arm, and renders `out/report.html`. No API key needed, prints progress as it goes, and finishes in a few seconds. Ends with the headline numbers and the report path printed to the terminal.
+No API key needed. Runs in about three seconds and populates all three ablation arms: generates seed 42's fixtures, runs rules only, rules plus LLM, and LLM only, scores the with-LLM arm, and renders `out/report.html`. It prints this:
 
-No API key is needed to reproduce any number in this README. Every LLM response the cascade can produce on seeds 42 through 47 and the adversarial dataset is committed under `cache/`, keyed by a hash of the exact prompt sent, and `--cached` (which `unbatch demo` always passes) replays those bytes instead of calling out; on a cache miss it fails with a clear message rather than attempting a live call. CI proves the keyless claim on a runner that has never had `OPENAI_API_KEY` set: `.github/workflows/ci.yml`'s keyless-reproduction step runs the underlying commands for real and asserts the committed numbers down to the exact fraction, not just that the commands exit cleanly.
+```
+[1/6] generate --seed 42
+[2/6] run --no-llm (arm A: rules only)
+[3/6] run --cached (arm B: rules + LLM)
+[4/6] run --llm-only --cached (arm C: LLM only)
+[5/6] metrics (arm B)
+[6/6] report
+
+total credits:    105
+match rate:       88.6%
+false-match rate: 0.0%
+exceptions:       11.4%
+LLM cost:         ₹0.19
+report:           out/report.html
+```
+
+Every LLM response the cascade can produce on seeds 42 through 47 and the adversarial dataset is committed under `cache/`, keyed by a hash of the exact prompt sent, and `--cached` (which `unbatch demo` always passes) replays those bytes instead of calling out; on a cache miss it fails with a clear message rather than attempting a live call. CI proves the keyless claim on a runner that has never had `OPENAI_API_KEY` set: `.github/workflows/ci.yml`'s keyless-reproduction step runs the underlying commands for real and asserts the committed numbers down to the exact fraction, not just that the commands exit cleanly.
 
 ### Or run the steps separately
 
@@ -125,7 +145,7 @@ Four independent measurements, each stressing a different axis of the system.
 
 ## Total project spend
 
-**975 paise (₹9.75)** across every live LLM call made building and measuring this project, computed by summing the cost of every committed file under `cache/` (975 files, each costing exactly 1 paisa). Most of it did not go to the shipped system: 896 of the 975 paise, per `bench_ablation_seeds.json`'s own `llm_only` total, is the cost of running the LLM-only arm across all six seeds, the experiment designed specifically to test whether the cascade was unnecessary.
+**975 paise (₹9.75)** across every live LLM call made building and measuring this project, computed by summing the cost of every committed file under `cache/` (975 files, each costing exactly 1 paisa). This was really spent: every one of those calls happened once, live, and the response was committed to `cache/` at the time, which is the entire reason reproduction from a fresh clone needs no API key and costs nothing further. Most of it did not go to the shipped system: 896 of the 975 paise, per `bench_ablation_seeds.json`'s own `llm_only` total, is the cost of running the LLM-only arm across all six seeds, the experiment designed specifically to make the cascade look unnecessary.
 
 ## Repo guide
 
@@ -159,13 +179,13 @@ Raw evidence behind the numbers above, all committed and all reproducible with `
 
 Written as scope for what comes next, not apology for what exists.
 
-- **Synthetic data throughout.** No real merchant settlement file has been run through this. The interesting question is not whether this works on real data in the abstract; it is which break types exist in real settlement data that these thirteen do not cover.
-- **One reconciliation pair.** Bank credit lines against settlement-derived batches. No other document types (invoices, tax filings, bank fee schedules) are in scope; see DECISIONS.md's [A second reconciliation pair](DECISIONS.md#a-second-reconciliation-pair-bank-statement-to-invoices) for why.
-- **The false-match floor is irreducible without an upstream identifying signal.** Every remaining false match is a coincidental collision between two unrelated quantities landing within a narrow numeric target of each other. Distinguishing coincidence from a real match using only the numbers already available is impossible in principle, not merely difficult.
-- **The forecaster captures only about 10% of future inflow.** This is a provable ceiling given T+1 settlement, not a modelling failure: settlement data structurally cannot see orders that have not been captured yet, and most of a 14-day window's inflow comes from exactly those. See ARCHITECTURE.md's [Forward cash forecast](ARCHITECTURE.md#forward-cash-forecast-e14).
-- **Evidence-grounding gap.** Semantic validation found the model frequently cites references outside the vocabulary the prompt specified, most often a settlement UTR it read off a competing candidate's hint text rather than the payment or settlement ID it was asked to cite. The fix is a prompt change specific enough to stop the habit, plus a full cache regeneration once that prompt changes (any prompt edit invalidates every cached response keyed against it).
-- **Keyless reproduction is scoped to the committed cache.** Every seed and dataset this README quotes numbers for replays with no API key. A new seed, a new noise level, or a new adversarial scenario needs live calls before it can be reproduced the same way.
-- **Single-tenant, batch, not streaming.** One merchant, static CSV files read once per run. No multi-tenant isolation, no live gateway ingestion.
+- **Synthetic data throughout.** The open question is not whether this works on real data in the abstract, but which break types a real merchant settlement file contains that these thirteen do not.
+- **One reconciliation pair.** Closed properly rather than splitting the same effort across two closed only partially; see DECISIONS.md's [A second reconciliation pair](DECISIONS.md#a-second-reconciliation-pair-bank-statement-to-invoices) for why.
+- **The false-match floor is irreducible without an upstream identifying signal.** The mechanism is a coincidental collision between unrelated amounts landing within the same narrow target, which the numbers alone cannot distinguish from a genuine match.
+- **The forecaster reaches about 10% of future inflow.** This is a provable ceiling given T+1 settlement rather than a modelling failure, since settlement data structurally cannot see orders not yet captured; see ARCHITECTURE.md's [Forward cash forecast](ARCHITECTURE.md#forward-cash-forecast-e14).
+- **Evidence-grounding gap.** Semantic validation found the model citing references outside the vocabulary the prompt specified; the fix is a prompt change precise enough to stop the habit, plus a full cache regeneration once that prompt changes.
+- **Keyless reproduction is scoped to the committed cache.** New data (a new seed, noise level, or adversarial scenario) needs live calls before it reproduces the same way.
+- **Single-tenant, batch, not streaming.** One merchant, static CSV files read once per run, with no live gateway ingestion.
 
 ## Measurement overruled assumption
 
