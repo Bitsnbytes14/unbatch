@@ -264,6 +264,27 @@ def fetch_exceptions(conn: sqlite3.Connection, run_id: str | None = None) -> lis
     )
 
 
+def latest_run_id(conn: sqlite3.Connection) -> str | None:
+    """The run_id of the most recently written Decision, or None if the
+    audit log has no rows at all. `unbatch metrics` uses this when no
+    --arm is given, so a reviewer following the quickstart sees the run
+    they just made instead of a fixed default arm that may never have
+    been run against this database."""
+    row = conn.execute("SELECT run_id FROM decisions ORDER BY id DESC LIMIT 1").fetchone()
+    return row[0] if row is not None else None
+
+
+def run_id_summary(conn: sqlite3.Connection) -> dict[str, int]:
+    """Every run_id present in the audit log, mapped to its decision count,
+    most recently active run first. Used to build a clear error message
+    when a requested run_id has no decisions, instead of silently scoring
+    a table of zeros against ground truth."""
+    rows = conn.execute(
+        "SELECT run_id, COUNT(*) FROM decisions GROUP BY run_id ORDER BY MAX(id) DESC"
+    ).fetchall()
+    return {row[0]: row[1] for row in rows}
+
+
 def derive_run_id(seed: int, data_dir: Path = DEFAULT_DATA_DIR, *, arm: str = "no_llm") -> str:
     """Derive a run_id deterministically from `seed`, `arm`, and a hash of
     the input CSVs actually present in `data_dir`. Two calls with the same

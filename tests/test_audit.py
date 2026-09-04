@@ -175,6 +175,46 @@ def test_fetch_exceptions_with_no_run_id_spans_all_runs(tmp_path: Path) -> None:
     assert {d.credit_id for d in exceptions} == {"txn_a", "txn_b"}
 
 
+def test_latest_run_id_is_none_for_an_empty_audit_log(tmp_path: Path) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    assert audit.latest_run_id(conn) is None
+
+
+def test_latest_run_id_returns_the_most_recently_written_runs_id(tmp_path: Path) -> None:
+    """`unbatch metrics` with no --arm relies on this to report whatever run
+    the reviewer just made, not a fixed default arm."""
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(conn, _decision(run_id="run_older", credit_id="txn_1"))
+    audit.record(conn, _decision(run_id="run_newer", credit_id="txn_1"))
+
+    assert audit.latest_run_id(conn) == "run_newer"
+
+
+def test_latest_run_id_after_clearing_the_newest_run_falls_back_to_the_next(
+    tmp_path: Path,
+) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(conn, _decision(run_id="run_older", credit_id="txn_1"))
+    audit.record(conn, _decision(run_id="run_newer", credit_id="txn_1"))
+    audit.clear_run(conn, "run_newer")
+
+    assert audit.latest_run_id(conn) == "run_older"
+
+
+def test_run_id_summary_is_empty_for_an_empty_audit_log(tmp_path: Path) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    assert audit.run_id_summary(conn) == {}
+
+
+def test_run_id_summary_counts_decisions_per_run_most_recent_first(tmp_path: Path) -> None:
+    conn = audit.connect(tmp_path / "audit.db")
+    audit.record(conn, _decision(run_id="run_a", credit_id="txn_1"))
+    audit.record(conn, _decision(run_id="run_a", credit_id="txn_2"))
+    audit.record(conn, _decision(run_id="run_b", credit_id="txn_1"))
+
+    assert audit.run_id_summary(conn) == {"run_b": 1, "run_a": 2}
+
+
 def test_reopen_after_close_preserves_rows(tmp_path: Path) -> None:
     db_path = tmp_path / "audit.db"
     conn = audit.connect(db_path)
