@@ -26,6 +26,7 @@ import json
 import random
 import sqlite3
 import statistics
+import sys
 import tempfile
 import time
 from collections import defaultdict
@@ -57,6 +58,19 @@ from unbatch.models import (
 from unbatch.stages import l0_utr, l1_exact, l2_compose, l3_tolerance, l4_llm
 
 app = typer.Typer(help="unbatch — settlement reconciliation agent.")
+
+# Rupee amounts (report_module.format_rupees) print the "₹" sign to the
+# terminal — a plain cmd.exe/PowerShell console on Windows defaults to a
+# legacy codepage (cp1252 or similar) that cannot encode it, crashing any
+# command that echoes one with UnicodeEncodeError. `unbatch demo`'s headline
+# summary is the first place this project prints a rupee amount to the
+# terminal rather than only into a UTF-8-encoded file, so it's the first
+# place this was ever exercised. Reconfiguring to UTF-8 is a no-op where the
+# console is already UTF-8 (every non-Windows terminal), so this fixes it
+# for every command rather than special-casing just this one.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 # Cheapest-and-most-certain first, per ARCHITECTURE.md's cascade table.
 # --no-llm runs only this sequence, with run_cascade's terminal exception
@@ -276,6 +290,42 @@ def _arm_name(*, no_llm: bool, llm_only: bool) -> str:
     return "with_llm"
 
 
+def _run_arm(
+    seed: int,
+    *,
+    cached: bool,
+    no_llm: bool,
+    llm_only: bool,
+    data_dir: Path,
+    db: Path,
+) -> tuple[str, int, dict[str, int]]:
+    """Shared body of `run` and `demo`: load input data, run the cascade for
+    one arm, return (run_id, credit_count, per-stage counts). Callers that
+    need the --llm-only uncached spend guard (the `run` command) check it
+    themselves before calling this — `demo` never needs it, since it always
+    passes cached=True for llm_only."""
+    _orders, settlements, bank_records = load_input_data(data_dir)
+    expected_batches = compute_expected_batches(settlements)
+    unresolved = build_unresolved_credits(bank_records, expected_batches)
+
+    arm = _arm_name(no_llm=no_llm, llm_only=llm_only)
+    run_id = audit.derive_run_id(seed, data_dir, arm=arm)
+    ctx = RunContext(run_id=run_id, seed=seed, cached=cached, no_llm=no_llm, llm_only=llm_only)
+    conn = audit.connect(db)
+    audit.clear_run(conn, run_id)
+
+    if llm_only:
+        stage_sequence = LLM_ONLY_STAGE_SEQUENCE
+    elif no_llm:
+        stage_sequence = STAGE_SEQUENCE
+    else:
+        stage_sequence = FULL_STAGE_SEQUENCE
+    counts = run_cascade(
+        ctx, unresolved, conn, settlements=settlements, stage_sequence=stage_sequence
+    )
+    return run_id, len(unresolved), counts
+
+
 @app.command()
 def run(
     seed: int = 42,
@@ -308,28 +358,12 @@ def run(
         )
         raise typer.Exit(code=1)
 
-    _orders, settlements, bank_records = load_input_data(data_dir)
-    expected_batches = compute_expected_batches(settlements)
-    unresolved = build_unresolved_credits(bank_records, expected_batches)
-
-    arm = _arm_name(no_llm=no_llm, llm_only=llm_only)
-    run_id = audit.derive_run_id(seed, data_dir, arm=arm)
-    ctx = RunContext(run_id=run_id, seed=seed, cached=cached, no_llm=no_llm, llm_only=llm_only)
-    conn = audit.connect(db)
-    audit.clear_run(conn, run_id)
-
-    if llm_only:
-        stage_sequence = LLM_ONLY_STAGE_SEQUENCE
-    elif no_llm:
-        stage_sequence = STAGE_SEQUENCE
-    else:
-        stage_sequence = FULL_STAGE_SEQUENCE
-    counts = run_cascade(
-        ctx, unresolved, conn, settlements=settlements, stage_sequence=stage_sequence
+    run_id, credit_count, counts = _run_arm(
+        seed, cached=cached, no_llm=no_llm, llm_only=llm_only, data_dir=data_dir, db=db
     )
 
     typer.echo(f"run_id: {run_id}")
-    typer.echo(f"credits: {len(unresolved)}")
+    typer.echo(f"credits: {credit_count}")
     for stage_name, count in counts.items():
         typer.echo(f"{stage_name}\t{count}")
 
@@ -337,19 +371,44 @@ def run(
 @app.command()
 def metrics(
     seed: int = 42,
-    arm: str = "no_llm",
+    arm: str | None = None,
     data_dir: Path = generate_module.DEFAULT_OUT_DIR,
     db: Path = audit.DEFAULT_DB_PATH,
     out: Path | None = None,
 ) -> None:
     """Score a run's audit log against ground truth and print the result as
-    JSON (METRICS.md). `--arm` must match whichever arm actually produced
-    the run (derive_run_id keys on it) — "no_llm", "with_llm", or
-    "llm_only". `--out PATH` also writes the same JSON to a file, which is
-    how baseline_rules_only.json was produced and can be reproduced.
+    JSON (METRICS.md). `--arm` ("no_llm", "with_llm", or "llm_only") must
+    match whichever arm actually produced the run (derive_run_id keys on
+    it); without it, this reports whichever run most recently wrote a
+    Decision, so a reviewer who just ran `unbatch run --cached` gets that
+    run, not a fixed default arm that may never have been run. `--out
+    PATH` also writes the same JSON to a file, which is how
+    baseline_rules_only.json was produced and can be reproduced.
     """
-    run_id = audit.derive_run_id(seed, data_dir, arm=arm)
     conn = audit.connect(db)
+    if arm is not None:
+        run_id = audit.derive_run_id(seed, data_dir, arm=arm)
+    else:
+        run_id = audit.latest_run_id(conn)
+        if run_id is None:
+            typer.echo(
+                "no runs found in out/audit.db — run `unbatch run` (or `unbatch demo`) first",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+    if not audit.fetch_decisions(conn, run_id):
+        present = audit.run_id_summary(conn)
+        typer.echo(f"no decisions found for run_id '{run_id}'", err=True)
+        if present:
+            typer.echo("runs present in the audit log:", err=True)
+            for present_run_id, count in present.items():
+                typer.echo(f"  {present_run_id} ({count} decisions)", err=True)
+            typer.echo("pass --arm to match one of these, or --seed if it differs", err=True)
+        else:
+            typer.echo("the audit log is empty — run `unbatch run` first", err=True)
+        raise typer.Exit(code=1)
+
     metrics_report = metrics_module.score(conn, run_id, data_dir=data_dir)
     payload = metrics_report.model_dump_json(indent=2)
     if out is not None:
@@ -372,6 +431,78 @@ def report(
     """
     out_path = report_module.render(seed, data_dir=data_dir, db=db, out_path=out)
     typer.echo(f"wrote {out_path}")
+
+
+def _demo_cache_miss_message(arm_label: str, retry_hint: str, exc: Exception) -> str:
+    return (
+        f"{arm_label} needs a live call that cache/ does not cover: {exc}\n"
+        "unbatch demo never makes a live call. Use seed 42 (the default) to "
+        f"replay from the committed cache, or set OPENAI_API_KEY and run "
+        f"{retry_hint} directly instead of `unbatch demo`."
+    )
+
+
+@app.command()
+def demo(seed: int = 42) -> None:
+    """Run the whole pipeline end to end with one command: generate the
+    fixtures, all three ablation arms, metrics, and the report — then print
+    the headline numbers and where the report landed.
+
+    This wraps `generate`, `run --no-llm`, `run --cached`,
+    `run --llm-only --cached`, `metrics`, and `report` exactly as they
+    already exist; it does not replace them, and running them separately
+    (see the README) produces the identical audit log and report. No API
+    key is needed for seed 42: the with-LLM and LLM-only arms replay from
+    the committed cache/, and this refuses with a clear message on a cache
+    miss rather than silently attempting a live call.
+    """
+    data_dir = generate_module.DEFAULT_OUT_DIR
+    db = audit.DEFAULT_DB_PATH
+
+    typer.echo(f"[1/6] generate --seed {seed}")
+    generate_module.generate(seed)
+
+    typer.echo("[2/6] run --no-llm (arm A: rules only)")
+    _run_arm(seed, cached=False, no_llm=True, llm_only=False, data_dir=data_dir, db=db)
+
+    typer.echo("[3/6] run --cached (arm B: rules + LLM)")
+    try:
+        _run_arm(seed, cached=True, no_llm=False, llm_only=False, data_dir=data_dir, db=db)
+    except adjudicator.CacheMissError as exc:
+        typer.echo(
+            _demo_cache_miss_message("arm B", f"unbatch run --seed {seed}", exc), err=True
+        )
+        raise typer.Exit(code=1) from exc
+
+    typer.echo("[4/6] run --llm-only --cached (arm C: LLM only)")
+    try:
+        _run_arm(seed, cached=True, no_llm=False, llm_only=True, data_dir=data_dir, db=db)
+    except adjudicator.CacheMissError as exc:
+        typer.echo(
+            _demo_cache_miss_message(
+                "arm C", f"unbatch run --seed {seed} --llm-only --confirm-spend", exc
+            ),
+            err=True,
+        )
+        raise typer.Exit(code=1) from exc
+
+    typer.echo("[5/6] metrics (arm B)")
+    conn = audit.connect(db)
+    with_llm_run_id = audit.derive_run_id(seed, data_dir, arm="with_llm")
+    headline = metrics_module.score(conn, with_llm_run_id, data_dir=data_dir)
+
+    typer.echo("[6/6] report")
+    out_path = report_module.render(seed, data_dir=data_dir, db=db)
+
+    typer.echo("")
+    typer.echo(f"total credits:    {headline.total_credits}")
+    typer.echo(f"match rate:       {report_module.format_percent(headline.count_match_rate)}")
+    typer.echo(
+        f"false-match rate: {report_module.format_percent(headline.false_match_rate)}"
+    )
+    typer.echo(f"exceptions:       {report_module.format_percent(headline.exception_rate)}")
+    typer.echo(f"LLM cost:         {report_module.format_rupees(headline.llm_cost_paise)}")
+    typer.echo(f"report:           {out_path}")
 
 
 @app.command()
