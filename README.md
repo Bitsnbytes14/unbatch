@@ -78,6 +78,16 @@ LLM cost:         ₹0.19
 report:           out/report.html
 ```
 
+Open the report:
+
+```
+Windows:  start out\report.html
+macOS:    open out/report.html
+Linux:    xdg-open out/report.html
+```
+
+This opens the full report in a browser.
+
 Every LLM response the cascade can produce on seeds 42 through 47 and the adversarial dataset is committed under `cache/`, keyed by a hash of the exact prompt sent, and `--cached` (which `unbatch demo` always passes) replays those bytes instead of calling out; on a cache miss it fails with a clear message rather than attempting a live call. CI proves the keyless claim on a runner that has never had `OPENAI_API_KEY` set: `.github/workflows/ci.yml`'s keyless-reproduction step runs the underlying commands for real and asserts the committed numbers down to the exact fraction, not just that the commands exit cleanly.
 
 ### Or run the steps separately
@@ -128,9 +138,9 @@ Pooled across six seeds (42 through 47, 630 credits total), with seed 42 shown a
 
 Source: `bench_multiseed.json` (arm A), `bench_ablation_seeds.json` (arms B and C, pooled and per-seed).
 
-**The finding that matters most here is a safety finding, not a match-rate finding.** Arm C is not merely worse and more expensive than the shipped cascade; it is measurably less safe. Its pooled false-match rate, 3.64%, is over four times arm B's 0.89%, and on seed 42 alone it went from an exact 0.0% to 9.1% the moment a stricter check forced more retries than the project had ever run before. The mechanism is concrete, not hypothetical: under `--llm-only`, the pipeline always attaches the nearest-by-amount batch's payment IDs to a credit, regardless of what the model classifies the break as. When a semantic-validation check (added to catch the model citing evidence it was never shown) rejected the model's first answer for one seed-42 credit and forced a retry, the second, independent sample from the model landed on a confidently wrong classification the first attempt, whatever else was wrong with it, had not made. Without the deterministic layers narrowing the candidate set first, the model reaches for the nearest-looking batch and attaches real payment IDs to the wrong credit. Full account: FAILURES.md, [2026-09-01: retrying against an LLM produced a worse answer than the one it replaced, and a real false match, for the first time](FAILURES.md#2026-09-01-retrying-against-an-llm-produced-a-worse-answer-than-the-one-it-replaced-and-a-real-false-match-for-the-first-time).
+**Arm C is not merely worse and more expensive than the shipped cascade; it is measurably less safe.** Its pooled false-match rate, 3.64%, is over four times arm B's 0.89%, and on seed 42 alone it went from an exact 0.0% to 9.1% the moment a stricter check forced more retries than the project had ever run before. The mechanism is concrete, not hypothetical: under `--llm-only`, the pipeline always attaches the nearest-by-amount batch's payment IDs to a credit, regardless of what the model classifies the break as. When a semantic-validation check (added to catch the model citing evidence it was never shown) rejected the model's first answer for one seed-42 credit and forced a retry, the second, independent sample from the model landed on a confidently wrong classification the first attempt, whatever else was wrong with it, had not made. Without the deterministic layers narrowing the candidate set first, the model reaches for the nearest-looking batch and attaches real payment IDs to the wrong credit. Full account: FAILURES.md, [2026-09-01: retrying against an LLM produced a worse answer than the one it replaced, and a real false match, for the first time](FAILURES.md#2026-09-01-retrying-against-an-llm-produced-a-worse-answer-than-the-one-it-replaced-and-a-real-false-match-for-the-first-time).
 
-The ablation itself is stated honestly. The model adds close to zero match rate over rules alone: 89.4% versus 89.05% pooled, 88.6% versus 88.6% on seed 42. That is not a wash. The credits reaching L4 are exactly the ones the rules layer correctly declined to guess on (competing exact-sum compositions, deltas outside the tolerance band, credits with no plausible batch at all), not ones the rules missed. What the model adds instead is a classification of *why* each of those credits broke, with cited evidence, at a pooled accuracy detailed below.
+The ablation shows the model adding close to zero match rate over rules alone: 89.4% versus 89.05% pooled, 88.6% versus 88.6% on seed 42. That is not a wash. The credits reaching L4 are exactly the ones the rules layer correctly declined to guess on (competing exact-sum compositions, deltas outside the tolerance band, credits with no plausible batch at all), not ones the rules missed. What the model adds instead is a classification of *why* each of those credits broke, with cited evidence, at a pooled accuracy detailed below.
 
 ## Operating envelope
 
@@ -177,7 +187,7 @@ Raw evidence behind the numbers above, all committed and all reproducible with `
 
 ## Limitations
 
-Written as scope for what comes next, not apology for what exists.
+What this does not do yet, and what it would take.
 
 - **Synthetic data throughout.** The open question is not whether this works on real data in the abstract, but which break types a real merchant settlement file contains that these thirteen do not.
 - **One reconciliation pair.** Closed properly rather than splitting the same effort across two closed only partially; see DECISIONS.md's [A second reconciliation pair](DECISIONS.md#a-second-reconciliation-pair-bank-statement-to-invoices) for why.

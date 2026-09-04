@@ -2,13 +2,13 @@
 
 This file describes how this project was built, as engineering method rather than a feature list. Read it if you want to know how decisions were made and checked, not what the code does.
 
-AI use in an AI Builder Internship is the expected baseline, not a variable worth measuring. The content worth recording is how the work was directed and checked, not who typed which line.
+This describes how the work was directed, reviewed, and checked, and the decisions behind it.
 
 ## Docs before code
 
 `CLAUDE.md`, `ARCHITECTURE.md`, `DATA_SPEC.md`, and `METRICS.md` existed before `src/unbatch` had a single module in it. The invariants, the cascade's stage order and confidence bands, the record shapes and break-type catalogue, and the exact definition of every reported metric were all fixed first.
 
-The point isn't ceremony. A contract written before an implementation exists can't be quietly reshaped by whatever turned out to be convenient to build; a metric defined before any number exists can't be chosen because it happened to look good. METRICS.md's reporting rules (never report a match rate without the false-match rate beside it, no cherry-picking across runs, delete any number with no line in `metrics.py` producing it) were fixed before a single arm had ever been run. That is what made the ablation's central finding, that the model adds close to zero match rate, a measurement rather than a narrative fitted around a result. That finding is reported as the correct outcome, not explained away.
+This ordering serves a specific purpose: a contract written before an implementation exists can't be quietly reshaped by whatever turned out to be convenient to build, and a metric defined before any number exists can't be chosen because it happened to look good. METRICS.md's reporting rules (never report a match rate without the false-match rate beside it, no cherry-picking across runs, delete any number with no line in `metrics.py` producing it) were fixed before a single arm had ever been run. That is what made the ablation's central finding, that the model adds close to zero match rate, a measurement rather than a narrative fitted around a result. That finding is reported as the correct outcome, not explained away.
 
 ## The seven invariants, and why each one exists
 
