@@ -37,7 +37,7 @@ def test_report_renders_html_from_a_real_no_llm_run(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert out_path.exists()
     html = out_path.read_text(encoding="utf-8")
-    assert "unbatch — settlement reconciliation report" in html
+    assert "unbatch: settlement reconciliation report" in html
     assert b"\r" not in out_path.read_bytes()
 
 

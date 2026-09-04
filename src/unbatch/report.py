@@ -45,9 +45,9 @@ TEMPLATE_NAME = "report.html.jinja2"
 # Ordered A -> B -> C to match METRICS.md's ablation table.
 ARM_ORDER: tuple[str, ...] = ("no_llm", "with_llm", "llm_only")
 ARM_LABELS: dict[str, str] = {
-    "no_llm": "A — rules only",
-    "with_llm": "B — rules + LLM",
-    "llm_only": "C — LLM only",
+    "no_llm": "A: rules only",
+    "with_llm": "B: rules + LLM",
+    "llm_only": "C: LLM only",
 }
 ARM_COMMANDS: dict[str, str] = {
     "no_llm": "unbatch run --no-llm",
@@ -188,7 +188,7 @@ def _confidence_histogram(decisions: list[Decision]) -> list[tuple[str, int]]:
         band = min(band, _CONFIDENCE_BAND_COUNT - 1)  # confidence == 1.0 lands in the top band
         counts[band] += 1
     labels = [
-        f"{i * _CONFIDENCE_BAND_WIDTH:.1f}–{(i + 1) * _CONFIDENCE_BAND_WIDTH:.1f}"
+        f"{i * _CONFIDENCE_BAND_WIDTH:.1f} to {(i + 1) * _CONFIDENCE_BAND_WIDTH:.1f}"
         for i in range(_CONFIDENCE_BAND_COUNT)
     ]
     return list(zip(labels, counts, strict=True))

@@ -63,16 +63,16 @@ def test_confidence_histogram_buckets_by_tenth() -> None:
     ]
     histogram = report._confidence_histogram(decisions)
     counts = dict(histogram)
-    assert counts["0.0–0.1"] == 2
-    assert counts["0.7–0.8"] == 1
-    assert counts["0.9–1.0"] == 1
+    assert counts["0.0 to 0.1"] == 2
+    assert counts["0.7 to 0.8"] == 1
+    assert counts["0.9 to 1.0"] == 1
     assert sum(counts.values()) == 4
 
 
 def test_confidence_histogram_does_not_overflow_at_exactly_1_0() -> None:
     histogram = report._confidence_histogram([_decision("a", 1.0)])
     counts = dict(histogram)
-    assert counts["0.9–1.0"] == 1
+    assert counts["0.9 to 1.0"] == 1
     assert len(histogram) == 10  # no 11th bucket created
 
 
@@ -485,6 +485,6 @@ def test_render_with_all_three_arms_states_the_c_vs_b_comparison_precisely(
     # exception) = 66.7%, both LLM classifications correct = 100%
     # arm C: 3 calls, 1/3 resolved (33.3%), 2/3 correct (66.7%)
     assert "Arm C made 3 LLM calls against arm B's 2" in html
-    assert "1.5× as many" in html
+    assert "1.5 times as many" in html
     assert "33.3-point" in html  # both gaps happen to be 33.3 points here:
     # match-rate 66.7% - 33.3%, break-reason-accuracy 100.0% - 66.7%
