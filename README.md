@@ -9,7 +9,7 @@ Built for the Razorpay AI Buildathon, Track 04 (AI Finance Controller). A paymen
 ## Demo
 
 <!-- VIDEO LINK -->
-https://drive.google.com/file/d/1bs4_dajs_qLAGqzkl9p4x6K5xBmDXGEV/view?usp=sharing
+https://drive.google.com/file/d/1ncp-wJjmm-Qw2L3Em66ocQsJibJKf5m2/view?usp=sharing
 
 ## The problem
 
