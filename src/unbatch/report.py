@@ -56,10 +56,19 @@ ARM_COMMANDS: dict[str, str] = {
 }
 
 # 10 fixed-width bands from 0.0 to 1.0 — coarse enough to read as a shape,
-# fine enough that L0/L1/L2/L3's fixed confidences (1.00/0.98/0.90/0.75)
-# still land in visibly distinct bands from L4's model-reported spread.
+# fine enough to show real spread across the model's own reported values.
+# Fed only the decisions that actually went through the adjudicator (see
+# build_arm_views): L0-L3's confidences are fixed constants (1.00/0.98/
+# 0.90/0.75), so including them piles almost every decision into one or
+# two bands and the rest render as empty — not a chart bug, just a chart
+# with nothing to show for stages whose confidence never varies.
 _CONFIDENCE_BAND_WIDTH = 0.1
 _CONFIDENCE_BAND_COUNT = 10
+
+# Fixed L0 -> L4 order for the funnel — stage_funnel only contains keys for
+# stages that resolved at least one credit (metrics.py), so arm C's l0-l3
+# would otherwise be silently absent instead of shown as zero.
+_FUNNEL_STAGE_ORDER: tuple[str, ...] = ("l0", "l1", "l2", "l3", "l4")
 
 
 def format_rupees(paise: int) -> str:
@@ -99,6 +108,35 @@ class ConfusionTable:
 
 
 @dataclass
+class FunnelRow:
+    """One stage's row in the funnel chart — count is always rendered as
+    text next to the bar, never only inside it, so a stage resolving a
+    handful of credits (L1/L3 on seed 42) is still legible next to L0's
+    79 and doesn't depend on the bar being wide enough to hold a label."""
+
+    stage: str
+    count: int
+    percent_of_total: float
+
+
+def _funnel_rows(stage_funnel: dict[str, int], total_credits: int) -> list[FunnelRow]:
+    """Every cascade stage in fixed L0 -> L4 order. metrics.py's
+    stage_funnel only has a key for a stage that resolved at least one
+    credit, so arm C's l0-l3 (it skips straight to L4) would otherwise be
+    silently absent instead of shown as zero."""
+    return [
+        FunnelRow(
+            stage=stage,
+            count=stage_funnel.get(stage, 0),
+            percent_of_total=(
+                stage_funnel.get(stage, 0) / total_credits * 100 if total_credits else 0.0
+            ),
+        )
+        for stage in _FUNNEL_STAGE_ORDER
+    ]
+
+
+@dataclass
 class ArmView:
     """Everything the template needs for one ablation arm. `ran=False`
     means this arm's run_id has zero decisions in the audit log — rendered
@@ -111,6 +149,7 @@ class ArmView:
     ran: bool
     metrics: MetricsReport | None = None
     exceptions: list[ExceptionRow] = field(default_factory=list)
+    funnel_rows: list[FunnelRow] = field(default_factory=list)
     confidence_histogram: list[tuple[str, int]] = field(default_factory=list)
     confidence_histogram_max: int = 1
     confusion_table: ConfusionTable | None = None
@@ -118,6 +157,11 @@ class ArmView:
     cost_per_adjudicated_credit_paise: str = "0.00"
     cost_per_exception_paise: str = "0.00"
     has_llm_calls: bool = False
+    # llm_call_count minus adjudication_failed_count: credits that actually
+    # received a usable break_reason, the denominator break_reason_accuracy
+    # is computed against. Shown alongside the accuracy figure so a small
+    # sample (e.g. 83.3% on 6) is never read as a precise measurement.
+    classified_count: int = 0
 
 
 @dataclass
@@ -282,7 +326,14 @@ def build_arm_views(
             continue
 
         report = metrics_module.score(conn, run_id, data_dir=data_dir)
-        histogram = _confidence_histogram(decisions)
+        # Only decisions that actually went through the adjudicator carry a
+        # model name (l4_llm.py is the sole call site that sets llm_model —
+        # the --no-llm terminal exception explicitly leaves it None), so
+        # this excludes L0-L3's fixed confidences and arm A's declined
+        # items rather than letting them swamp the one stage whose
+        # confidence is genuinely model-reported.
+        adjudicated_decisions = [d for d in decisions if d.llm_model is not None]
+        histogram = _confidence_histogram(adjudicated_decisions)
         views[arm] = ArmView(
             key=arm,
             label=ARM_LABELS[arm],
@@ -291,6 +342,7 @@ def build_arm_views(
             ran=True,
             metrics=report,
             exceptions=_exception_rows(audit.fetch_exceptions(conn, run_id)),
+            funnel_rows=_funnel_rows(report.stage_funnel, report.total_credits),
             confidence_histogram=histogram,
             confidence_histogram_max=max((count for _label, count in histogram), default=1) or 1,
             confusion_table=_confusion_table(report.break_reason_confusion),
@@ -298,6 +350,7 @@ def build_arm_views(
             cost_per_adjudicated_credit_paise=f"{report.cost_paise_per_adjudicated_credit:.2f}",
             cost_per_exception_paise=f"{report.cost_paise_per_exception:.2f}",
             has_llm_calls=report.llm_call_count > 0,
+            classified_count=report.llm_call_count - report.adjudication_failed_count,
         )
     return views
 
