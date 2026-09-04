@@ -53,13 +53,23 @@ out/report.html, unbatch metrics, unbatch exceptions --export
 git clone https://github.com/Bitsnbytes14/unbatch.git
 cd unbatch
 uv sync
+uv run unbatch demo
+```
+
+One command: generates seed 42's fixtures, runs all three ablation arms (rules only, rules + LLM, LLM only) from the committed cache, scores the with-LLM arm, and renders `out/report.html`. No API key needed, prints progress as it goes, and finishes in a few seconds. Ends with the headline numbers and the report path printed to the terminal.
+
+No API key is needed to reproduce any number in this README. Every LLM response the cascade can produce on seeds 42 through 47 and the adversarial dataset is committed under `cache/`, keyed by a hash of the exact prompt sent, and `--cached` (which `unbatch demo` always passes) replays those bytes instead of calling out; on a cache miss it fails with a clear message rather than attempting a live call. CI proves the keyless claim on a runner that has never had `OPENAI_API_KEY` set: `.github/workflows/ci.yml`'s keyless-reproduction step runs the underlying commands for real and asserts the committed numbers down to the exact fraction, not just that the commands exit cleanly.
+
+### Or run the steps separately
+
+```bash
 uv run unbatch generate --seed 42
 uv run unbatch run --seed 42 --cached
 uv run unbatch metrics --seed 42 --arm with_llm
 uv run unbatch report
 ```
 
-No API key is needed to reproduce any number in this README. Every LLM response the cascade can produce on seeds 42 through 47 and the adversarial dataset is committed under `cache/`, keyed by a hash of the exact prompt sent, and `--cached` replays those bytes instead of calling out. CI proves this on a runner that has never had `OPENAI_API_KEY` set: `.github/workflows/ci.yml`'s keyless-reproduction step runs the three commands above for real and asserts the committed numbers down to the exact fraction, not just that the commands exit cleanly.
+`unbatch demo` wraps exactly these commands (plus the two arms below); running them by hand produces the identical audit log and report.
 
 To reproduce the full three-arm ablation used in the results below:
 
